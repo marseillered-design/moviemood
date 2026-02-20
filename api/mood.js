@@ -73,7 +73,7 @@ TMDB Genre IDs:
     const content = data.choices?.[0]?.message?.content;
 
     if (!content) {
-      return res.status(500).json({ error: "Invalid AI response" });
+      return res.status(500).json({ error: "Invalid AI response", groq: data });
     }
 
     let parsed;
