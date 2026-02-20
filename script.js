@@ -26,19 +26,25 @@ async function handleSearch() {
 
   moviesGrid.innerHTML = '';
 
-  // 1️⃣ Сначала обычный поиск по названию
-  const directResults = await searchTMDB(query);
+  const words = query.split(' ');
 
-  if (directResults.length > 0) {
-    displayMovies(directResults);
-    return;
+  let results = [];
+
+  // Если больше 2 слов → считаем это mood-запросом
+  if (words.length >= 3) {
+    results = await searchWithAI(query);
+
+    if (results.length > 0) {
+      displayMovies(results);
+      return;
+    }
   }
 
-  // 2️⃣ Если не найдено — пробуем AI
-  const aiResults = await searchWithAI(query);
+  // fallback на обычный поиск
+  results = await searchTMDB(query);
 
-  if (aiResults.length > 0) {
-    displayMovies(aiResults);
+  if (results.length > 0) {
+    displayMovies(results);
     return;
   }
 
