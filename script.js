@@ -27,10 +27,9 @@ async function handleSearch() {
   moviesGrid.innerHTML = '';
 
   const words = query.split(' ');
-
   let results = [];
 
-  // Если больше 2 слов → считаем это mood-запросом
+  // 1️⃣ Если 3+ слов — сначала пробуем AI
   if (words.length >= 3) {
     results = await searchWithAI(query);
 
@@ -40,7 +39,7 @@ async function handleSearch() {
     }
   }
 
-  // fallback на обычный поиск
+  // 2️⃣ Если AI ничего не дал — обычный поиск
   results = await searchTMDB(query);
 
   if (results.length > 0) {
@@ -48,9 +47,9 @@ async function handleSearch() {
     return;
   }
 
+  // 3️⃣ Если вообще ничего
   moviesGrid.innerHTML = `<p style="color:red">No movies found</p>`;
 }
-
 async function searchTMDB(query) {
   try {
     const res = await fetch(
