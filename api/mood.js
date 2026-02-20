@@ -1,1 +1,91 @@
-export default async function handler(req, res) {  try {    const { query } = req.body;    if (!query) {      return res.status(400).json({ error: "No query provided" });    }    const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {      method: "POST",      headers: {        "Content-Type": "application/json",        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`      },      body: JSON.stringify({        model: "llama3-70b-8192",        messages: [          {            role: "system",            content: `You are a movie mood classifier.Convert a user movie mood description into TMDB genre IDs.Return ONLY valid JSON in this format:{  "genres": [number, number]}TMDB Genre IDs:28 = Action12 = Adventure16 = Animation35 = Comedy80 = Crime99 = Documentary18 = Drama10751 = Family14 = Fantasy36 = History27 = Horror10402 = Music9648 = Mystery10749 = Romance878 = Science Fiction10770 = TV Movie53 = Thriller10752 = War37 = Western`          },          {            role: "user",            content: query          }        ],        temperature: 0.3      })    });    const data = await groqResponse.json();    const content = data.choices?.[0]?.message?.content;    if (!content) {      return res.status(500).json({ error: "Invalid response from Groq" });    }    // ??????? ????????? ?????????? JSON    let parsed;    try {      parsed = JSON.parse(content);    } catch (err) {      return res.status(500).json({ error: "Failed to parse AI response", raw: content });    }    return res.status(200).json(parsed);  } catch (error) {    console.error(error);    return res.status(500).json({ error: "Server error" });  }}
+export default async function handler(req, res) {
+  try {
+    const { query } = req.body;
+
+    if (!query) {
+      return res.status(400).json({ error: "No query provided" });
+    }
+
+    const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "llama3-70b-8192",
+        messages: [
+          {
+            role: "system",
+            content: `
+You are an intelligent movie search assistant.
+
+The user may write in ANY language (English, Russian, Ukrainian, etc).
+Understand the meaning of the request.
+
+Analyze the mood description and return ONLY valid JSON in this format:
+
+{
+  "genres": [number],
+  "search_query": "cleaned search phrase for TMDB"
+}
+
+Rules:
+- Include relevant TMDB genre IDs.
+- search_query must summarize the core concept (e.g. "psychological horror in space").
+- Keep search_query short and precise.
+- Return ONLY valid JSON.
+
+TMDB Genre IDs:
+28 = Action
+12 = Adventure
+16 = Animation
+35 = Comedy
+80 = Crime
+99 = Documentary
+18 = Drama
+10751 = Family
+14 = Fantasy
+36 = History
+27 = Horror
+10402 = Music
+9648 = Mystery
+10749 = Romance
+878 = Science Fiction
+10770 = TV Movie
+53 = Thriller
+10752 = War
+37 = Western
+`
+          },
+          {
+            role: "user",
+            content: query
+          }
+        ],
+        temperature: 0.3
+      })
+    });
+
+    const data = await groqResponse.json();
+
+    const content = data.choices?.[0]?.message?.content;
+
+    if (!content) {
+      return res.status(500).json({ error: "Invalid response from Groq" });
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(content);
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to parse AI response", raw: content });
+    }
+
+    return res.status(200).json(parsed);
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
