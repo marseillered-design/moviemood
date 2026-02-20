@@ -1,4 +1,4 @@
-// TMDB API
+// TMDB
 const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
@@ -26,16 +26,36 @@ async function handleSearch() {
 
   moviesGrid.innerHTML = '';
 
-  const results = await searchWithAI(query);
+  // 1️⃣ Сначала обычный поиск по названию
+  const directResults = await searchTMDB(query);
 
-  if (!results.length) {
-    moviesGrid.innerHTML = `<p style="color:red">No movies found</p>`;
+  if (directResults.length > 0) {
+    displayMovies(directResults);
     return;
   }
 
-  results.forEach(movie => {
-    moviesGrid.appendChild(createCard(movie));
-  });
+  // 2️⃣ Если не найдено — пробуем AI
+  const aiResults = await searchWithAI(query);
+
+  if (aiResults.length > 0) {
+    displayMovies(aiResults);
+    return;
+  }
+
+  moviesGrid.innerHTML = `<p style="color:red">No movies found</p>`;
+}
+
+async function searchTMDB(query) {
+  try {
+    const res = await fetch(
+      `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
+    );
+    const data = await res.json();
+    return data.results || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
 }
 
 async function searchWithAI(query) {
@@ -46,16 +66,18 @@ async function searchWithAI(query) {
       body: JSON.stringify({ query })
     });
 
+    if (!ai.ok) return [];
+
     const aiData = await ai.json();
 
     if (aiData.search_query) {
-      const res = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(aiData.search_query)}`);
-      const data = await res.json();
-      return data.results || [];
+      return await searchTMDB(aiData.search_query);
     }
 
     if (aiData.genres?.length) {
-      const res = await fetch(`${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${aiData.genres.join(',')}&region=${currentRegion}`);
+      const res = await fetch(
+        `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${aiData.genres.join(',')}&region=${currentRegion}`
+      );
       const data = await res.json();
       return data.results || [];
     }
@@ -65,6 +87,13 @@ async function searchWithAI(query) {
     console.error(e);
     return [];
   }
+}
+
+function displayMovies(movies) {
+  moviesGrid.innerHTML = '';
+  movies.forEach(movie => {
+    moviesGrid.appendChild(createCard(movie));
+  });
 }
 
 function createCard(movie) {
