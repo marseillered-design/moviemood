@@ -46,12 +46,11 @@ async function handleSearch() {
   const query = moodInput.value.trim();
   if (!query) return;
 
-  // Сброс пагинации при новом поиске
   currentPage = 1;
   currentQuery = query;
   lastAiData = null;
-  moviesGrid.innerHTML = '';
   removeLoadMoreBtn();
+  showSkeleton();
 
   const words = query.split(' ');
   let results = [];
@@ -60,6 +59,7 @@ async function handleSearch() {
     const { results: aiResults, aiData } = await searchWithAI(query, 1);
     lastAiData = aiData;
     if (aiResults.length > 0) {
+      hideSkeleton();
       displayMovies(aiResults, false);
       addLoadMoreBtn();
       return;
@@ -68,11 +68,13 @@ async function handleSearch() {
 
   results = await searchTMDB(query, 1);
   if (results.length > 0) {
+    hideSkeleton();
     displayMovies(results, false);
     addLoadMoreBtn();
     return;
   }
 
+  hideSkeleton();
   moviesGrid.innerHTML = `<p style="color:red">No movies found</p>`;
 }
 
@@ -149,6 +151,23 @@ async function searchWithAI(query, page = 1) {
     console.error(e);
     return { results: [], aiData: null };
   }
+}
+
+function showSkeleton() {
+  moviesGrid.innerHTML = '';
+  for (let i = 0; i < 12; i++) {
+    const skeleton = document.createElement('div');
+    skeleton.className = 'movie-card skeleton';
+    skeleton.innerHTML = `
+      <div class="skeleton-poster"></div>
+      <div class="skeleton-title"></div>
+    `;
+    moviesGrid.appendChild(skeleton);
+  }
+}
+
+function hideSkeleton() {
+  document.querySelectorAll('.skeleton').forEach(s => s.remove());
 }
 
 function displayMovies(movies, append = false) {
