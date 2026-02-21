@@ -27,6 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
       currentType = tab.dataset.type;
     });
   });
+  document.querySelectorAll('.mood-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      moodInput.value = btn.dataset.mood;
+      handleSearch();
+    });
+  });
   document.getElementById('animeToggle').addEventListener('change', e => {
     includeAnime = e.target.checked;
   });
@@ -62,6 +68,7 @@ async function handleSearch() {
   // 3️⃣ Если вообще ничего
   moviesGrid.innerHTML = `<p style="color:red">No movies found</p>`;
 }
+
 async function searchTMDB(query) {
   try {
     let endpoint = currentType === 'tv' ? 'tv' : 'movie';
