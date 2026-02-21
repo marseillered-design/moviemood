@@ -1,200 +1,265 @@
-// ================= TMDB CONFIG =================
-const TMDB_API_KEY = "838a2b872b36560920c01b7b50b0bb9e"; // если позже спрячем — уберём
-const TMDB_BASE_URL = "https://api.themoviedb.org/3";
-const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+// TMDB
+const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
+const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
-// ================= STATE =================
-let currentMovies = [];
-let currentRegion = "US";
+let currentRegion = 'US';
+let currentType = 'movie';
+let includeAnime = false;
+let currentPage = 1;
+let currentQuery = '';
+let lastAiData = null;
+let isLoading = false;
 
-// ================= DOM =================
-const moodInput = document.getElementById("moodInput");
-const searchBtn = document.getElementById("searchBtn");
-const moviesGrid = document.getElementById("moviesGrid");
-const loading = document.getElementById("loading");
-const errorMessage = document.getElementById("errorMessage");
+const moodInput = document.getElementById('moodInput');
+const searchBtn = document.getElementById('searchBtn');
+const countrySelect = document.getElementById('countrySelect');
+const moviesGrid = document.getElementById('moviesGrid');
 
-// ================= INIT =================
-document.addEventListener("DOMContentLoaded", () => {
-  searchBtn.addEventListener("click", handleSearch);
-  moodInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") handleSearch();
+document.addEventListener('DOMContentLoaded', () => {
+  searchBtn.addEventListener('click', handleSearch);
+  moodInput.addEventListener('keypress', e => {
+    if (e.key === 'Enter') handleSearch();
   });
+  countrySelect.addEventListener('change', e => {
+    currentRegion = e.target.value;
+  });
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentType = tab.dataset.type;
+    });
+  });
+  document.querySelectorAll('.mood-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      moodInput.value = btn.dataset.mood;
+      handleSearch();
+    });
+  });
+  document.getElementById('animeToggle').addEventListener('change', e => {
+    includeAnime = e.target.checked;
+  });
+  document.getElementById('surpriseBtn').addEventListener('click', handleSurprise);
 });
 
-// ================= MAIN SEARCH =================
 async function handleSearch() {
   const query = moodInput.value.trim();
   if (!query) return;
 
-  showLoading();
-  clearMovies();
-  hideError();
+  currentPage = 1;
+  currentQuery = query;
+  lastAiData = null;
+  removeLoadMoreBtn();
+  showSkeleton();
 
-  try {
-    const response = await fetch("/api/mood", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query }),
-    });
+  const words = query.split(' ');
+  let results = [];
 
-    const aiData = await response.json();
-
-    if (!aiData) throw new Error("AI failed");
-
-    if (aiData.mode === "similar" && aiData.reference_title) {
-      await handleSimilarMode(aiData.reference_title);
-    } else {
-      await handleFilterMode(aiData);
+  if (words.length >= 3) {
+    const { results: aiResults, aiData } = await searchWithAI(query, 1);
+    lastAiData = aiData;
+    if (aiResults.length > 0) {
+      hideSkeleton();
+      displayMovies(aiResults, false);
+      addLoadMoreBtn();
+      return;
     }
-  } catch (error) {
-    console.error("AI error:", error);
-    const fallback = await searchTMDB(query);
-    displayMovies(fallback);
-  } finally {
-    hideLoading();
   }
-}
 
-// ================= SIMILAR MODE =================
-async function handleSimilarMode(title) {
-  const searchResults = await searchTMDB(title);
-
-  if (!searchResults.length) {
-    showError("No similar movies found.");
+  results = await searchTMDB(query, 1);
+  if (results.length > 0) {
+    hideSkeleton();
+    displayMovies(results, false);
+    addLoadMoreBtn();
     return;
   }
 
-  const referenceMovie = searchResults[0];
-
-  const res = await fetch(
-    `${TMDB_BASE_URL}/movie/${referenceMovie.id}/similar?api_key=${TMDB_API_KEY}`
-  );
-
-  const data = await res.json();
-
-  const filtered = data.results.filter((m) => m.vote_count > 1000);
-
-  displayMovies(filtered);
+  hideSkeleton();
+  moviesGrid.innerHTML = `<p style="color:red">No movies found</p>`;
 }
 
-// ================= FILTER MODE (SMART AI) =================
-async function handleFilterMode(aiData) {
-  const {
-    primary_genres = [],
-    exclude_genres = [],
-    year_from,
-    year_to,
-    vote_average_gte,
-    vote_count_gte = 1000,
-    original_language,
-    sort_by = "popularity.desc",
-    type = "movie",
-  } = aiData;
+async function handleSurprise() {
+  const genres = [28, 12, 16, 35, 80, 18, 14, 27, 9648, 10749, 878, 53, 37];
+  const randomGenre = genres[Math.floor(Math.random() * genres.length)];
+  const randomPage = Math.floor(Math.random() * 5) + 1;
 
-  const endpoint = type === "tv" ? "discover/tv" : "discover/movie";
+  currentPage = randomPage;
+  lastAiData = { genres: [randomGenre] };
+  removeLoadMoreBtn();
+  showSkeleton();
 
-  const params = new URLSearchParams({
-    api_key: TMDB_API_KEY,
-    sort_by,
-    page: 1,
+  const endpoint = currentType === 'tv' ? 'tv' : 'movie';
+  try {
+    const res = await fetch(
+      `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${randomGenre}&sort_by=popularity.desc&vote_count.gte=100&page=${randomPage}`
+    );
+    const data = await res.json();
+    hideSkeleton();
+    if (data.results?.length) {
+      displayMovies(data.results, false);
+      addLoadMoreBtn();
+    }
+  } catch (e) {
+    hideSkeleton();
+    console.error(e);
+  }
+}
+
+async function loadMore() {
+  if (isLoading) return;
+  isLoading = true;
+  currentPage++;
+
+  let results = [];
+
+  if (lastAiData) {
+    results = await fetchByAiData(lastAiData, currentPage);
+  } else {
+    results = await searchTMDB(currentQuery, currentPage);
+  }
+
+  if (results.length > 0) {
+    displayMovies(results, true);
+  } else {
+    removeLoadMoreBtn();
+  }
+
+  isLoading = false;
+}
+
+async function searchTMDB(query, page = 1) {
+  try {
+    let endpoint = currentType === 'tv' ? 'tv' : 'movie';
+    const res = await fetch(
+      `${TMDB_BASE_URL}/search/${endpoint}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&page=${page}`
+    );
+    const data = await res.json();
+    return data.results || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+}
+
+async function fetchByAiData(aiData, page = 1) {
+  try {
+    if (aiData.genres?.length) {
+      let endpoint = currentType === 'tv' ? 'tv' : 'movie';
+      let genreParam = currentType === 'documentary' ? '99' : aiData.genres.join(',');
+      let animeParam = includeAnime ? '&with_keywords=210024' : '';
+      const res = await fetch(
+        `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${genreParam}&sort_by=popularity.desc&vote_count.gte=100&page=${page}${animeParam}`
+      );
+      const data = await res.json();
+      return data.results || [];
+    }
+    if (aiData.search_query) {
+      return await searchTMDB(aiData.search_query, page);
+    }
+    return [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+}
+
+async function searchWithAI(query, page = 1) {
+  try {
+    const ai = await fetch('/api/mood', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
+    });
+    if (!ai.ok) return { results: [], aiData: null };
+    const aiData = await ai.json();
+    const results = await fetchByAiData(aiData, page);
+    return { results, aiData };
+  } catch (e) {
+    console.error(e);
+    return { results: [], aiData: null };
+  }
+}
+
+function showSkeleton() {
+  moviesGrid.innerHTML = '';
+  for (let i = 0; i < 12; i++) {
+    const skeleton = document.createElement('div');
+    skeleton.className = 'movie-card skeleton';
+    skeleton.innerHTML = `
+      <div class="skeleton-poster"></div>
+      <div class="skeleton-title"></div>
+    `;
+    moviesGrid.appendChild(skeleton);
+  }
+}
+
+function hideSkeleton() {
+  document.querySelectorAll('.skeleton').forEach(s => s.remove());
+}
+
+function displayMovies(movies, append = false) {
+  if (!append) moviesGrid.innerHTML = '';
+  movies.forEach(movie => {
+    moviesGrid.appendChild(createCard(movie));
   });
-
-  if (primary_genres.length)
-    params.append("with_genres", primary_genres.join(","));
-
-  if (exclude_genres.length)
-    params.append("without_genres", exclude_genres.join(","));
-
-  if (year_from)
-    params.append("primary_release_date.gte", `${year_from}-01-01`);
-
-  if (year_to)
-    params.append("primary_release_date.lte", `${year_to}-12-31`);
-
-  if (vote_average_gte)
-    params.append("vote_average.gte", vote_average_gte);
-
-  if (vote_count_gte)
-    params.append("vote_count.gte", vote_count_gte);
-
-  if (original_language)
-    params.append("with_original_language", original_language);
-
-  const res = await fetch(
-    `${TMDB_BASE_URL}/${endpoint}?${params.toString()}`
-  );
-
-  const data = await res.json();
-
-  displayMovies(data.results || []);
 }
 
-// ================= NORMAL SEARCH =================
-async function searchTMDB(query) {
-  const res = await fetch(
-    `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(
-      query
-    )}`
-  );
-
-  const data = await res.json();
-  return data.results || [];
+function addLoadMoreBtn() {
+  removeLoadMoreBtn();
+  const btn = document.createElement('button');
+  btn.id = 'loadMoreBtn';
+  btn.className = 'load-more-btn';
+  btn.textContent = 'Load More';
+  btn.addEventListener('click', loadMore);
+  moviesGrid.parentElement.appendChild(btn);
 }
 
-// ================= DISPLAY =================
-function displayMovies(movies) {
-  currentMovies = movies;
-  moviesGrid.innerHTML = "";
-
-  movies.forEach((movie) => {
-    const card = createMovieCard(movie);
-    moviesGrid.appendChild(card);
-  });
+function removeLoadMoreBtn() {
+  const btn = document.getElementById('loadMoreBtn');
+  if (btn) btn.remove();
 }
 
-function createMovieCard(movie) {
-  const card = document.createElement("div");
-  card.className = "movie-card";
+function toggleFavorite(movie) {
+  let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+  const exists = favorites.find(f => f.id === movie.id);
+  if (exists) {
+    favorites = favorites.filter(f => f.id !== movie.id);
+  } else {
+    favorites.push({
+      id: movie.id,
+      title: movie.title || movie.name,
+      poster_path: movie.poster_path,
+      media_type: currentType
+    });
+  }
+  localStorage.setItem('favorites', JSON.stringify(favorites));
+}
 
+function isFavorite(id) {
+  const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+  return favorites.some(f => f.id === id);
+}
+
+function createCard(movie) {
+  const card = document.createElement('div');
+  card.className = 'movie-card';
   const poster = movie.poster_path
     ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}`
-    : "";
-
+    : '';
+  const favIcon = isFavorite(movie.id) ? '❤️' : '🤍';
   card.innerHTML = `
-    <img src="${poster}" alt="${movie.title}">
-    <div class="movie-info">
-      <h3>${movie.title}</h3>
-      <p>⭐ ${movie.vote_average?.toFixed(1) || "N/A"}</p>
-    </div>
+    <img src="${poster}" class="movie-poster">
+    <h3>${movie.title || movie.name}</h3>
+    <button class="fav-btn">${favIcon}</button>
   `;
-
-  card.addEventListener("click", () => {
-    window.location.href = \`movie.html?id=\${movie.id}\`;
+  card.querySelector('.fav-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    toggleFavorite(movie);
+    e.target.textContent = isFavorite(movie.id) ? '❤️' : '🤍';
   });
-
+  card.addEventListener('click', () => {
+    window.open(`movie.html?id=${movie.id}&type=${currentType}`, '_blank');
+  });
   return card;
-}
-
-// ================= UI HELPERS =================
-function showLoading() {
-  if (loading) loading.style.display = "block";
-}
-
-function hideLoading() {
-  if (loading) loading.style.display = "none";
-}
-
-function showError(message) {
-  if (!errorMessage) return;
-  errorMessage.textContent = message;
-  errorMessage.style.display = "block";
-}
-
-function hideError() {
-  if (errorMessage) errorMessage.style.display = "none";
-}
-
-function clearMovies() {
-  moviesGrid.innerHTML = "";
 }
