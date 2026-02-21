@@ -6,6 +6,10 @@ const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 let currentRegion = 'US';
 let currentType = 'movie';
 let includeAnime = false;
+let currentPage = 1;
+let currentQuery = '';
+let lastAiData = null;
+let isLoading = false;
 
 const moodInput = document.getElementById('moodInput');
 const searchBtn = document.getElementById('searchBtn');
@@ -42,38 +46,63 @@ async function handleSearch() {
   const query = moodInput.value.trim();
   if (!query) return;
 
+  // Сброс пагинации при новом поиске
+  currentPage = 1;
+  currentQuery = query;
+  lastAiData = null;
   moviesGrid.innerHTML = '';
+  removeLoadMoreBtn();
 
   const words = query.split(' ');
   let results = [];
 
-  // 1️⃣ Если 3+ слов — сначала пробуем AI
   if (words.length >= 3) {
-    results = await searchWithAI(query);
-
-    if (results.length > 0) {
-      displayMovies(results);
+    const { results: aiResults, aiData } = await searchWithAI(query, 1);
+    lastAiData = aiData;
+    if (aiResults.length > 0) {
+      displayMovies(aiResults, false);
+      addLoadMoreBtn();
       return;
     }
   }
 
-  // 2️⃣ Если AI ничего не дал — обычный поиск
-  results = await searchTMDB(query);
-
+  results = await searchTMDB(query, 1);
   if (results.length > 0) {
-    displayMovies(results);
+    displayMovies(results, false);
+    addLoadMoreBtn();
     return;
   }
 
-  // 3️⃣ Если вообще ничего
   moviesGrid.innerHTML = `<p style="color:red">No movies found</p>`;
 }
 
-async function searchTMDB(query) {
+async function loadMore() {
+  if (isLoading) return;
+  isLoading = true;
+  currentPage++;
+
+  let results = [];
+
+  if (lastAiData) {
+    results = await fetchByAiData(lastAiData, currentPage);
+  } else {
+    results = await searchTMDB(currentQuery, currentPage);
+  }
+
+  if (results.length > 0) {
+    displayMovies(results, true);
+  } else {
+    removeLoadMoreBtn();
+  }
+
+  isLoading = false;
+}
+
+async function searchTMDB(query, page = 1) {
   try {
     let endpoint = currentType === 'tv' ? 'tv' : 'movie';
     const res = await fetch(
-      `${TMDB_BASE_URL}/search/${endpoint}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
+      `${TMDB_BASE_URL}/search/${endpoint}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&page=${page}`
     );
     const data = await res.json();
     return data.results || [];
@@ -83,31 +112,21 @@ async function searchTMDB(query) {
   }
 }
 
-async function searchWithAI(query) {
+async function fetchByAiData(aiData, page = 1) {
   try {
-    const ai = await fetch('/api/mood', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query })
-    });
-    if (!ai.ok) return [];
-    const aiData = await ai.json();
-
     if (aiData.genres?.length) {
       let endpoint = currentType === 'tv' ? 'tv' : 'movie';
       let genreParam = currentType === 'documentary' ? '99' : aiData.genres.join(',');
       let animeParam = includeAnime ? '&with_keywords=210024' : '';
       const res = await fetch(
-        `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${genreParam}&sort_by=popularity.desc&vote_count.gte=100${animeParam}`
+        `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${genreParam}&sort_by=popularity.desc&vote_count.gte=100&page=${page}${animeParam}`
       );
       const data = await res.json();
       return data.results || [];
     }
-
     if (aiData.search_query) {
-      return await searchTMDB(aiData.search_query);
+      return await searchTMDB(aiData.search_query, page);
     }
-
     return [];
   } catch (e) {
     console.error(e);
@@ -115,11 +134,43 @@ async function searchWithAI(query) {
   }
 }
 
-function displayMovies(movies) {
-  moviesGrid.innerHTML = '';
+async function searchWithAI(query, page = 1) {
+  try {
+    const ai = await fetch('/api/mood', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
+    });
+    if (!ai.ok) return { results: [], aiData: null };
+    const aiData = await ai.json();
+    const results = await fetchByAiData(aiData, page);
+    return { results, aiData };
+  } catch (e) {
+    console.error(e);
+    return { results: [], aiData: null };
+  }
+}
+
+function displayMovies(movies, append = false) {
+  if (!append) moviesGrid.innerHTML = '';
   movies.forEach(movie => {
     moviesGrid.appendChild(createCard(movie));
   });
+}
+
+function addLoadMoreBtn() {
+  removeLoadMoreBtn();
+  const btn = document.createElement('button');
+  btn.id = 'loadMoreBtn';
+  btn.className = 'load-more-btn';
+  btn.textContent = 'Load More';
+  btn.addEventListener('click', loadMore);
+  moviesGrid.parentElement.appendChild(btn);
+}
+
+function removeLoadMoreBtn() {
+  const btn = document.getElementById('loadMoreBtn');
+  if (btn) btn.remove();
 }
 
 function toggleFavorite(movie) {
