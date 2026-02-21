@@ -113,6 +113,25 @@ header {
     transform: translateY(0);
 }
 
+/* Surprise Me Button */
+.surprise-btn {
+    padding: 18px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    background-color: #2a2a2a;
+    color: var(--text-primary);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.surprise-btn:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
 .region-selector {
     display: flex;
     align-items: center;
@@ -482,6 +501,10 @@ footer {
     }
 
     .search-btn {
+        width: 100%;
+    }
+
+    .surprise-btn {
         width: 100%;
     }
 
