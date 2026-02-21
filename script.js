@@ -4,6 +4,8 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
 let currentRegion = 'US';
+let currentType = 'movie';
+let includeAnime = false;
 
 const moodInput = document.getElementById('moodInput');
 const searchBtn = document.getElementById('searchBtn');
@@ -17,6 +19,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   countrySelect.addEventListener('change', e => {
     currentRegion = e.target.value;
+  });
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentType = tab.dataset.type;
+    });
+  });
+  document.getElementById('animeToggle').addEventListener('change', e => {
+    includeAnime = e.target.checked;
   });
 });
 
@@ -52,8 +64,9 @@ async function handleSearch() {
 }
 async function searchTMDB(query) {
   try {
+    let endpoint = currentType === 'tv' ? 'tv' : 'movie';
     const res = await fetch(
-      `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
+      `${TMDB_BASE_URL}/search/${endpoint}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
     );
     const data = await res.json();
     return data.results || [];
@@ -74,8 +87,11 @@ async function searchWithAI(query) {
     const aiData = await ai.json();
 
     if (aiData.genres?.length) {
+      let endpoint = currentType === 'tv' ? 'tv' : 'movie';
+      let genreParam = currentType === 'documentary' ? '99' : aiData.genres.join(',');
+      let animeParam = includeAnime ? '&with_keywords=210024' : '';
       const res = await fetch(
-        `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${aiData.genres.join(',')}&sort_by=popularity.desc&vote_count.gte=100`
+        `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${genreParam}&sort_by=popularity.desc&vote_count.gte=100${animeParam}`
       );
       const data = await res.json();
       return data.results || [];
