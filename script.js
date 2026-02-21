@@ -72,22 +72,19 @@ async function searchWithAI(query) {
     });
     if (!ai.ok) return [];
     const aiData = await ai.json();
-    if (aiData.search_query) {
-      const res = await fetch(
-        `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_keywords=${encodeURIComponent(aiData.search_query)}&sort_by=popularity.desc`
-      );
-      const data = await res.json();
-      if (data.results?.length) return data.results;
-      // fallback на обычный поиск
-      return await searchTMDB(aiData.search_query);
-    }
+
     if (aiData.genres?.length) {
       const res = await fetch(
-        `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${aiData.genres.join(',')}&sort_by=popularity.desc`
+        `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${aiData.genres.join(',')}&sort_by=popularity.desc&vote_count.gte=100`
       );
       const data = await res.json();
       return data.results || [];
     }
+
+    if (aiData.search_query) {
+      return await searchTMDB(aiData.search_query);
+    }
+
     return [];
   } catch (e) {
     console.error(e);
