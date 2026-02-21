@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('animeToggle').addEventListener('change', e => {
     includeAnime = e.target.checked;
   });
+  document.getElementById('surpriseBtn').addEventListener('click', handleSurprise);
 });
 
 async function handleSearch() {
@@ -76,6 +77,33 @@ async function handleSearch() {
 
   hideSkeleton();
   moviesGrid.innerHTML = `<p style="color:red">No movies found</p>`;
+}
+
+async function handleSurprise() {
+  const genres = [28, 12, 16, 35, 80, 18, 14, 27, 9648, 10749, 878, 53, 37];
+  const randomGenre = genres[Math.floor(Math.random() * genres.length)];
+  const randomPage = Math.floor(Math.random() * 5) + 1;
+
+  currentPage = randomPage;
+  lastAiData = { genres: [randomGenre] };
+  removeLoadMoreBtn();
+  showSkeleton();
+
+  const endpoint = currentType === 'tv' ? 'tv' : 'movie';
+  try {
+    const res = await fetch(
+      `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${randomGenre}&sort_by=popularity.desc&vote_count.gte=100&page=${randomPage}`
+    );
+    const data = await res.json();
+    hideSkeleton();
+    if (data.results?.length) {
+      displayMovies(data.results, false);
+      addLoadMoreBtn();
+    }
+  } catch (e) {
+    hideSkeleton();
+    console.error(e);
+  }
 }
 
 async function loadMore() {

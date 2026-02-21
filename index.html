@@ -11,7 +11,7 @@
         <header>
             <h1 class="logo">MovieMood</h1>
             <p class="tagline">Discover movies that match your mood</p>
-			<a href="favorites.html" class="favorites-link">❤️ Favorites</a>
+            <a href="favorites.html" class="favorites-link">❤️ Favorites</a>
         </header>
 
         <main>
@@ -25,19 +25,20 @@
                         autocomplete="off"
                     >
                     <button id="searchBtn" class="search-btn">Search</button>
+                    <button id="surpriseBtn" class="surprise-btn">🎲 Surprise Me!</button>
                 </div>
-				</div>
 
-            <div class="mood-buttons">
-              <button class="mood-btn" data-mood="funny comedy for evening">😂 Funny</button>
-              <button class="mood-btn" data-mood="sad emotional drama">😢 Sad</button>
-              <button class="mood-btn" data-mood="scary horror thriller">😱 Scary</button>
-              <button class="mood-btn" data-mood="action adventure adrenaline">🔥 Action</button>
-              <button class="mood-btn" data-mood="romantic love story">💕 Romance</button>
-              <button class="mood-btn" data-mood="mind blowing twist ending">🤔 Mind-blowing</button>
-              <button class="mood-btn" data-mood="family fun kids">👨‍👩‍👧 Family</button>
-              <button class="mood-btn" data-mood="dark crime mystery">🕵️ Mystery</button>
-            </div>
+                <div class="mood-buttons">
+                    <button class="mood-btn" data-mood="funny comedy for evening">😂 Funny</button>
+                    <button class="mood-btn" data-mood="sad emotional drama">😢 Sad</button>
+                    <button class="mood-btn" data-mood="scary horror thriller">😱 Scary</button>
+                    <button class="mood-btn" data-mood="action adventure adrenaline">🔥 Action</button>
+                    <button class="mood-btn" data-mood="romantic love story">💕 Romance</button>
+                    <button class="mood-btn" data-mood="mind blowing twist ending">🤔 Mind-blowing</button>
+                    <button class="mood-btn" data-mood="family fun kids">👨‍👩‍👧 Family</button>
+                    <button class="mood-btn" data-mood="dark crime mystery">🕵️ Mystery</button>
+                </div>
+
                 <div class="region-selector">
                     <label for="countrySelect">Region:</label>
                     <select id="countrySelect" class="country-select">
@@ -61,19 +62,19 @@
                         <option value="IE">Ireland</option>
                         <option value="CZ">Czech Republic</option>
                         <option value="GR">Greece</option>
-						<option value="GR">Ukraine</option>
+                        <option value="UA">Ukraine</option>
                     </select>
                 </div>
+
+                <div class="content-tabs">
+                    <button class="tab active" data-type="movie">🎬 Movies</button>
+                    <button class="tab" data-type="tv">📺 Series</button>
+                    <button class="tab" data-type="documentary">🎥 Documentary</button>
+                </div>
+                <label class="anime-toggle">
+                    <input type="checkbox" id="animeToggle"> 🎌 Include Anime
+                </label>
             </section>
-			<div class="content-tabs">
-        <button class="tab active" data-type="movie">🎬 Movies</button>
-        <button class="tab" data-type="tv">📺 Series</button>
-        <button class="tab" data-type="documentary">🎥 Documentary</button>
-      </div>
-      <label class="anime-toggle">
-        <input type="checkbox" id="animeToggle"> 🎌 Include Anime
-      </label>
-    </section>
 
             <section class="results-section" id="resultsSection">
                 <div class="loading" id="loading" style="display: none;">
