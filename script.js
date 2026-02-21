@@ -118,15 +118,15 @@ function displayMovies(movies) {
 function createCard(movie) {
   const card = document.createElement('div');
   card.className = 'movie-card';
-
   const poster = movie.poster_path
     ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}`
     : '';
-
   card.innerHTML = `
     <img src="${poster}" class="movie-poster">
-    <h3>${movie.title}</h3>
+    <h3>${movie.title || movie.name}</h3>
   `;
-
+  card.addEventListener('click', () => {
+    window.open(`movie.html?id=${movie.id}&type=${currentType}`, '_blank');
+  });
   return card;
 }
