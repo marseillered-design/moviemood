@@ -122,16 +122,44 @@ function displayMovies(movies) {
   });
 }
 
+function toggleFavorite(movie) {
+  let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+  const exists = favorites.find(f => f.id === movie.id);
+  if (exists) {
+    favorites = favorites.filter(f => f.id !== movie.id);
+  } else {
+    favorites.push({
+      id: movie.id,
+      title: movie.title || movie.name,
+      poster_path: movie.poster_path,
+      media_type: currentType
+    });
+  }
+  localStorage.setItem('favorites', JSON.stringify(favorites));
+}
+
+function isFavorite(id) {
+  const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+  return favorites.some(f => f.id === id);
+}
+
 function createCard(movie) {
   const card = document.createElement('div');
   card.className = 'movie-card';
   const poster = movie.poster_path
     ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}`
     : '';
+  const favIcon = isFavorite(movie.id) ? '❤️' : '🤍';
   card.innerHTML = `
     <img src="${poster}" class="movie-poster">
     <h3>${movie.title || movie.name}</h3>
+    <button class="fav-btn">${favIcon}</button>
   `;
+  card.querySelector('.fav-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    toggleFavorite(movie);
+    e.target.textContent = isFavorite(movie.id) ? '❤️' : '🤍';
+  });
   card.addEventListener('click', () => {
     window.open(`movie.html?id=${movie.id}&type=${currentType}`, '_blank');
   });
