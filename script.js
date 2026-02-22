@@ -76,7 +76,7 @@ async function handleSearch() {
   }
 
   hideSkeleton();
-  moviesGrid.innerHTML = `<p style="color:red">No movies found</p>`;
+  moviesGrid.innerHTML = `<p style="color:#ff6b6b; text-align:center; padding: 40px;">No movies found. Try a different mood!</p>`;
 }
 
 async function handleSurprise() {
@@ -247,10 +247,19 @@ function createCard(movie) {
   const poster = movie.poster_path
     ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}`
     : '';
+  const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '';
   const favIcon = isFavorite(movie.id) ? '❤️' : '🤍';
   card.innerHTML = `
-    <img src="${poster}" class="movie-poster">
-    <h3>${movie.title || movie.name}</h3>
+    <div class="card-poster-wrapper">
+      <img src="${poster}" class="movie-poster" loading="lazy">
+      <div class="card-overlay">
+        ${rating ? `<span class="card-rating">⭐ ${rating}</span>` : ''}
+      </div>
+    </div>
+    <div class="card-info">
+      <h3 class="card-title">${movie.title || movie.name}</h3>
+      <span class="card-year">${(movie.release_date || movie.first_air_date || '').slice(0,4)}</span>
+    </div>
     <button class="fav-btn">${favIcon}</button>
   `;
   card.querySelector('.fav-btn').addEventListener('click', e => {
@@ -259,7 +268,7 @@ function createCard(movie) {
     e.target.textContent = isFavorite(movie.id) ? '❤️' : '🤍';
   });
   card.addEventListener('click', () => {
-    window.open(`movie.html?id=${movie.id}&type=${currentType}`, '_blank');
+    window.open(`movie.html?id=${movie.id}&type=${currentType}&region=${currentRegion}`, '_blank');
   });
   return card;
 }

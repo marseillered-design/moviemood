@@ -5,42 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MovieMood - Discover Movies by Mood</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
-<body>
-    <div class="container">
-        <header>
-            <h1 class="logo">MovieMood</h1>
-            <p class="tagline">Discover movies that match your mood</p>
-            <a href="favorites.html" class="favorites-link">❤️ Favorites</a>
-        </header>
+<body class="home-body">
 
-        <main>
-            <section class="search-section">
-                <div class="search-container">
-                    <input 
-                        type="text" 
-                        id="moodInput" 
-                        class="mood-input" 
-                        placeholder="Describe your mood... (e.g., 'dark sci-fi like Interstellar' or 'light comedy for evening')"
+    <!-- Animated background -->
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="noise-overlay"></div>
+
+    <!-- NAV -->
+    <nav class="home-nav">
+        <span class="nav-logo">MovieMood</span>
+        <a href="favorites.html" class="nav-favorites">❤️ Favorites</a>
+    </nav>
+
+    <!-- HERO -->
+    <header class="home-hero">
+        <h1 class="home-title">What's your<br><span class="title-accent">mood?</span></h1>
+        <p class="home-subtitle">Tell us how you feel — we'll find the perfect film.</p>
+    </header>
+
+    <!-- SEARCH -->
+    <main class="home-main">
+        <section class="search-section">
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input
+                        type="text"
+                        id="moodInput"
+                        class="mood-input"
+                        placeholder="e.g. 'dark sci-fi like Interstellar' or 'light comedy for evening'"
                         autocomplete="off"
                     >
-                    <button id="searchBtn" class="search-btn">Search</button>
-                    <button id="surpriseBtn" class="surprise-btn">🎲 Surprise Me!</button>
                 </div>
+                <button id="searchBtn" class="search-btn">Search</button>
+                <button id="surpriseBtn" class="surprise-btn">🎲</button>
+            </div>
 
-                <div class="mood-buttons">
-                    <button class="mood-btn" data-mood="funny comedy for evening">😂 Funny</button>
-                    <button class="mood-btn" data-mood="sad emotional drama">😢 Sad</button>
-                    <button class="mood-btn" data-mood="scary horror thriller">😱 Scary</button>
-                    <button class="mood-btn" data-mood="action adventure adrenaline">🔥 Action</button>
-                    <button class="mood-btn" data-mood="romantic love story">💕 Romance</button>
-                    <button class="mood-btn" data-mood="mind blowing twist ending">🤔 Mind-blowing</button>
-                    <button class="mood-btn" data-mood="family fun kids">👨‍👩‍👧 Family</button>
-                    <button class="mood-btn" data-mood="dark crime mystery">🕵️ Mystery</button>
+            <!-- MOOD BUTTONS -->
+            <div class="mood-buttons">
+                <button class="mood-btn" data-mood="funny comedy for evening">😂 Funny</button>
+                <button class="mood-btn" data-mood="sad emotional drama">😢 Sad</button>
+                <button class="mood-btn" data-mood="scary horror thriller">😱 Scary</button>
+                <button class="mood-btn" data-mood="action adventure adrenaline">🔥 Action</button>
+                <button class="mood-btn" data-mood="romantic love story">💕 Romance</button>
+                <button class="mood-btn" data-mood="mind blowing twist ending">🤔 Mind-blowing</button>
+                <button class="mood-btn" data-mood="family fun kids">👨‍👩‍👧 Family</button>
+                <button class="mood-btn" data-mood="dark crime mystery">🕵️ Mystery</button>
+            </div>
+
+            <!-- FILTERS ROW -->
+            <div class="filters-row">
+                <div class="content-tabs">
+                    <button class="tab active" data-type="movie">🎬 Movies</button>
+                    <button class="tab" data-type="tv">📺 Series</button>
+                    <button class="tab" data-type="documentary">🎥 Documentary</button>
                 </div>
 
                 <div class="region-selector">
-                    <label for="countrySelect">Region:</label>
+                    <label for="countrySelect">🌍</label>
                     <select id="countrySelect" class="country-select">
                         <option value="US" selected>United States</option>
                         <option value="CA">Canada</option>
@@ -66,38 +94,27 @@
                     </select>
                 </div>
 
-                <div class="content-tabs">
-                    <button class="tab active" data-type="movie">🎬 Movies</button>
-                    <button class="tab" data-type="tv">📺 Series</button>
-                    <button class="tab" data-type="documentary">🎥 Documentary</button>
-                </div>
                 <label class="anime-toggle">
-                    <input type="checkbox" id="animeToggle"> 🎌 Include Anime
+                    <input type="checkbox" id="animeToggle">
+                    <span>🎌 Anime</span>
                 </label>
-            </section>
+            </div>
+        </section>
 
-            <section class="results-section" id="resultsSection">
-                <div class="loading" id="loading" style="display: none;">
-                    <div class="spinner"></div>
-                    <p>Finding movies that match your mood...</p>
+        <!-- RESULTS -->
+        <section class="results-section" id="resultsSection">
+            <div class="error-message" id="errorMessage" style="display: none;"></div>
+            <div class="movies-grid" id="moviesGrid">
+                <div class="welcome-message">
+                    <p class="example-text">Try: "dark sci-fi like Interstellar" or "light comedy for evening"</p>
                 </div>
+            </div>
+        </section>
+    </main>
 
-                <div class="error-message" id="errorMessage" style="display: none;"></div>
-
-                <div class="movies-grid" id="moviesGrid">
-                    <div class="welcome-message">
-                        <h2>Welcome to MovieMood</h2>
-                        <p>Tell us how you're feeling and we'll suggest the perfect movies and shows for you.</p>
-                        <p class="example-text">Try: "dark sci-fi like Interstellar" or "light comedy for evening"</p>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <footer>
-            <p>Powered by TMDB API</p>
-        </footer>
-    </div>
+    <footer class="home-footer">
+        <p>Powered by TMDB API</p>
+    </footer>
 
     <script src="script.js"></script>
 </body>
