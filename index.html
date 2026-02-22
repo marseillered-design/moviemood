@@ -32,6 +32,8 @@
     <!-- SEARCH -->
     <main class="home-main">
         <section class="search-section">
+
+            <!-- SEARCH ROW -->
             <div class="search-container">
                 <div class="search-input-wrapper">
                     <span class="search-icon">🔍</span>
@@ -39,18 +41,45 @@
                         type="text"
                         id="moodInput"
                         class="mood-input"
-                        placeholder="Describe your mood..."
+                        placeholder="e.g. 'horrors of 90s' or 'dark sci-fi like Interstellar'"
                         autocomplete="off"
                     >
-                    <!-- MOOD PICKER BUTTON -->
                     <button class="mood-picker-btn" id="moodPickerBtn" title="Pick a mood">😊</button>
                 </div>
-                <button class="filters-btn" id="filtersBtn" title="Filters">🎛️</button>
+                <button class="filters-btn" id="filtersBtn">⚙️ Filters</button>
                 <button id="searchBtn" class="search-btn">Search</button>
-                <button id="surpriseBtn" class="surprise-btn">🎲</button>
+                <button id="surpriseBtn" class="surprise-btn" title="Surprise me!">🎲</button>
             </div>
 
-            <!-- MOOD PICKER POPUP (Telegram style) -->
+            <!-- REGION ROW (always visible) -->
+            <div class="region-row">
+                <span class="region-label">🌍 Region:</span>
+                <select id="countrySelect" class="country-select">
+                    <option value="US" selected>🇺🇸 United States</option>
+                    <option value="CA">🇨🇦 Canada</option>
+                    <option value="GB">🇬🇧 United Kingdom</option>
+                    <option value="DE">🇩🇪 Germany</option>
+                    <option value="FR">🇫🇷 France</option>
+                    <option value="IT">🇮🇹 Italy</option>
+                    <option value="ES">🇪🇸 Spain</option>
+                    <option value="NL">🇳🇱 Netherlands</option>
+                    <option value="BE">🇧🇪 Belgium</option>
+                    <option value="AT">🇦🇹 Austria</option>
+                    <option value="CH">🇨🇭 Switzerland</option>
+                    <option value="SE">🇸🇪 Sweden</option>
+                    <option value="NO">🇳🇴 Norway</option>
+                    <option value="DK">🇩🇰 Denmark</option>
+                    <option value="FI">🇫🇮 Finland</option>
+                    <option value="PL">🇵🇱 Poland</option>
+                    <option value="PT">🇵🇹 Portugal</option>
+                    <option value="IE">🇮🇪 Ireland</option>
+                    <option value="CZ">🇨🇿 Czech Republic</option>
+                    <option value="GR">🇬🇷 Greece</option>
+                    <option value="UA">🇺🇦 Ukraine</option>
+                </select>
+            </div>
+
+            <!-- MOOD PICKER POPUP -->
             <div class="mood-picker-popup" id="moodPickerPopup">
                 <div class="mood-picker-arrow"></div>
                 <div class="mood-picker-grid">
@@ -117,34 +146,6 @@
                         </div>
                     </div>
                     <div class="filter-group">
-                        <span class="filter-group-label">Region</span>
-                        <div class="region-selector">
-                            <select id="countrySelect" class="country-select">
-                                <option value="US" selected>🇺🇸 United States</option>
-                                <option value="CA">🇨🇦 Canada</option>
-                                <option value="GB">🇬🇧 United Kingdom</option>
-                                <option value="DE">🇩🇪 Germany</option>
-                                <option value="FR">🇫🇷 France</option>
-                                <option value="IT">🇮🇹 Italy</option>
-                                <option value="ES">🇪🇸 Spain</option>
-                                <option value="NL">🇳🇱 Netherlands</option>
-                                <option value="BE">🇧🇪 Belgium</option>
-                                <option value="AT">🇦🇹 Austria</option>
-                                <option value="CH">🇨🇭 Switzerland</option>
-                                <option value="SE">🇸🇪 Sweden</option>
-                                <option value="NO">🇳🇴 Norway</option>
-                                <option value="DK">🇩🇰 Denmark</option>
-                                <option value="FI">🇫🇮 Finland</option>
-                                <option value="PL">🇵🇱 Poland</option>
-                                <option value="PT">🇵🇹 Portugal</option>
-                                <option value="IE">🇮🇪 Ireland</option>
-                                <option value="CZ">🇨🇿 Czech Republic</option>
-                                <option value="GR">🇬🇷 Greece</option>
-                                <option value="UA">🇺🇦 Ukraine</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="filter-group">
                         <span class="filter-group-label">Options</span>
                         <label class="anime-toggle">
                             <input type="checkbox" id="animeToggle">
@@ -153,6 +154,7 @@
                     </div>
                 </div>
             </div>
+
         </section>
 
         <!-- RESULTS -->
@@ -160,7 +162,7 @@
             <div class="error-message" id="errorMessage" style="display: none;"></div>
             <div class="movies-grid" id="moviesGrid">
                 <div class="welcome-message">
-                    <p class="example-text">Try typing a mood or pick one with 😊</p>
+                    <p class="example-text">Try: "horrors of 90s" · "80s action" · "dark sci-fi like Interstellar"</p>
                 </div>
             </div>
         </section>

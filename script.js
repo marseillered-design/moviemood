@@ -185,8 +185,11 @@ async function fetchByAiData(aiData, page = 1) {
       let endpoint = currentType === 'tv' ? 'tv' : 'movie';
       let genreParam = currentType === 'documentary' ? '99' : aiData.genres.join(',');
       let animeParam = includeAnime ? '&with_keywords=210024' : '';
+      let yearParam = '';
+      if (aiData.year_from) yearParam += `&primary_release_date.gte=${aiData.year_from}-01-01&first_air_date.gte=${aiData.year_from}-01-01`;
+      if (aiData.year_to) yearParam += `&primary_release_date.lte=${aiData.year_to}-12-31&first_air_date.lte=${aiData.year_to}-12-31`;
       const res = await fetch(
-        `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${genreParam}&sort_by=popularity.desc&vote_count.gte=100&page=${page}${animeParam}`
+        `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${genreParam}&sort_by=popularity.desc&vote_count.gte=50&page=${page}${animeParam}${yearParam}`
       );
       const data = await res.json();
       return data.results || [];
