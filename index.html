@@ -39,65 +39,119 @@
                         type="text"
                         id="moodInput"
                         class="mood-input"
-                        placeholder="e.g. 'dark sci-fi like Interstellar' or 'light comedy for evening'"
+                        placeholder="Describe your mood..."
                         autocomplete="off"
                     >
+                    <!-- MOOD PICKER BUTTON -->
+                    <button class="mood-picker-btn" id="moodPickerBtn" title="Pick a mood">😊</button>
                 </div>
+                <button class="filters-btn" id="filtersBtn" title="Filters">🎛️</button>
                 <button id="searchBtn" class="search-btn">Search</button>
                 <button id="surpriseBtn" class="surprise-btn">🎲</button>
             </div>
 
-            <!-- MOOD BUTTONS -->
-            <div class="mood-buttons">
-                <button class="mood-btn" data-mood="funny comedy for evening">😂 Funny</button>
-                <button class="mood-btn" data-mood="sad emotional drama">😢 Sad</button>
-                <button class="mood-btn" data-mood="scary horror thriller">😱 Scary</button>
-                <button class="mood-btn" data-mood="action adventure adrenaline">🔥 Action</button>
-                <button class="mood-btn" data-mood="romantic love story">💕 Romance</button>
-                <button class="mood-btn" data-mood="mind blowing twist ending">🤔 Mind-blowing</button>
-                <button class="mood-btn" data-mood="family fun kids">👨‍👩‍👧 Family</button>
-                <button class="mood-btn" data-mood="dark crime mystery">🕵️ Mystery</button>
+            <!-- MOOD PICKER POPUP (Telegram style) -->
+            <div class="mood-picker-popup" id="moodPickerPopup">
+                <div class="mood-picker-arrow"></div>
+                <div class="mood-picker-grid">
+                    <button class="mood-pick-btn" data-mood="funny comedy for evening">
+                        <span class="mood-emoji">😂</span>
+                        <span class="mood-label">Funny</span>
+                    </button>
+                    <button class="mood-pick-btn" data-mood="sad emotional drama">
+                        <span class="mood-emoji">😢</span>
+                        <span class="mood-label">Sad</span>
+                    </button>
+                    <button class="mood-pick-btn" data-mood="scary horror thriller">
+                        <span class="mood-emoji">😱</span>
+                        <span class="mood-label">Scary</span>
+                    </button>
+                    <button class="mood-pick-btn" data-mood="action adventure adrenaline">
+                        <span class="mood-emoji">🔥</span>
+                        <span class="mood-label">Action</span>
+                    </button>
+                    <button class="mood-pick-btn" data-mood="romantic love story">
+                        <span class="mood-emoji">💕</span>
+                        <span class="mood-label">Romance</span>
+                    </button>
+                    <button class="mood-pick-btn" data-mood="mind blowing twist ending">
+                        <span class="mood-emoji">🤔</span>
+                        <span class="mood-label">Mind-blowing</span>
+                    </button>
+                    <button class="mood-pick-btn" data-mood="family fun kids">
+                        <span class="mood-emoji">👨‍👩‍👧</span>
+                        <span class="mood-label">Family</span>
+                    </button>
+                    <button class="mood-pick-btn" data-mood="dark crime mystery">
+                        <span class="mood-emoji">🕵️</span>
+                        <span class="mood-label">Mystery</span>
+                    </button>
+                    <button class="mood-pick-btn" data-mood="inspiring motivational biography">
+                        <span class="mood-emoji">💪</span>
+                        <span class="mood-label">Inspiring</span>
+                    </button>
+                    <button class="mood-pick-btn" data-mood="animated fun colorful cartoon">
+                        <span class="mood-emoji">🎨</span>
+                        <span class="mood-label">Animated</span>
+                    </button>
+                    <button class="mood-pick-btn" data-mood="historical epic period drama">
+                        <span class="mood-emoji">🏛️</span>
+                        <span class="mood-label">Historical</span>
+                    </button>
+                    <button class="mood-pick-btn" data-mood="musical concert performance song">
+                        <span class="mood-emoji">🎵</span>
+                        <span class="mood-label">Musical</span>
+                    </button>
+                </div>
             </div>
 
-            <!-- FILTERS ROW -->
-            <div class="filters-row">
-                <div class="content-tabs">
-                    <button class="tab active" data-type="movie">🎬 Movies</button>
-                    <button class="tab" data-type="tv">📺 Series</button>
-                    <button class="tab" data-type="documentary">🎥 Documentary</button>
+            <!-- FILTERS PANEL -->
+            <div class="filters-panel" id="filtersPanel">
+                <div class="filters-panel-inner">
+                    <div class="filter-group">
+                        <span class="filter-group-label">Content type</span>
+                        <div class="content-tabs">
+                            <button class="tab active" data-type="movie">🎬 Movies</button>
+                            <button class="tab" data-type="tv">📺 Series</button>
+                            <button class="tab" data-type="documentary">🎥 Documentary</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-group-label">Region</span>
+                        <div class="region-selector">
+                            <select id="countrySelect" class="country-select">
+                                <option value="US" selected>🇺🇸 United States</option>
+                                <option value="CA">🇨🇦 Canada</option>
+                                <option value="GB">🇬🇧 United Kingdom</option>
+                                <option value="DE">🇩🇪 Germany</option>
+                                <option value="FR">🇫🇷 France</option>
+                                <option value="IT">🇮🇹 Italy</option>
+                                <option value="ES">🇪🇸 Spain</option>
+                                <option value="NL">🇳🇱 Netherlands</option>
+                                <option value="BE">🇧🇪 Belgium</option>
+                                <option value="AT">🇦🇹 Austria</option>
+                                <option value="CH">🇨🇭 Switzerland</option>
+                                <option value="SE">🇸🇪 Sweden</option>
+                                <option value="NO">🇳🇴 Norway</option>
+                                <option value="DK">🇩🇰 Denmark</option>
+                                <option value="FI">🇫🇮 Finland</option>
+                                <option value="PL">🇵🇱 Poland</option>
+                                <option value="PT">🇵🇹 Portugal</option>
+                                <option value="IE">🇮🇪 Ireland</option>
+                                <option value="CZ">🇨🇿 Czech Republic</option>
+                                <option value="GR">🇬🇷 Greece</option>
+                                <option value="UA">🇺🇦 Ukraine</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-group-label">Options</span>
+                        <label class="anime-toggle">
+                            <input type="checkbox" id="animeToggle">
+                            <span>🎌 Include Anime</span>
+                        </label>
+                    </div>
                 </div>
-
-                <div class="region-selector">
-                    <label for="countrySelect">🌍</label>
-                    <select id="countrySelect" class="country-select">
-                        <option value="US" selected>United States</option>
-                        <option value="CA">Canada</option>
-                        <option value="GB">United Kingdom</option>
-                        <option value="DE">Germany</option>
-                        <option value="FR">France</option>
-                        <option value="IT">Italy</option>
-                        <option value="ES">Spain</option>
-                        <option value="NL">Netherlands</option>
-                        <option value="BE">Belgium</option>
-                        <option value="AT">Austria</option>
-                        <option value="CH">Switzerland</option>
-                        <option value="SE">Sweden</option>
-                        <option value="NO">Norway</option>
-                        <option value="DK">Denmark</option>
-                        <option value="FI">Finland</option>
-                        <option value="PL">Poland</option>
-                        <option value="PT">Portugal</option>
-                        <option value="IE">Ireland</option>
-                        <option value="CZ">Czech Republic</option>
-                        <option value="GR">Greece</option>
-                        <option value="UA">Ukraine</option>
-                    </select>
-                </div>
-
-                <label class="anime-toggle">
-                    <input type="checkbox" id="animeToggle">
-                    <span>🎌 Anime</span>
-                </label>
             </div>
         </section>
 
@@ -106,7 +160,7 @@
             <div class="error-message" id="errorMessage" style="display: none;"></div>
             <div class="movies-grid" id="moviesGrid">
                 <div class="welcome-message">
-                    <p class="example-text">Try: "dark sci-fi like Interstellar" or "light comedy for evening"</p>
+                    <p class="example-text">Try typing a mood or pick one with 😊</p>
                 </div>
             </div>
         </section>

@@ -41,6 +41,43 @@ document.addEventListener('DOMContentLoaded', () => {
     includeAnime = e.target.checked;
   });
   document.getElementById('surpriseBtn').addEventListener('click', handleSurprise);
+
+  // MOOD PICKER POPUP
+  const moodPickerBtn = document.getElementById('moodPickerBtn');
+  const moodPickerPopup = document.getElementById('moodPickerPopup');
+
+  moodPickerBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    moodPickerPopup.classList.toggle('open');
+    moodPickerBtn.classList.toggle('active');
+  });
+
+  document.querySelectorAll('.mood-pick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      moodInput.value = btn.dataset.mood;
+      moodPickerPopup.classList.remove('open');
+      moodPickerBtn.classList.remove('active');
+      handleSearch();
+    });
+  });
+
+  // FILTERS PANEL
+  const filtersBtn = document.getElementById('filtersBtn');
+  const filtersPanel = document.getElementById('filtersPanel');
+
+  filtersBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    filtersPanel.classList.toggle('open');
+    filtersBtn.classList.toggle('active');
+  });
+
+  // Close popup on outside click
+  document.addEventListener('click', (e) => {
+    if (!moodPickerPopup.contains(e.target) && e.target !== moodPickerBtn) {
+      moodPickerPopup.classList.remove('open');
+      moodPickerBtn.classList.remove('active');
+    }
+  });
 });
 
 async function handleSearch() {

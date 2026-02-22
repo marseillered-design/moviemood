@@ -570,6 +570,129 @@
     margin-bottom: 20px;
 }
 
+/* MOOD PICKER BTN */
+.mood-picker-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    opacity: 0.6;
+    line-height: 1;
+}
+.mood-picker-btn:hover { opacity: 1; transform: scale(1.2); }
+.mood-picker-btn.active { opacity: 1; filter: drop-shadow(0 0 8px var(--neon-glow)); }
+
+/* MOOD PICKER POPUP */
+.mood-picker-popup {
+    position: absolute;
+    top: calc(100% + 14px);
+    left: 0;
+    width: 100%;
+    max-width: 780px;
+    background: rgba(18, 18, 30, 0.97);
+    border: 1px solid rgba(124, 58, 237, 0.3);
+    border-radius: 16px;
+    padding: 16px;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(192,132,252,0.1);
+    display: none;
+}
+.mood-picker-popup.open { display: block; animation: popupIn 0.2s ease; }
+
+@keyframes popupIn {
+    from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.mood-picker-arrow {
+    position: absolute;
+    top: -7px; right: 100px;
+    width: 14px; height: 14px;
+    background: rgba(18, 18, 30, 0.97);
+    border-left: 1px solid rgba(124, 58, 237, 0.3);
+    border-top: 1px solid rgba(124, 58, 237, 0.3);
+    transform: rotate(45deg);
+    border-radius: 2px;
+}
+
+.mood-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+}
+
+.mood-pick-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 6px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+.mood-pick-btn:hover {
+    background: rgba(124, 58, 237, 0.15);
+    border-color: rgba(124, 58, 237, 0.3);
+    transform: translateY(-2px);
+}
+.mood-emoji { font-size: 1.6rem; line-height: 1; }
+.mood-label { font-size: 0.68rem; color: var(--text-dim); text-align: center; white-space: nowrap; }
+.mood-pick-btn:hover .mood-label { color: var(--text); }
+
+/* FILTERS BTN */
+.filters-btn {
+    padding: 14px 16px;
+    font-size: 1.1rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(8px);
+}
+.filters-btn:hover, .filters-btn.active {
+    border-color: var(--purple-light);
+    background: rgba(124, 58, 237, 0.1);
+}
+
+/* FILTERS PANEL */
+.filters-panel {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, opacity 0.35s ease;
+    opacity: 0;
+}
+.filters-panel.open { max-height: 200px; opacity: 1; }
+
+.filters-panel-inner {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    padding: 16px 0 8px;
+    flex-wrap: wrap;
+}
+
+.filter-group { display: flex; flex-direction: column; gap: 8px; }
+
+.filter-group-label {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.search-section { position: relative; }
+
 /* ==================== MOVIE PAGE ==================== */
 
 .movie-body {
