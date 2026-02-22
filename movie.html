@@ -5,38 +5,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MovieMood</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
-<body>
-  <header>
-    <a href="/" class="logo">MovieMood</a>
-	<a href="favorites.html" class="favorites-link">❤️ Favorites</a>
-  </header>
+<body class="movie-body">
 
-  <div class="movie-page" id="moviePage">
-    <div class="movie-hero">
-      <img id="moviePoster" src="" alt="">
-      <div class="movie-info">
-        <h1 id="movieTitle"></h1>
-        <div class="movie-meta">
-          <span id="movieYear"></span>
-          <span id="movieRuntime"></span>
-          <span id="movieGenres"></span>
+  <!-- HERO SECTION -->
+  <div class="movie-hero-section" id="heroSection">
+    <div class="hero-backdrop" id="heroBackdrop"></div>
+    <div class="hero-video-wrapper" id="heroVideoWrapper"></div>
+    <div class="hero-gradient"></div>
+
+    <!-- NAV -->
+    <nav class="movie-nav">
+      <a href="/" class="nav-logo">MovieMood</a>
+      <div class="nav-links">
+        <a href="favorites.html" class="nav-link">❤️ Favorites</a>
+      </div>
+    </nav>
+
+    <!-- HERO CONTENT -->
+    <div class="hero-content">
+      <div class="hero-left">
+        <div class="hero-badges" id="heroBadges"></div>
+        <h1 class="hero-title" id="movieTitle"></h1>
+        <div class="hero-meta" id="heroMeta"></div>
+        <p class="hero-overview" id="movieOverview"></p>
+        <div class="hero-actions">
+          <button class="btn-play" id="btnPlayTrailer">▶ Play Trailer</button>
+          <button class="btn-fav" id="btnFavorite">🤍 Add to Favorites</button>
+          <a class="btn-imdb" id="imdbLink" target="_blank" style="display:none">🎬 IMDb</a>
         </div>
-        <div class="movie-ratings">
-          <span class="rating tmdb">⭐ TMDB: <strong id="tmdbRating"></strong></span>
-          <a class="rating imdb" id="imdbLink" target="_blank">🎬 IMDb</a>
-        </div>
-        <p id="movieOverview"></p>
-        <div class="movie-crew">
-          <p><strong>Director:</strong></p>
-          <div id="movieDirector"></div>
-          <p><strong>Cast:</strong></p>
-          <div id="movieCast" class="cast-grid"></div>
-        </div>
-        <div id="watchProviders" class="watch-providers"></div>
+        <div class="hero-providers" id="watchProviders"></div>
       </div>
     </div>
-    <div class="movie-trailer" id="trailerContainer"></div>
+
+    <!-- MUTE BUTTON -->
+    <button class="mute-btn" id="muteBtn" style="display:none">🔇</button>
+  </div>
+
+  <!-- DETAILS SECTION -->
+  <div class="movie-details-section">
+    <div class="details-grid">
+
+      <!-- POSTER -->
+      <div class="details-poster">
+        <img id="moviePoster" src="" alt="">
+      </div>
+
+      <!-- INFO -->
+      <div class="details-info">
+        <h2 class="details-title" id="detailsTitle"></h2>
+
+        <div class="info-row">
+          <span class="info-label">Director</span>
+          <div id="movieDirector"></div>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Cast</span>
+          <div class="cast-scroll" id="movieCast"></div>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Genres</span>
+          <div class="genre-tags" id="movieGenres"></div>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Rating</span>
+          <div class="ratings-row">
+            <span class="rating-badge tmdb-badge">⭐ <strong id="tmdbRating"></strong> TMDB</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIMILAR MOVIES -->
+    <div class="similar-section" id="similarSection" style="display:none">
+      <h2 class="section-title">More Like This</h2>
+      <div class="similar-grid" id="similarGrid"></div>
+    </div>
+  </div>
+
+  <!-- TRAILER MODAL -->
+  <div class="trailer-modal" id="trailerModal">
+    <div class="trailer-modal-inner">
+      <button class="modal-close" id="modalClose">✕</button>
+      <div id="trailerContainer"></div>
+    </div>
   </div>
 
   <script src="movie.js"></script>
