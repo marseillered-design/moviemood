@@ -5,18 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Favorites — MovieMood</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
-<body>
-  <header>
-    <a href="/" class="logo">MovieMood</a>
-    <a href="favorites.html" class="favorites-link">❤️ Favorites</a>
+<body class="home-body">
+
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+  <div class="noise-overlay"></div>
+
+  <!-- NAV -->
+  <nav class="home-nav">
+    <a href="/" class="nav-logo" style="-webkit-text-fill-color:transparent">MovieMood</a>
+    <a href="favorites.html" class="nav-favorites" style="color:var(--neon);border-color:rgba(192,132,252,0.3)">❤️ Favorites</a>
+  </nav>
+
+  <!-- HEADER -->
+  <header class="page-header">
+    <h1 class="page-title">My <span class="title-accent">Favorites</span></h1>
+    <p class="page-subtitle" id="favCount"></p>
   </header>
 
-  <div class="favorites-page">
-    <h1>My Favorites</h1>
+  <main class="home-main">
+    <!-- EMPTY STATE -->
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="empty-icon">🎬</div>
+      <h2>No favorites yet</h2>
+      <p>Start exploring and add movies you love!</p>
+      <a href="/" class="btn-go-home">Discover Movies</a>
+    </div>
+
+    <!-- GRID -->
     <div class="movies-grid" id="favoritesGrid"></div>
-    <p id="emptyMessage" style="display:none; text-align:center; color:#888;">No favorites yet. Add some movies!</p>
-  </div>
+  </main>
+
+  <footer class="home-footer">
+    <p>Powered by TMDB API</p>
+  </footer>
 
   <script src="favorites.js"></script>
 </body>

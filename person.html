@@ -1,1 +1,56 @@
-<!DOCTYPE html><html lang="en"><head>  <meta charset="UTF-8">  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>MovieMood</title>  <link rel="stylesheet" href="style.css"></head><body>  <header>    <a href="/" class="logo">MovieMood</a>	<a href="favorites.html" class="favorites-link">❤️ Favorites</a>  </header>  <div class="person-page">    <div class="person-hero">      <img id="personPhoto" src="" alt="">      <div class="person-info">        <h1 id="personName"></h1>        <p id="personBio"></p>      </div>    </div>    <h2 id="personMoviesTitle"></h2>    <div class="movies-grid" id="moviesGrid"></div>  </div>  <script src="person.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MovieMood</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="home-body">
+
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+  <div class="noise-overlay"></div>
+
+  <!-- NAV -->
+  <nav class="home-nav">
+    <a href="/" class="nav-logo" style="-webkit-text-fill-color:transparent">MovieMood</a>
+    <a href="favorites.html" class="nav-favorites">❤️ Favorites</a>
+  </nav>
+
+  <!-- PERSON HERO -->
+  <div class="person-hero-section">
+    <div class="person-hero-blur" id="personHeroBlur"></div>
+    <div class="person-hero-gradient"></div>
+    <div class="person-hero-content">
+      <div class="person-photo-wrapper">
+        <img id="personPhoto" src="" alt="" class="person-photo">
+      </div>
+      <div class="person-meta">
+        <div class="person-badges" id="personBadges"></div>
+        <h1 class="person-name" id="personName"></h1>
+        <div class="person-details" id="personDetails"></div>
+        <p class="person-bio" id="personBio"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILMOGRAPHY -->
+  <main class="home-main">
+    <section class="person-films-section">
+      <h2 class="section-heading" id="personMoviesTitle"></h2>
+      <div class="movies-grid" id="moviesGrid"></div>
+    </section>
+  </main>
+
+  <footer class="home-footer">
+    <p>Powered by TMDB API</p>
+  </footer>
+
+  <script src="person.js"></script>
+</body>
+</html>

@@ -570,6 +570,29 @@
     margin-bottom: 20px;
 }
 
+/* REGION ROW */
+.region-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 14px;
+}
+
+.region-label {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+}
+
+.region-detected {
+    font-size: 0.75rem;
+    color: #a855f7;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    white-space: nowrap;
+}
+
 /* MOOD PICKER BTN */
 .mood-picker-btn {
     position: absolute;
@@ -651,8 +674,10 @@
 
 /* FILTERS BTN */
 .filters-btn {
-    padding: 14px 16px;
-    font-size: 1.1rem;
+    padding: 14px 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
     background: rgba(255,255,255,0.04);
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -1209,4 +1234,234 @@
     .details-poster { max-width: 200px; margin: 0 auto; }
     .mute-btn { bottom: 20px; right: 20px; }
     .similar-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+}
+
+/* ==================== FAVORITES PAGE ==================== */
+
+.page-header {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 40px 20px 20px;
+}
+
+.page-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    letter-spacing: 3px;
+    line-height: 1;
+    color: var(--text);
+}
+
+.page-subtitle {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    filter: grayscale(0.5);
+}
+
+.empty-state h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 2px;
+    color: var(--text);
+}
+
+.empty-state p {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+}
+
+.btn-go-home {
+    margin-top: 8px;
+    padding: 12px 28px;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+}
+
+.btn-go-home:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.9); }
+}
+
+/* ==================== PERSON PAGE ==================== */
+
+.person-hero-section {
+    position: relative;
+    min-height: 480px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+}
+
+.person-hero-blur {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center top;
+    filter: blur(40px) saturate(0.6);
+    transform: scale(1.1);
+    opacity: 0.3;
+}
+
+.person-hero-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(13,13,20,0.3) 0%,
+        rgba(13,13,20,0.7) 50%,
+        rgba(13,13,20,1) 100%
+    );
+    z-index: 1;
+}
+
+.person-hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: 40px;
+    align-items: flex-end;
+    padding: 80px 48px 48px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: fadeInUp 0.7s ease forwards;
+}
+
+.person-photo-wrapper {
+    flex-shrink: 0;
+}
+
+.person-photo {
+    width: 200px;
+    height: 280px;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 2px solid rgba(192, 132, 252, 0.3);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(124,58,237,0.15);
+}
+
+.person-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.person-badges {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.person-badge {
+    padding: 4px 14px;
+    background: rgba(124, 58, 237, 0.15);
+    border: 1px solid rgba(124, 58, 237, 0.3);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--neon);
+}
+
+.person-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    letter-spacing: 2px;
+    line-height: 1;
+    margin-bottom: 14px;
+    color: var(--text);
+}
+
+.person-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.person-detail-item {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+}
+
+.person-bio {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.75);
+    max-width: 700px;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.bio-read-more {
+    background: none;
+    border: none;
+    color: var(--neon);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+    padding: 0;
+    margin-left: 4px;
+}
+
+.bio-read-more:hover { text-decoration: underline; }
+
+.person-films-section {
+    margin-top: 10px;
+}
+
+.section-heading {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #fff, var(--neon));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+@media (max-width: 768px) {
+    .person-hero-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 80px 20px 32px;
+        gap: 24px;
+    }
+    .person-photo {
+        width: 150px;
+        height: 210px;
+    }
+    .person-details { justify-content: center; }
+    .person-bio { -webkit-line-clamp: 6; }
 }
