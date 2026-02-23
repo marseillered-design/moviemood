@@ -18,27 +18,34 @@
 
   <!-- NAV -->
   <nav class="home-nav">
-    <a href="/" class="nav-logo" style="-webkit-text-fill-color:transparent">MovieMood</a>
+    <a href="/" class="nav-logo">MovieMood</a>
     <a href="favorites.html" class="nav-favorites" style="color:var(--neon);border-color:rgba(192,132,252,0.3)">❤️ Favorites</a>
   </nav>
 
   <!-- HEADER -->
-  <header class="page-header">
-    <h1 class="page-title">My <span class="title-accent">Favorites</span></h1>
-    <p class="page-subtitle" id="favCount"></p>
+  <header class="fav-header">
+    <h1 class="home-title" style="font-size: clamp(3rem, 8vw, 6rem)">My <span class="title-accent">Favorites</span></h1>
+    <p class="fav-count" id="favCount"></p>
   </header>
 
   <main class="home-main">
+
     <!-- EMPTY STATE -->
-    <div class="empty-state" id="emptyState" style="display:none">
-      <div class="empty-icon">🎬</div>
+    <div class="fav-empty" id="emptyState" style="display:none">
+      <div class="fav-empty-icon">🎬</div>
       <h2>No favorites yet</h2>
-      <p>Start exploring and add movies you love!</p>
-      <a href="/" class="btn-go-home">Discover Movies</a>
+      <p>Explore movies and hit ❤️ to save them here</p>
+      <a href="/" class="btn-discover">Discover Movies</a>
     </div>
 
     <!-- GRID -->
-    <div class="movies-grid" id="favoritesGrid"></div>
+    <div class="fav-grid" id="favoritesGrid"></div>
+
+    <!-- CLEAR ALL -->
+    <div class="fav-actions" id="favActions" style="display:none">
+      <button class="btn-clear-all" id="clearAllBtn">🗑️ Clear all favorites</button>
+    </div>
+
   </main>
 
   <footer class="home-footer">
