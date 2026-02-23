@@ -9,7 +9,6 @@
 </head>
 <body class="home-body">
 
-    <!-- Animated background -->
     <div class="bg-orbs">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
@@ -29,11 +28,10 @@
         <p class="home-subtitle">Tell us how you feel — we'll find the perfect film.</p>
     </header>
 
-    <!-- SEARCH -->
     <main class="home-main">
         <section class="search-section">
 
-            <!-- SEARCH ROW -->
+            <!-- SEARCH ROW: [input 😊] [Search] [🎲] [⚙️ Filters] -->
             <div class="search-container">
                 <div class="search-input-wrapper">
                     <span class="search-icon">🔍</span>
@@ -46,16 +44,17 @@
                     >
                     <button class="mood-picker-btn" id="moodPickerBtn" title="Pick a mood">😊</button>
                 </div>
-                <button class="filters-btn" id="filtersBtn">⚙️ Filters</button>
                 <button id="searchBtn" class="search-btn">Search</button>
                 <button id="surpriseBtn" class="surprise-btn" title="Surprise me!">🎲</button>
+                <button class="filters-btn" id="filtersBtn">⚙️ Filters</button>
             </div>
 
-            <!-- REGION ROW (always visible) -->
+            <!-- REGION ROW — centered, clean -->
             <div class="region-row">
-                <span class="region-label">🌍 Region:</span>
+                <span class="region-detected" id="regionDetected"></span>
+                <label class="region-label" for="countrySelect">🌍 Streaming region:</label>
                 <select id="countrySelect" class="country-select">
-                    <option value="US" selected>🇺🇸 United States</option>
+                    <option value="US">🇺🇸 United States</option>
                     <option value="CA">🇨🇦 Canada</option>
                     <option value="GB">🇬🇧 United Kingdom</option>
                     <option value="DE">🇩🇪 Germany</option>
@@ -83,54 +82,18 @@
             <div class="mood-picker-popup" id="moodPickerPopup">
                 <div class="mood-picker-arrow"></div>
                 <div class="mood-picker-grid">
-                    <button class="mood-pick-btn" data-mood="funny comedy for evening">
-                        <span class="mood-emoji">😂</span>
-                        <span class="mood-label">Funny</span>
-                    </button>
-                    <button class="mood-pick-btn" data-mood="sad emotional drama">
-                        <span class="mood-emoji">😢</span>
-                        <span class="mood-label">Sad</span>
-                    </button>
-                    <button class="mood-pick-btn" data-mood="scary horror thriller">
-                        <span class="mood-emoji">😱</span>
-                        <span class="mood-label">Scary</span>
-                    </button>
-                    <button class="mood-pick-btn" data-mood="action adventure adrenaline">
-                        <span class="mood-emoji">🔥</span>
-                        <span class="mood-label">Action</span>
-                    </button>
-                    <button class="mood-pick-btn" data-mood="romantic love story">
-                        <span class="mood-emoji">💕</span>
-                        <span class="mood-label">Romance</span>
-                    </button>
-                    <button class="mood-pick-btn" data-mood="mind blowing twist ending">
-                        <span class="mood-emoji">🤔</span>
-                        <span class="mood-label">Mind-blowing</span>
-                    </button>
-                    <button class="mood-pick-btn" data-mood="family fun kids">
-                        <span class="mood-emoji">👨‍👩‍👧</span>
-                        <span class="mood-label">Family</span>
-                    </button>
-                    <button class="mood-pick-btn" data-mood="dark crime mystery">
-                        <span class="mood-emoji">🕵️</span>
-                        <span class="mood-label">Mystery</span>
-                    </button>
-                    <button class="mood-pick-btn" data-mood="inspiring motivational biography">
-                        <span class="mood-emoji">💪</span>
-                        <span class="mood-label">Inspiring</span>
-                    </button>
-                    <button class="mood-pick-btn" data-mood="animated fun colorful cartoon">
-                        <span class="mood-emoji">🎨</span>
-                        <span class="mood-label">Animated</span>
-                    </button>
-                    <button class="mood-pick-btn" data-mood="historical epic period drama">
-                        <span class="mood-emoji">🏛️</span>
-                        <span class="mood-label">Historical</span>
-                    </button>
-                    <button class="mood-pick-btn" data-mood="musical concert performance song">
-                        <span class="mood-emoji">🎵</span>
-                        <span class="mood-label">Musical</span>
-                    </button>
+                    <button class="mood-pick-btn" data-mood="funny comedy for evening"><span class="mood-emoji">😂</span><span class="mood-label">Funny</span></button>
+                    <button class="mood-pick-btn" data-mood="sad emotional drama"><span class="mood-emoji">😢</span><span class="mood-label">Sad</span></button>
+                    <button class="mood-pick-btn" data-mood="scary horror thriller"><span class="mood-emoji">😱</span><span class="mood-label">Scary</span></button>
+                    <button class="mood-pick-btn" data-mood="action adventure adrenaline"><span class="mood-emoji">🔥</span><span class="mood-label">Action</span></button>
+                    <button class="mood-pick-btn" data-mood="romantic love story"><span class="mood-emoji">💕</span><span class="mood-label">Romance</span></button>
+                    <button class="mood-pick-btn" data-mood="mind blowing twist ending"><span class="mood-emoji">🤔</span><span class="mood-label">Mind-blowing</span></button>
+                    <button class="mood-pick-btn" data-mood="family fun kids"><span class="mood-emoji">👨‍👩‍👧</span><span class="mood-label">Family</span></button>
+                    <button class="mood-pick-btn" data-mood="dark crime mystery"><span class="mood-emoji">🕵️</span><span class="mood-label">Mystery</span></button>
+                    <button class="mood-pick-btn" data-mood="inspiring motivational biography"><span class="mood-emoji">💪</span><span class="mood-label">Inspiring</span></button>
+                    <button class="mood-pick-btn" data-mood="animated fun colorful cartoon"><span class="mood-emoji">🎨</span><span class="mood-label">Animated</span></button>
+                    <button class="mood-pick-btn" data-mood="historical epic period drama"><span class="mood-emoji">🏛️</span><span class="mood-label">Historical</span></button>
+                    <button class="mood-pick-btn" data-mood="musical concert performance song"><span class="mood-emoji">🎵</span><span class="mood-label">Musical</span></button>
                 </div>
             </div>
 

@@ -16,7 +16,33 @@ const searchBtn = document.getElementById('searchBtn');
 const countrySelect = document.getElementById('countrySelect');
 const moviesGrid = document.getElementById('moviesGrid');
 
+// Supported regions in our dropdown
+const SUPPORTED_REGIONS = ['US','CA','GB','DE','FR','IT','ES','NL','BE','AT','CH','SE','NO','DK','FI','PL','PT','IE','CZ','GR','UA'];
+
+async function detectRegion() {
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    const data = await res.json();
+    const country = data.country_code;
+    if (country && SUPPORTED_REGIONS.includes(country)) {
+      currentRegion = country;
+      countrySelect.value = country;
+      const detected = document.getElementById('regionDetected');
+      if (detected) {
+        detected.textContent = '📍 Auto-detected';
+        detected.style.opacity = '1';
+        setTimeout(() => { detected.style.opacity = '0'; }, 3000);
+      }
+    }
+  } catch (e) {
+    // Silently fail — default to US
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  // Auto-detect region on load
+  detectRegion();
+
   searchBtn.addEventListener('click', handleSearch);
   moodInput.addEventListener('keypress', e => {
     if (e.key === 'Enter') handleSearch();
@@ -29,12 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentType = tab.dataset.type;
-    });
-  });
-  document.querySelectorAll('.mood-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      moodInput.value = btn.dataset.mood;
-      handleSearch();
     });
   });
   document.getElementById('animeToggle').addEventListener('change', e => {
@@ -93,7 +113,7 @@ async function handleSearch() {
   const words = query.split(' ');
   let results = [];
 
-  if (words.length >= 3) {
+  if (words.length >= 2) {
     const { results: aiResults, aiData } = await searchWithAI(query, 1);
     lastAiData = aiData;
     if (aiResults.length > 0) {
@@ -149,7 +169,6 @@ async function loadMore() {
   currentPage++;
 
   let results = [];
-
   if (lastAiData) {
     results = await fetchByAiData(lastAiData, currentPage);
   } else {
@@ -240,9 +259,7 @@ function hideSkeleton() {
 
 function displayMovies(movies, append = false) {
   if (!append) moviesGrid.innerHTML = '';
-  movies.forEach(movie => {
-    moviesGrid.appendChild(createCard(movie));
-  });
+  movies.forEach(movie => moviesGrid.appendChild(createCard(movie)));
 }
 
 function addLoadMoreBtn() {
@@ -284,9 +301,7 @@ function isFavorite(id) {
 function createCard(movie) {
   const card = document.createElement('div');
   card.className = 'movie-card';
-  const poster = movie.poster_path
-    ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}`
-    : '';
+  const poster = movie.poster_path ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}` : '';
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '';
   const favIcon = isFavorite(movie.id) ? '❤️' : '🤍';
   card.innerHTML = `

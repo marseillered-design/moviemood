@@ -2,6 +2,7 @@ export default async function handler(req, res) {
   try {
     const { query } = req.body;
     if (!query) {
+      console.log("No query provided");
       return res.status(400).json({ error: "No query provided" });
     }
     const groqResponse = await fetch(
