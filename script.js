@@ -16,7 +16,6 @@ const searchBtn = document.getElementById('searchBtn');
 const countrySelect = document.getElementById('countrySelect');
 const moviesGrid = document.getElementById('moviesGrid');
 
-// Supported regions in our dropdown
 const SUPPORTED_REGIONS = ['US','CA','GB','DE','FR','IT','ES','NL','BE','AT','CH','SE','NO','DK','FI','PL','PT','IE','CZ','GR','UA'];
 
 async function detectRegion() {
@@ -34,13 +33,10 @@ async function detectRegion() {
         setTimeout(() => { detected.style.opacity = '0'; }, 3000);
       }
     }
-  } catch (e) {
-    // Silently fail — default to US
-  }
+  } catch (e) {}
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Auto-detect region on load
   detectRegion();
 
   searchBtn.addEventListener('click', handleSearch);
@@ -110,21 +106,19 @@ async function handleSearch() {
   removeLoadMoreBtn();
   showSkeleton();
 
-  const words = query.split(' ');
-  let results = [];
+  // Always go through AI
+  const { results: aiResults, aiData } = await searchWithAI(query, 1);
+  lastAiData = aiData;
 
-  if (words.length >= 2) {
-    const { results: aiResults, aiData } = await searchWithAI(query, 1);
-    lastAiData = aiData;
-    if (aiResults.length > 0) {
-      hideSkeleton();
-      displayMovies(aiResults, false);
-      addLoadMoreBtn();
-      return;
-    }
+  if (aiResults.length > 0) {
+    hideSkeleton();
+    displayMovies(aiResults, false);
+    addLoadMoreBtn();
+    return;
   }
 
-  results = await searchTMDB(query, 1);
+  // Fallback: direct TMDB search
+  const results = await searchTMDB(query, 1);
   if (results.length > 0) {
     hideSkeleton();
     displayMovies(results, false);
@@ -186,7 +180,7 @@ async function loadMore() {
 
 async function searchTMDB(query, page = 1) {
   try {
-    let endpoint = currentType === 'tv' ? 'tv' : 'movie';
+    const endpoint = currentType === 'tv' ? 'tv' : 'movie';
     const res = await fetch(
       `${TMDB_BASE_URL}/search/${endpoint}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&page=${page}`
     );
@@ -200,22 +194,47 @@ async function searchTMDB(query, page = 1) {
 
 async function fetchByAiData(aiData, page = 1) {
   try {
+    const endpoint = currentType === 'tv' ? 'tv' : 'movie';
+
+    // 1. Company-based discover (Pixar, Marvel, DC, Ghibli etc.)
+    if (aiData.company_id) {
+      let yearParam = '';
+      if (aiData.year_from) yearParam += `&primary_release_date.gte=${aiData.year_from}-01-01`;
+      if (aiData.year_to) yearParam += `&primary_release_date.lte=${aiData.year_to}-12-31`;
+      const res = await fetch(
+        `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_companies=${aiData.company_id}&sort_by=popularity.desc&vote_count.gte=20&page=${page}${yearParam}`
+      );
+      const data = await res.json();
+      return data.results || [];
+    }
+
+    // 2. Specific search query (director, actor, franchise, language)
+    if (aiData.search_query) {
+      return await searchTMDB(aiData.search_query, page);
+    }
+
+    // 3. Genre-based discover
     if (aiData.genres?.length) {
-      let endpoint = currentType === 'tv' ? 'tv' : 'movie';
       let genreParam = currentType === 'documentary' ? '99' : aiData.genres.join(',');
       let animeParam = includeAnime ? '&with_keywords=210024' : '';
       let yearParam = '';
-      if (aiData.year_from) yearParam += `&primary_release_date.gte=${aiData.year_from}-01-01&first_air_date.gte=${aiData.year_from}-01-01`;
-      if (aiData.year_to) yearParam += `&primary_release_date.lte=${aiData.year_to}-12-31&first_air_date.lte=${aiData.year_to}-12-31`;
+      if (aiData.year_from) {
+        yearParam += endpoint === 'movie'
+          ? `&primary_release_date.gte=${aiData.year_from}-01-01`
+          : `&first_air_date.gte=${aiData.year_from}-01-01`;
+      }
+      if (aiData.year_to) {
+        yearParam += endpoint === 'movie'
+          ? `&primary_release_date.lte=${aiData.year_to}-12-31`
+          : `&first_air_date.lte=${aiData.year_to}-12-31`;
+      }
       const res = await fetch(
         `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${genreParam}&sort_by=popularity.desc&vote_count.gte=50&page=${page}${animeParam}${yearParam}`
       );
       const data = await res.json();
       return data.results || [];
     }
-    if (aiData.search_query) {
-      return await searchTMDB(aiData.search_query, page);
-    }
+
     return [];
   } catch (e) {
     console.error(e);
