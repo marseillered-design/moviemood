@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('surpriseBtn').addEventListener('click', handleSurprise);
   
   // ══════════════════════════════════════════════
-  // MOOD PICKER POPUP (FIXED WITH RANDOM PAGE)
+  // MOOD PICKER POPUP
   // ══════════════════════════════════════════════
   const moodPickerBtn = document.getElementById('moodPickerBtn');
   const moodPickerPopup = document.getElementById('moodPickerPopup');
@@ -78,10 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
       moodPickerPopup.classList.remove('open');
       moodPickerBtn.classList.remove('active');
       
-      // 🎲 RANDOM STARTING PAGE FOR VARIETY (1-10)
+      // 🎲 RANDOM PAGE FOR VARIETY (1-10) - don't reset in handleSearch
       currentPage = Math.floor(Math.random() * 10) + 1;
       
-      handleSearch();
+      handleSearch(false); // false = don't reset page
     });
   });
   
@@ -103,19 +103,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-async function handleSearch() {
+async function handleSearch(resetPage = true) {
   const query = moodInput.value.trim();
   if (!query) return;
   
-  // Reset to page 1 for manual text search
-  currentPage = 1;
-  currentQuery = query;
-  lastAiData = null;
-  removeLoadMoreBtn();
+  // Only reset page for manual text search
+  if (resetPage) {
+    currentPage = 1;
+    currentQuery = query;
+    lastAiData = null;
+    removeLoadMoreBtn();
+  }
+  
   showSkeleton();
   
   // Always go through AI
-  const { results: aiResults, aiData } = await searchWithAI(query, 1);
+  const { results: aiResults, aiData } = await searchWithAI(query, currentPage);
   lastAiData = aiData;
   
   if (aiResults.length > 0) {
@@ -126,7 +129,7 @@ async function handleSearch() {
   }
   
   // Fallback: direct TMDB search
-  const results = await searchTMDB(query, 1);
+  const results = await searchTMDB(query, currentPage);
   if (results.length > 0) {
     hideSkeleton();
     displayMovies(results, false);
