@@ -227,6 +227,7 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
   gap: 10px;
   max-width: 780px;
   margin: 0 auto 28px;
+  position: relative; /* popup anchors here */
 }
 .search-input-wrapper {
   flex: 1;
@@ -430,8 +431,9 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
 
 .mood-picker-popup {
   position: absolute;
-  top: calc(100% + 14px);
-  left: 0;
+  top: calc(100% + 8px); /* right below search-container */
+  left: 50%;
+  transform: translateX(-50%);
   width: 100%;
   max-width: 780px;
   background: var(--bg2);
