@@ -1,14 +1,3 @@
-Вот полный, исправленный **`style.css`**.
-
-**Что исправлено в этой версии:**
-1.  ✅ **Убран дубликат кнопок:** Класс `.mood-buttons` теперь скрыт (`display: none`), чтобы не ломать вёрстку. Остался только аккуратный попап.
-2.  ✅ **Темы работают:** Прописаны переменные для светлой (`:root`) и тёмной (`[data-theme="dark"]`) тем.
-3.  ✅ **Чистый код:** Убран весь JavaScript, который случайно попал в конец CSS файла.
-4.  ✅ **Исправлен синтаксис:** Все комментарии и селекторы записаны правильно.
-
-Просто скопируй этот код и полностью замени им содержимое своего файла `style.css`:
-
-```css
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap');
 
 /* ==================== RESET ==================== */
@@ -62,6 +51,12 @@
 /* ==================== GLOBAL TRANSITIONS ==================== */
 body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-toggle {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Prevent theme color from breaking emoji rendering */
+.mood-pick-btn, .surprise-btn, .filters-btn, .tab, .anime-toggle,
+.nav-favorites, .search-icon, .region-label {
+  font-family: 'Inter', "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
 }
 
 /* ==================== HOME PAGE ==================== */
@@ -488,7 +483,13 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
   border-color: rgba(124, 58, 237, 0.3);
   transform: translateY(-2px);
 }
-.mood-emoji { font-size: 1.6rem; }
+.mood-emoji {
+  font-size: 1.6rem;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  color: initial; /* prevent theme color from overriding emoji rendering */
+  -webkit-text-fill-color: initial;
+  line-height: 1;
+}
 .mood-label { font-size: 0.68rem; color: var(--text-dim); }
 
 /* RESULTS */
