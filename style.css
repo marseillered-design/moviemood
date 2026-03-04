@@ -449,10 +449,10 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
   background: rgba(18, 18, 30, 0.97);
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
 }
-.mood-picker-popup.open { display: block; animation: popupIn 0.2s ease; }
+.mood-picker-popup.open { display: block; animation: popupIn 0.2s ease forwards; }
 @keyframes popupIn {
-  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateX(-50%) translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0)    scale(1); }
 }
 .mood-picker-arrow {
   position: absolute;
