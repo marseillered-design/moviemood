@@ -218,6 +218,8 @@ async function fetchByAiData(aiData, page = 1) {
       let genreParam = currentType === 'documentary' ? '99' : aiData.genres.join(',');
       let animeParam = includeAnime ? '&with_keywords=210024' : '';
       let yearParam = '';
+      const hasYears = aiData.year_from || aiData.year_to;
+
       if (aiData.year_from) {
         yearParam += endpoint === 'movie'
           ? `&primary_release_date.gte=${aiData.year_from}-01-01`
@@ -228,8 +230,14 @@ async function fetchByAiData(aiData, page = 1) {
           ? `&primary_release_date.lte=${aiData.year_to}-12-31`
           : `&first_air_date.lte=${aiData.year_to}-12-31`;
       }
+
+      // When filtering by era: sort by rating → best films of that period come first
+      // Without years: sort by popularity → well-known modern films first
+      const sortBy = hasYears ? 'vote_average.desc' : 'popularity.desc';
+      const minVotes = hasYears ? 200 : 50;
+
       const res = await fetch(
-        `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${genreParam}&sort_by=popularity.desc&vote_count.gte=50&page=${page}${animeParam}${yearParam}`
+        `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${genreParam}&sort_by=${sortBy}&vote_count.gte=${minVotes}&page=${page}${animeParam}${yearParam}`
       );
       const data = await res.json();
       return data.results || [];
