@@ -20,45 +20,35 @@ export default async function handler(req, res) {
     // STEP 2: Fallback to Gemini AI
     // ══════════════════════════════════════════════
     const prompt = `You are an expert movie recommendation assistant. Convert ANY user request into TMDB search parameters.
-
 Return ONLY valid JSON, no extra text, no markdown. Choose ONE of these formats:
-
 FORMAT A — for studios/companies:
 {"company_id": number}
-
 FORMAT B — for genres/moods:
 {"genres": [number], "year_from": number, "year_to": number}
-
 FORMAT C — for specific titles/directors/actors/languages:
 {"search_query": "string", "year_from": number, "year_to": number}
-
 year_from and year_to are always optional.
-
 COMPANY IDs:
 pixar=3, disney=2, marvel=420, dc=9993, dreamworks=521,
 studio ghibli=10342, a24=41077, blumhouse=3172,
 illumination=6704, warner bros=174, universal=33,
 paramount=4, sony=5, lionsgate=1632
-
 TMDB Genre IDs:
 28=Action, 12=Adventure, 16=Animation, 35=Comedy,
 80=Crime, 99=Documentary, 18=Drama, 10751=Family,
 14=Fantasy, 36=History, 27=Horror, 10402=Music,
 9648=Mystery, 10749=Romance, 878=Sci-Fi,
 53=Thriller, 10752=War, 37=Western
-
 YEAR DETECTION:
 50s=1950-1959, 60s=1960-1969, 70s=1970-1979,
 80s=1980-1989, 90s=1990-1999, 2000s=2000-2009,
 2010s=2010-2019, 2020s=2020-2029,
 classic=1950-1985, recent/new=2020-2025
-
 RULES:
-- company_id for studios/brands (pixar, marvel, dc, ghibli, a24...)
-- search_query for directors, actors, franchises, national cinemas
-- genres for moods, emotions, situations, descriptors
-- Add year_from/year_to when time period is mentioned
-
+company_id for studios/brands (pixar, marvel, dc, ghibli, a24...)
+search_query for directors, actors, franchises, national cinemas
+genres for moods, emotions, situations, descriptors
+Add year_from/year_to when time period is mentioned
 EXAMPLES:
 "something like inception" → {"genres": [9648, 878]}
 "cozy sunday" → {"genres": [35, 10749]}
@@ -68,7 +58,6 @@ EXAMPLES:
 "medical drama" → {"genres": [18]}
 "prison escape" → {"genres": [18, 28]}
 "dark 90s thriller" → {"genres": [53, 18], "year_from": 1990, "year_to": 1999}
-
 User request: "${query}"`;
 
     const geminiResponse = await fetch(
@@ -117,7 +106,6 @@ User request: "${query}"`;
     }
 
     return res.status(200).json(parsed);
-
   } catch (error) {
     console.error("Handler error:", error);
     return res.status(200).json({ genres: [18, 28], fallback: true });
@@ -128,7 +116,6 @@ User request: "${query}"`;
 // PROMPTS DATABASE (1000+ entries)
 // ══════════════════════════════════════════════
 const promptsDB = {
-
   // ══════════════════════════════════════════════
   // STUDIOS & COMPANIES
   // ══════════════════════════════════════════════
@@ -139,7 +126,6 @@ const promptsDB = {
   "pixar animated": { company_id: 3 },
   "classic pixar": { company_id: 3, year_from: 1995, year_to: 2010 },
   "new pixar": { company_id: 3, year_from: 2015, year_to: 2025 },
-
   "disney": { company_id: 2 },
   "disney movies": { company_id: 2 },
   "disney animated": { company_id: 2 },
@@ -150,7 +136,6 @@ const promptsDB = {
   "new disney": { company_id: 2, year_from: 2010, year_to: 2025 },
   "disney live action": { company_id: 2 },
   "walt disney": { company_id: 2 },
-
   "marvel": { company_id: 420 },
   "marvel movies": { company_id: 420 },
   "marvel films": { company_id: 420 },
@@ -166,7 +151,6 @@ const promptsDB = {
   "doctor strange": { search_query: "doctor strange" },
   "black widow": { search_query: "black widow" },
   "ant-man": { search_query: "ant-man" },
-
   "dc": { company_id: 9993 },
   "dc movies": { company_id: 9993 },
   "dc films": { company_id: 9993 },
@@ -178,7 +162,6 @@ const promptsDB = {
   "aquaman": { search_query: "aquaman" },
   "the flash": { search_query: "the flash dc" },
   "joker": { search_query: "joker" },
-
   "studio ghibli": { company_id: 10342 },
   "ghibli": { company_id: 10342 },
   "ghibli movies": { company_id: 10342 },
@@ -191,7 +174,6 @@ const promptsDB = {
   "nausicaa": { search_query: "nausicaa" },
   "castle in the sky": { search_query: "castle in the sky" },
   "kiki's delivery service": { search_query: "kiki's delivery service" },
-
   "dreamworks": { company_id: 521 },
   "dreamworks animation": { company_id: 521 },
   "shrek": { search_query: "shrek" },
@@ -202,22 +184,18 @@ const promptsDB = {
   "the croods": { search_query: "the croods" },
   "trolls": { search_query: "trolls" },
   "bee movie": { search_query: "bee movie" },
-
   "illumination": { company_id: 6704 },
   "minions": { search_query: "minions" },
   "despicable me": { search_query: "despicable me" },
   "the secret life of pets": { search_query: "secret life of pets" },
   "sing": { search_query: "sing illumination" },
-
   "a24": { company_id: 41077 },
   "a24 movies": { company_id: 41077 },
   "a24 films": { company_id: 41077 },
   "a24 horror": { company_id: 41077, genres: [27] },
-
   "blumhouse": { company_id: 3172 },
   "blumhouse horror": { company_id: 3172 },
   "blumhouse movies": { company_id: 3172 },
-
   "warner bros": { company_id: 174 },
   "universal": { company_id: 33 },
   "paramount": { company_id: 4 },
@@ -479,7 +457,6 @@ const promptsDB = {
   "train to busan": { search_query: "train to busan" },
   "the wailing": { search_query: "the wailing" },
   "squid game": { search_query: "squid game" },
-
   "japanese": { search_query: "japanese" },
   "japanese movies": { search_query: "japanese" },
   "japanese anime": { search_query: "anime" },
@@ -488,7 +465,6 @@ const promptsDB = {
   "japanese thriller": { search_query: "japanese thriller" },
   "ringu": { search_query: "ring japanese" },
   "akira": { search_query: "akira anime" },
-
   "french": { search_query: "french" },
   "french movies": { search_query: "french" },
   "french cinema": { search_query: "french" },
@@ -498,21 +474,17 @@ const promptsDB = {
   "french horror": { search_query: "french horror" },
   "new french extremity": { search_query: "french horror extreme" },
   "french new wave": { search_query: "french new wave cinema" },
-
   "italian": { search_query: "italian" },
   "italian cinema": { search_query: "italian" },
   "italian movies": { search_query: "italian" },
   "spaghetti western": { genres: [37], search_query: "spaghetti western" },
   "italian horror": { search_query: "italian horror" },
-
   "spanish": { search_query: "spanish" },
   "spanish movies": { search_query: "spanish" },
   "spanish horror": { search_query: "spanish horror" },
-
   "german": { search_query: "german" },
   "german cinema": { search_query: "german" },
   "german movies": { search_query: "german" },
-
   "bollywood": { search_query: "bollywood" },
   "indian movies": { search_query: "bollywood" },
   "indian cinema": { search_query: "bollywood" },
@@ -522,28 +494,23 @@ const promptsDB = {
   "new bollywood": { search_query: "bollywood", year_from: 2010, year_to: 2025 },
   "bollywood romance": { search_query: "bollywood romance" },
   "bollywood action": { search_query: "bollywood action" },
-
   "chinese": { search_query: "chinese" },
   "chinese cinema": { search_query: "chinese" },
   "chinese movies": { search_query: "chinese" },
   "kung fu movies": { search_query: "kung fu" },
   "hong kong": { search_query: "hong kong" },
-
   "turkish": { search_query: "turkish" },
   "turkish drama": { search_query: "turkish drama" },
   "turkish movies": { search_query: "turkish" },
-
   "russian": { search_query: "russian" },
   "russian cinema": { search_query: "russian" },
   "russian movies": { search_query: "russian" },
   "soviet cinema": { search_query: "soviet film", year_from: 1950, year_to: 1991 },
-
   "scandinavian": { search_query: "scandinavian" },
   "nordic": { search_query: "nordic film" },
   "swedish movies": { search_query: "swedish film" },
   "danish movies": { search_query: "danish film" },
   "norwegian movies": { search_query: "norwegian film" },
-
   "iranian": { search_query: "iranian" },
   "iranian cinema": { search_query: "iranian" },
   "polish": { search_query: "polish film" },
@@ -659,7 +626,6 @@ const promptsDB = {
   // ══════════════════════════════════════════════
   // DECADES — GENRES BY ERA
   // ══════════════════════════════════════════════
-
   // 1930s-40s
   "1930s": { year_from: 1930, year_to: 1939 },
   "30s movies": { year_from: 1930, year_to: 1939 },
@@ -669,7 +635,6 @@ const promptsDB = {
   "classic hollywood": { year_from: 1930, year_to: 1960 },
   "golden age hollywood": { year_from: 1930, year_to: 1960 },
   "old hollywood": { year_from: 1930, year_to: 1965 },
-
   // 1950s
   "50s movies": { year_from: 1950, year_to: 1959 },
   "1950s": { year_from: 1950, year_to: 1959 },
@@ -677,7 +642,6 @@ const promptsDB = {
   "50s sci-fi": { genres: [878], year_from: 1950, year_to: 1959 },
   "50s westerns": { genres: [37], year_from: 1950, year_to: 1959 },
   "50s romance": { genres: [10749], year_from: 1950, year_to: 1959 },
-
   // 1960s
   "60s movies": { year_from: 1960, year_to: 1969 },
   "1960s": { year_from: 1960, year_to: 1969 },
@@ -689,7 +653,6 @@ const promptsDB = {
   "60s romance": { genres: [10749], year_from: 1960, year_to: 1969 },
   "60s musicals": { genres: [10402], year_from: 1960, year_to: 1969 },
   "new wave cinema": { genres: [18], year_from: 1958, year_to: 1972 },
-
   // 1970s
   "70s movies": { year_from: 1970, year_to: 1979 },
   "1970s": { year_from: 1970, year_to: 1979 },
@@ -705,13 +668,14 @@ const promptsDB = {
   "grindhouse": { genres: [27, 28], year_from: 1965, year_to: 1985 },
   "blaxploitation": { genres: [28, 80], year_from: 1970, year_to: 1979 },
   "new hollywood": { genres: [18, 80], year_from: 1967, year_to: 1980 },
-
   // 1980s
   "80s movies": { year_from: 1980, year_to: 1989 },
   "1980s": { year_from: 1980, year_to: 1989 },
   "80s horror": { genres: [27], year_from: 1980, year_to: 1989 },
   "80s horrors": { genres: [27], year_from: 1980, year_to: 1989 },
   "horror 80s": { genres: [27], year_from: 1980, year_to: 1989 },
+  "horrors of 80s": { genres: [27], year_from: 1980, year_to: 1989 },
+  "horror of 80s": { genres: [27], year_from: 1980, year_to: 1989 },
   "80s action": { genres: [28], year_from: 1980, year_to: 1989 },
   "80s action movies": { genres: [28, 12], year_from: 1980, year_to: 1989 },
   "80s comedy": { genres: [35], year_from: 1980, year_to: 1989 },
@@ -727,7 +691,6 @@ const promptsDB = {
   "80s war movies": { genres: [10752], year_from: 1980, year_to: 1989 },
   "80s crime": { genres: [80], year_from: 1980, year_to: 1989 },
   "retro action": { genres: [28], year_from: 1980, year_to: 1995 },
-
   // 1990s
   "90s movies": { year_from: 1990, year_to: 1999 },
   "1990s": { year_from: 1990, year_to: 1999 },
@@ -752,7 +715,6 @@ const promptsDB = {
   "90s cartoons": { genres: [16, 10751], year_from: 1990, year_to: 1999 },
   "90s family": { genres: [10751], year_from: 1990, year_to: 1999 },
   "90s classics": { year_from: 1990, year_to: 1999 },
-
   // 2000s
   "2000s movies": { year_from: 2000, year_to: 2009 },
   "2000s": { year_from: 2000, year_to: 2009 },
@@ -769,7 +731,6 @@ const promptsDB = {
   "2000s crime": { genres: [80], year_from: 2000, year_to: 2009 },
   "2000s fantasy": { genres: [14, 12], year_from: 2000, year_to: 2009 },
   "early 2000s": { year_from: 2000, year_to: 2005 },
-
   // 2010s
   "2010s movies": { year_from: 2010, year_to: 2019 },
   "2010s": { year_from: 2010, year_to: 2019 },
@@ -781,7 +742,6 @@ const promptsDB = {
   "2010s romance": { genres: [10749], year_from: 2010, year_to: 2019 },
   "2010s thriller": { genres: [53], year_from: 2010, year_to: 2019 },
   "last decade": { year_from: 2010, year_to: 2019 },
-
   // 2020s
   "2020s movies": { year_from: 2020, year_to: 2025 },
   "2020s": { year_from: 2020, year_to: 2025 },
@@ -817,7 +777,6 @@ const promptsDB = {
   "heartbreaking": { genres: [18] },
   "make me cry": { genres: [18] },
   "cry my eyes out": { genres: [18] },
-
   "happy": { genres: [35, 10749] },
   "feel good": { genres: [35, 18] },
   "feel good movie": { genres: [35, 18] },
@@ -831,7 +790,6 @@ const promptsDB = {
   "funny": { genres: [35] },
   "hilarious": { genres: [35] },
   "laugh out loud": { genres: [35] },
-
   "scared": { genres: [27, 53] },
   "want to be scared": { genres: [27] },
   "something scary": { genres: [27] },
@@ -841,7 +799,6 @@ const promptsDB = {
   "disturbing": { genres: [27, 18] },
   "unsettling": { genres: [27, 9648] },
   "dark and creepy": { genres: [27, 53] },
-
   "excited": { genres: [28, 12] },
   "pumped": { genres: [28] },
   "adrenaline": { genres: [28, 12] },
@@ -849,7 +806,6 @@ const promptsDB = {
   "intense": { genres: [28, 53] },
   "edge of seat": { genres: [53, 28] },
   "thrilling": { genres: [53] },
-
   "relaxed": { genres: [35, 10749] },
   "calm": { genres: [35, 10749] },
   "cozy": { genres: [35, 10749] },
@@ -860,19 +816,16 @@ const promptsDB = {
   "easy watching": { genres: [35, 10749] },
   "not too heavy": { genres: [35, 10749] },
   "easy to watch": { genres: [35, 10749] },
-
   "inspired": { genres: [18, 36] },
   "motivating": { genres: [18, 36] },
   "motivational": { genres: [18, 36] },
   "inspiring": { genres: [18, 36] },
   "empowering": { genres: [18, 36] },
-
   "nostalgic": { genres: [16, 10751] },
   "childhood": { genres: [16, 10751] },
   "childhood movies": { genres: [16, 10751] },
   "childhood favorites": { genres: [16, 10751] },
   "miss childhood": { genres: [16, 10751] },
-
   "thoughtful": { genres: [18, 878] },
   "philosophical": { genres: [18, 878] },
   "deep": { genres: [18, 878] },
@@ -888,21 +841,18 @@ const promptsDB = {
   "mindfuck": { genres: [878, 9648] },
   "complex": { genres: [9648, 18] },
   "layered": { genres: [9648, 18] },
-
   "adventurous": { genres: [12, 14] },
   "epic": { genres: [28, 12] },
   "something epic": { genres: [28, 12] },
   "grand": { genres: [28, 12] },
   "spectacular": { genres: [28, 12] },
   "big blockbuster": { genres: [28, 12] },
-
   "romantic": { genres: [10749, 35] },
   "in love": { genres: [10749] },
   "love story": { genres: [10749] },
   "lovey dovey": { genres: [10749, 35] },
   "want romance": { genres: [10749] },
   "something romantic": { genres: [10749, 35] },
-
   "dark": { genres: [18, 53] },
   "dark movie": { genres: [18, 53] },
   "gloomy": { genres: [18, 53] },
@@ -912,7 +862,6 @@ const promptsDB = {
   "heavy": { genres: [18, 53] },
   "serious": { genres: [18] },
   "dark and heavy": { genres: [18, 53] },
-
   "tense": { genres: [53] },
   "gripping": { genres: [53, 9648] },
   "suspenseful": { genres: [53] },
@@ -923,7 +872,6 @@ const promptsDB = {
   // ══════════════════════════════════════════════
   // SITUATIONS — VERY DETAILED
   // ══════════════════════════════════════════════
-
   // DATE & RELATIONSHIP
   "date night": { genres: [10749, 35] },
   "date night movie": { genres: [10749, 35] },
@@ -937,7 +885,6 @@ const promptsDB = {
   "anniversary": { genres: [10749, 18] },
   "valentines day": { genres: [10749, 35] },
   "valentine": { genres: [10749, 35] },
-
   // BREAKUP & HEARTBREAK
   "after breakup": { genres: [18, 10749] },
   "breakup movie": { genres: [18] },
@@ -950,7 +897,6 @@ const promptsDB = {
   "crying over ex": { genres: [18] },
   "sad after love": { genres: [18] },
   "eat ice cream and cry": { genres: [18, 10749] },
-
   // FAMILY & KIDS
   "family night": { genres: [10751, 16] },
   "family movie night": { genres: [10751, 16] },
@@ -967,7 +913,6 @@ const promptsDB = {
   "for my daughter": { genres: [10751, 16] },
   "for my son": { genres: [10751, 16] },
   "kids animation": { genres: [16, 10751] },
-
   // GIRLS NIGHT
   "girls night": { genres: [35, 10749] },
   "girls night out": { genres: [35, 10749] },
@@ -978,7 +923,6 @@ const promptsDB = {
   "bachelorette": { genres: [35, 10749] },
   "wine and movie": { genres: [35, 10749] },
   "ladies night": { genres: [35, 10749] },
-
   // GUYS NIGHT
   "guys night": { genres: [28, 35] },
   "boys night": { genres: [28, 35] },
@@ -988,7 +932,6 @@ const promptsDB = {
   "bro movie": { genres: [28, 35] },
   "lads night": { genres: [28, 35] },
   "stag night": { genres: [28, 35] },
-
   // TIME OF DAY
   "morning": { genres: [35, 10749] },
   "sunday morning": { genres: [35, 10749] },
@@ -1010,7 +953,6 @@ const promptsDB = {
   "cant sleep movie": { genres: [53, 9648] },
   "late night movie": { genres: [53, 27] },
   "night owl": { genres: [53, 27] },
-
   // WEATHER & SEASON
   "rainy day": { genres: [35, 18] },
   "rainy evening": { genres: [35, 18] },
@@ -1028,7 +970,6 @@ const promptsDB = {
   "halloween movie": { genres: [27] },
   "thanksgiving": { genres: [35, 10751] },
   "new year": { genres: [35, 10749] },
-
   // ENERGY STATE
   "no energy": { genres: [35, 10749] },
   "tired": { genres: [35, 10749] },
@@ -1052,7 +993,6 @@ const promptsDB = {
   "workout motivation": { genres: [28, 12] },
   "before gym": { genres: [28, 12] },
   "pump me up": { genres: [28, 12] },
-
   // MENTAL STATE
   "bored": { genres: [28, 35] },
   "nothing to do": { genres: [28, 35] },
@@ -1072,7 +1012,6 @@ const promptsDB = {
   "feeling empty": { genres: [18] },
   "feeling lost": { genres: [18, 12] },
   "need motivation": { genres: [18, 36] },
-
   // SOCIAL
   "movie marathon": { genres: [28, 12] },
   "marathon": { genres: [28, 12] },
@@ -1086,7 +1025,6 @@ const promptsDB = {
   "slumber party": { genres: [35, 27] },
   "first movie together": { genres: [10749, 35] },
   "new to cinema": { genres: [28, 12] },
-
   // FOOD-RELATED
   "pizza night": { genres: [35, 28] },
   "popcorn movie": { genres: [28, 35] },
@@ -1094,7 +1032,6 @@ const promptsDB = {
   "movie snacks": { genres: [28, 35] },
   "takeout night": { genres: [35, 28] },
   "delivery and movie": { genres: [35, 28] },
-
   // SPECIFIC VIBES
   "cozy autumn": { genres: [35, 9648] },
   "autumn vibes": { genres: [35, 9648] },
@@ -1279,22 +1216,19 @@ function lookupPrompt(query) {
   // 1. Exact match
   if (promptsDB[q]) return promptsDB[q];
 
-  // 2. Key is contained in query (e.g. "some nolan films" contains "nolan")
+  // 2. Query contains a known key (trim keys before matching!)
   const keys = Object.keys(promptsDB);
   for (const key of keys) {
-    if (key.length > 3 && q === key) return promptsDB[key];
-  }
-
-  // 3. Query contains a known key
-  for (const key of keys) {
-    if (key.length > 4 && q.includes(key)) {
+    const trimmedKey = key.trim();
+    if (trimmedKey.length > 4 && q.includes(trimmedKey)) {
       return promptsDB[key];
     }
   }
 
-  // 4. All words of multi-word key appear in query
+  // 3. All words of multi-word key appear in query
   for (const key of keys) {
-    const kWords = key.split(/\s+/);
+    const trimmedKey = key.trim();
+    const kWords = trimmedKey.split(/\s+/);
     if (kWords.length >= 2 && kWords.every(w => q.includes(w))) {
       return promptsDB[key];
     }
@@ -1305,6 +1239,28 @@ function lookupPrompt(query) {
 
 function keywordFallback(query) {
   const q = query.toLowerCase();
+
+  // ══════════════════════════════════════════════
+  // DECADE DETECTION (NEW!)
+  // ══════════════════════════════════════════════
+  const decadeMatch = q.match(/(19|20)?(\d{2})s/);
+  if (decadeMatch) {
+    let year = parseInt(decadeMatch[2]);
+    if (year < 100) year += 1900;
+
+    if (q.includes('horror')) return { genres: [27], year_from: year, year_to: year + 9 };
+    if (q.includes('action')) return { genres: [28], year_from: year, year_to: year + 9 };
+    if (q.includes('comedy')) return { genres: [35], year_from: year, year_to: year + 9 };
+    if (q.includes('drama')) return { genres: [18], year_from: year, year_to: year + 9 };
+    if (q.includes('sci-fi') || q.includes('sci fi')) return { genres: [878], year_from: year, year_to: year + 9 };
+    if (q.includes('thriller')) return { genres: [53], year_from: year, year_to: year + 9 };
+    if (q.includes('romance')) return { genres: [10749], year_from: year, year_to: year + 9 };
+    return { year_from: year, year_to: year + 9 };
+  }
+
+  // ══════════════════════════════════════════════
+  // STUDIO DETECTION
+  // ══════════════════════════════════════════════
   if (q.includes('pixar')) return { company_id: 3 };
   if (q.includes('ghibli') || q.includes('miyazaki')) return { company_id: 10342 };
   if (q.includes('dreamworks')) return { company_id: 521 };
@@ -1313,10 +1269,22 @@ function keywordFallback(query) {
   if (q.includes('marvel') || q.includes('mcu')) return { company_id: 420 };
   if (q.includes('batman') || q.includes('superman') || q.includes('dc movie')) return { company_id: 9993 };
   if (q.includes('disney')) return { company_id: 2 };
+
+  // ══════════════════════════════════════════════
+  // DIRECTOR DETECTION
+  // ══════════════════════════════════════════════
   if (q.includes('nolan')) return { search_query: 'christopher nolan' };
   if (q.includes('tarantino')) return { search_query: 'quentin tarantino' };
+
+  // ══════════════════════════════════════════════
+  // NATIONAL CINEMA DETECTION
+  // ══════════════════════════════════════════════
   if (q.includes('korean') || q.includes('k-drama')) return { search_query: 'korean' };
   if (q.includes('bollywood')) return { search_query: 'bollywood' };
+
+  // ══════════════════════════════════════════════
+  // GENRE DETECTION
+  // ══════════════════════════════════════════════
   if (q.match(/horror|scary|ghost|monster|creepy/)) return { genres: [27, 53] };
   if (q.match(/action|fight|battle|adrenaline/)) return { genres: [28, 12] };
   if (q.match(/funny|comedy|laugh|humor/)) return { genres: [35] };
@@ -1326,5 +1294,6 @@ function keywordFallback(query) {
   if (q.match(/family|kids|children|cartoon/)) return { genres: [16, 10751] };
   if (q.match(/sad|cry|emotional|drama/)) return { genres: [18] };
   if (q.match(/cozy|chill|relax|calm/)) return { genres: [35, 10749] };
+
   return { genres: [18, 28] };
 }
