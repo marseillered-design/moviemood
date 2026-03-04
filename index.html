@@ -48,7 +48,7 @@
         <button class="filters-btn" id="filtersBtn">⚙️ Filters</button>
       </div>
 
-      <!-- MOOD PICKER POPUP -->
+      <!-- MOOD PICKER POPUP (без класса open!) -->
       <div class="mood-picker-popup" id="moodPickerPopup">
         <div class="mood-picker-arrow"></div>
         <div class="mood-picker-grid">
@@ -71,14 +71,14 @@
       <div class="region-row">
         <span class="region-label">🌍 Streaming region:</span>
         <select class="country-select" id="countrySelect">
-          <option value="US">🇺🇸 United States</option>
-          <option value="CA">🇨 Canada</option>
+          <option value="US">🇺 United States</option>
+          <option value="CA">🇨🇦 Canada</option>
           <option value="GB">🇬🇧 United Kingdom</option>
-          <option value="DE">🇩🇪 Germany</option>
+          <option value="DE">🇩 Germany</option>
           <option value="FR">🇫🇷 France</option>
-          <option value="IT">🇮🇹 Italy</option>
+          <option value="IT">🇮 Italy</option>
           <option value="ES">🇪🇸 Spain</option>
-          <option value="NL">🇳🇱 Netherlands</option>
+          <option value="NL">🇳 Netherlands</option>
           <option value="UA">🇺🇦 Ukraine</option>
         </select>
       </div>
@@ -135,78 +135,7 @@
     <p>Powered by TMDB API</p>
   </footer>
 
-  <!-- THEME TOGGLE SCRIPT -->
-  <script>
-    // Theme Toggle
-    const themeToggle = document.getElementById('theme-toggle');
-    const root = document.documentElement;
-    
-    const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme === 'light') {
-      root.setAttribute('data-theme', 'light');
-    } else if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
-      root.setAttribute('data-theme', 'dark');
-    }
-    
-    themeToggle?.addEventListener('click', () => {
-      const currentTheme = root.getAttribute('data-theme');
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-    });
-
-    // Mood Picker
-    const moodPickerBtn = document.getElementById('moodPickerBtn');
-    const moodPickerPopup = document.getElementById('moodPickerPopup');
-    const moodInput = document.getElementById('moodInput');
-    
-    moodPickerBtn?.addEventListener('click', () => {
-      moodPickerPopup?.classList.toggle('open');
-      moodPickerBtn?.classList.toggle('active');
-    });
-
-    document.querySelectorAll('.mood-pick-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const mood = btn.dataset.mood;
-        moodInput.value = mood;
-        moodPickerPopup?.classList.remove('open');
-        moodPickerBtn?.classList.remove('active');
-      });
-    });
-
-    // Close popup on outside click
-    document.addEventListener('click', (e) => {
-      if (!moodPickerPopup?.contains(e.target) && e.target !== moodPickerBtn) {
-        moodPickerPopup?.classList.remove('open');
-        moodPickerBtn?.classList.remove('active');
-      }
-    });
-
-    // Filters Toggle
-    const filtersBtn = document.getElementById('filtersBtn');
-    const filtersPanel = document.getElementById('filtersPanel');
-    
-    filtersBtn?.addEventListener('click', () => {
-      filtersPanel?.classList.toggle('open');
-      filtersBtn?.classList.toggle('active');
-    });
-
-    // Content Type Tabs
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-      });
-    });
-
-    // Mood Buttons
-    document.querySelectorAll('.mood-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        moodInput.value = btn.dataset.mood;
-      });
-    });
-  </script>
+  <!-- SCRIPT -->
+  <script src="script.js"></script>
 </body>
 </html>

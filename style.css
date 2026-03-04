@@ -1259,3 +1259,52 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
   .movie-nav { padding-top: max(12px, env(safe-area-inset-top)); }
   .home-footer { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
 }
+// ══════════════════════════════════════════════
+// MOOD PICKER POPUP
+// ══════════════════════════════════════════════
+const moodPickerBtn = document.getElementById('moodPickerBtn');
+const moodPickerPopup = document.getElementById('moodPickerPopup');
+
+moodPickerBtn?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  moodPickerPopup?.classList.toggle('open');
+  moodPickerBtn?.classList.toggle('active');
+});
+
+document.querySelectorAll('.mood-pick-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    moodInput.value = btn.dataset.mood;
+    moodPickerPopup?.classList.remove('open');
+    moodPickerBtn?.classList.remove('active');
+  });
+});
+
+// Close popup on outside click
+document.addEventListener('click', (e) => {
+  if (!moodPickerPopup?.contains(e.target) && e.target !== moodPickerBtn) {
+    moodPickerPopup?.classList.remove('open');
+    moodPickerBtn?.classList.remove('active');
+  }
+});
+
+// ══════════════════════════════════════════════
+// THEME TOGGLE
+// ══════════════════════════════════════════════
+const themeToggle = document.getElementById('theme-toggle');
+const root = document.documentElement;
+
+const savedTheme = localStorage.getItem('theme');
+const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+if (savedTheme === 'light') {
+  root.setAttribute('data-theme', 'light');
+} else if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+  root.setAttribute('data-theme', 'dark');
+}
+
+themeToggle?.addEventListener('click', () => {
+  const currentTheme = root.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+});
