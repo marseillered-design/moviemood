@@ -1,150 +1,212 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>MovieMood - Discover Movies by Mood</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MovieMood - Discover Movies by Mood</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body class="home-body">
-
-    <div class="bg-orbs">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-    </div>
-    <div class="noise-overlay"></div>
-
-    <!-- NAV -->
-        <span class="nav-logo">MovieMood</span>
-        <a href="favorites.html" class="nav-favorites">❤️ Favorites</a>
-    </nav>
-    <nav class="home-nav">
-  <div class="nav-logo">MOVIEMOOD</div>
-  <div>
-    <a href="favorites.html" class="nav-favorites">⭐ Favorites</a>
-    <!-- ВСТАВЬ КНОПКУ СЮДА: -->
-    <button id="theme-toggle" class="theme-toggle" aria-label="Переключить тему">
-      <span class="icon-sun">☀️</span>
-      <span class="icon-moon">🌙</span>
-    </button>
+  <!-- Background Effects -->
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
   </div>
-</nav>
+  <div class="noise-overlay"></div>
 
-    <!-- HERO -->
-    <header class="home-hero">
-        <h1 class="home-title">What's your<br><span class="title-accent">mood?</span></h1>
-        <p class="home-subtitle">Tell us how you feel — we'll find the perfect film.</p>
-    </header>
+  <!-- NAV -->
+  <nav class="home-nav">
+    <div class="nav-logo">MOVIEMOOD</div>
+    <div>
+      <a href="favorites.html" class="nav-favorites">⭐ Favorites</a>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Переключить тему">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+    </div>
+  </nav>
 
-    <main class="home-main">
-        <section class="search-section">
+  <!-- HERO -->
+  <header class="home-hero">
+    <h1 class="home-title">WHAT'S YOUR <span class="title-accent">MOOD?</span></h1>
+    <p class="home-subtitle">Tell us how you feel — we'll find the perfect film.</p>
+  </header>
 
-            <!-- SEARCH ROW: [input 😊] [Search] [🎲] [⚙️ Filters] -->
-            <div class="search-container">
-                <div class="search-input-wrapper">
-                    <span class="search-icon">🔍</span>
-                    <input
-                        type="text"
-                        id="moodInput"
-                        class="mood-input"
-                        placeholder="e.g. 'horrors of 90s' or 'dark sci-fi like Interstellar'"
-                        autocomplete="off"
-                    >
-                    <button class="mood-picker-btn" id="moodPickerBtn" title="Pick a mood">😊</button>
-                </div>
-                <button id="searchBtn" class="search-btn">Search</button>
-                <button id="surpriseBtn" class="surprise-btn" title="Surprise me!">🎲</button>
-                <button class="filters-btn" id="filtersBtn">⚙️ Filters</button>
+  <!-- MAIN -->
+  <main class="home-main">
+    <!-- SEARCH -->
+    <section class="search-section">
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="mood-input" placeholder="e.g. 'horrors of 90s' or 'dark sci-fi like Interstellar' 😊" id="moodInput">
+          <button class="mood-picker-btn" id="moodPickerBtn">😊</button>
+        </div>
+        <button class="search-btn" id="searchBtn">Search</button>
+        <button class="surprise-btn" id="surpriseBtn">🎲</button>
+        <button class="filters-btn" id="filtersBtn">⚙️ Filters</button>
+      </div>
+
+      <!-- MOOD PICKER POPUP -->
+      <div class="mood-picker-popup" id="moodPickerPopup">
+        <div class="mood-picker-arrow"></div>
+        <div class="mood-picker-grid">
+          <button class="mood-pick-btn" data-mood="funny"><span class="mood-emoji">😂</span><span class="mood-label">Funny</span></button>
+          <button class="mood-pick-btn" data-mood="sad"><span class="mood-emoji">😢</span><span class="mood-label">Sad</span></button>
+          <button class="mood-pick-btn" data-mood="scary"><span class="mood-emoji">😱</span><span class="mood-label">Scary</span></button>
+          <button class="mood-pick-btn" data-mood="action"><span class="mood-emoji">🔥</span><span class="mood-label">Action</span></button>
+          <button class="mood-pick-btn" data-mood="romance"><span class="mood-emoji">💕</span><span class="mood-label">Romance</span></button>
+          <button class="mood-pick-btn" data-mood="mind"><span class="mood-emoji">🤔</span><span class="mood-label">Mind-blowing</span></button>
+          <button class="mood-pick-btn" data-mood="family"><span class="mood-emoji">👨‍👩‍👧</span><span class="mood-label">Family</span></button>
+          <button class="mood-pick-btn" data-mood="mystery"><span class="mood-emoji">🕵️</span><span class="mood-label">Mystery</span></button>
+          <button class="mood-pick-btn" data-mood="inspiring"><span class="mood-emoji">💪</span><span class="mood-label">Inspiring</span></button>
+          <button class="mood-pick-btn" data-mood="animated"><span class="mood-emoji">🎨</span><span class="mood-label">Animated</span></button>
+          <button class="mood-pick-btn" data-mood="historical"><span class="mood-emoji">🏛️</span><span class="mood-label">Historical</span></button>
+          <button class="mood-pick-btn" data-mood="musical"><span class="mood-emoji">🎵</span><span class="mood-label">Musical</span></button>
+        </div>
+      </div>
+
+      <!-- REGION ROW -->
+      <div class="region-row">
+        <span class="region-label">🌍 Streaming region:</span>
+        <select class="country-select" id="countrySelect">
+          <option value="US">🇺🇸 United States</option>
+          <option value="CA">🇨 Canada</option>
+          <option value="GB">🇬🇧 United Kingdom</option>
+          <option value="DE">🇩🇪 Germany</option>
+          <option value="FR">🇫🇷 France</option>
+          <option value="IT">🇮🇹 Italy</option>
+          <option value="ES">🇪🇸 Spain</option>
+          <option value="NL">🇳🇱 Netherlands</option>
+          <option value="UA">🇺🇦 Ukraine</option>
+        </select>
+      </div>
+
+      <!-- FILTERS PANEL -->
+      <div class="filters-panel" id="filtersPanel">
+        <div class="filters-panel-inner">
+          <div class="filter-group">
+            <span class="filter-group-label">Content type</span>
+            <div class="content-tabs">
+              <button class="tab active" data-type="movie">🎬 Movies</button>
+              <button class="tab" data-type="tv">📺 Series</button>
+              <button class="tab" data-type="documentary">🎥 Documentary</button>
             </div>
+          </div>
+          <div class="filter-group">
+            <span class="filter-group-label">Options</span>
+            <label class="anime-toggle">
+              <input type="checkbox" id="animeToggle">
+              🎌 Include Anime
+            </label>
+          </div>
+        </div>
+      </div>
 
-            <!-- REGION ROW — centered, clean -->
-            <div class="region-row">
-                <span class="region-detected" id="regionDetected"></span>
-                <label class="region-label" for="countrySelect">🌍 Streaming region:</label>
-                <select id="countrySelect" class="country-select">
-                    <option value="US">🇺🇸 United States</option>
-                    <option value="CA">🇨🇦 Canada</option>
-                    <option value="GB">🇬🇧 United Kingdom</option>
-                    <option value="DE">🇩🇪 Germany</option>
-                    <option value="FR">🇫🇷 France</option>
-                    <option value="IT">🇮🇹 Italy</option>
-                    <option value="ES">🇪🇸 Spain</option>
-                    <option value="NL">🇳🇱 Netherlands</option>
-                    <option value="BE">🇧🇪 Belgium</option>
-                    <option value="AT">🇦🇹 Austria</option>
-                    <option value="CH">🇨🇭 Switzerland</option>
-                    <option value="SE">🇸🇪 Sweden</option>
-                    <option value="NO">🇳🇴 Norway</option>
-                    <option value="DK">🇩🇰 Denmark</option>
-                    <option value="FI">🇫🇮 Finland</option>
-                    <option value="PL">🇵🇱 Poland</option>
-                    <option value="PT">🇵🇹 Portugal</option>
-                    <option value="IE">🇮🇪 Ireland</option>
-                    <option value="CZ">🇨🇿 Czech Republic</option>
-                    <option value="GR">🇬🇷 Greece</option>
-                    <option value="UA">🇺🇦 Ukraine</option>
-                </select>
-            </div>
+      <!-- MOOD BUTTONS -->
+      <div class="mood-buttons">
+        <button class="mood-btn" data-mood="funny">😂 Funny</button>
+        <button class="mood-btn" data-mood="sad">😢 Sad</button>
+        <button class="mood-btn" data-mood="scary">😱 Scary</button>
+        <button class="mood-btn" data-mood="action">🔥 Action</button>
+        <button class="mood-btn" data-mood="romance">💕 Romance</button>
+        <button class="mood-btn" data-mood="mind">🤔 Mind-blowing</button>
+        <button class="mood-btn" data-mood="family">👨‍‍👧 Family</button>
+        <button class="mood-btn" data-mood="mystery">🕵️ Mystery</button>
+        <button class="mood-btn" data-mood="inspiring">💪 Inspiring</button>
+        <button class="mood-btn" data-mood="animated">🎨 Animated</button>
+      </div>
+    </section>
 
-            <!-- MOOD PICKER POPUP -->
-            <div class="mood-picker-popup" id="moodPickerPopup">
-                <div class="mood-picker-arrow"></div>
-                <div class="mood-picker-grid">
-                    <button class="mood-pick-btn" data-mood="funny comedy for evening"><span class="mood-emoji">😂</span><span class="mood-label">Funny</span></button>
-                    <button class="mood-pick-btn" data-mood="sad emotional drama"><span class="mood-emoji">😢</span><span class="mood-label">Sad</span></button>
-                    <button class="mood-pick-btn" data-mood="scary horror thriller"><span class="mood-emoji">😱</span><span class="mood-label">Scary</span></button>
-                    <button class="mood-pick-btn" data-mood="action adventure adrenaline"><span class="mood-emoji">🔥</span><span class="mood-label">Action</span></button>
-                    <button class="mood-pick-btn" data-mood="romantic love story"><span class="mood-emoji">💕</span><span class="mood-label">Romance</span></button>
-                    <button class="mood-pick-btn" data-mood="mind blowing twist ending"><span class="mood-emoji">🤔</span><span class="mood-label">Mind-blowing</span></button>
-                    <button class="mood-pick-btn" data-mood="family fun kids"><span class="mood-emoji">👨‍👩‍👧</span><span class="mood-label">Family</span></button>
-                    <button class="mood-pick-btn" data-mood="dark crime mystery"><span class="mood-emoji">🕵️</span><span class="mood-label">Mystery</span></button>
-                    <button class="mood-pick-btn" data-mood="inspiring motivational biography"><span class="mood-emoji">💪</span><span class="mood-label">Inspiring</span></button>
-                    <button class="mood-pick-btn" data-mood="animated fun colorful cartoon"><span class="mood-emoji">🎨</span><span class="mood-label">Animated</span></button>
-                    <button class="mood-pick-btn" data-mood="historical epic period drama"><span class="mood-emoji">🏛️</span><span class="mood-label">Historical</span></button>
-                    <button class="mood-pick-btn" data-mood="musical concert performance song"><span class="mood-emoji">🎵</span><span class="mood-label">Musical</span></button>
-                </div>
-            </div>
+    <!-- RESULTS -->
+    <section class="results-section">
+      <div class="movies-grid" id="moviesGrid">
+        <div class="welcome-message">
+          <p class="example-text">Try: "horrors of 90s" · "80s action" · "dark sci-fi like Interstellar"</p>
+        </div>
+      </div>
+      <button class="load-more-btn" id="loadMoreBtn" style="display: none;">Load More</button>
+    </section>
+  </main>
 
-            <!-- FILTERS PANEL -->
-            <div class="filters-panel" id="filtersPanel">
-                <div class="filters-panel-inner">
-                    <div class="filter-group">
-                        <span class="filter-group-label">Content type</span>
-                        <div class="content-tabs">
-                            <button class="tab active" data-type="movie">🎬 Movies</button>
-                            <button class="tab" data-type="tv">📺 Series</button>
-                            <button class="tab" data-type="documentary">🎥 Documentary</button>
-                        </div>
-                    </div>
-                    <div class="filter-group">
-                        <span class="filter-group-label">Options</span>
-                        <label class="anime-toggle">
-                            <input type="checkbox" id="animeToggle">
-                            <span>🎌 Include Anime</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
+  <!-- FOOTER -->
+  <footer class="home-footer">
+    <p>Powered by TMDB API</p>
+  </footer>
 
-        </section>
+  <!-- THEME TOGGLE SCRIPT -->
+  <script>
+    // Theme Toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const root = document.documentElement;
+    
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'light') {
+      root.setAttribute('data-theme', 'light');
+    } else if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+      root.setAttribute('data-theme', 'dark');
+    }
+    
+    themeToggle?.addEventListener('click', () => {
+      const currentTheme = root.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    });
 
-        <!-- RESULTS -->
-        <section class="results-section" id="resultsSection">
-            <div class="error-message" id="errorMessage" style="display: none;"></div>
-            <div class="movies-grid" id="moviesGrid">
-                <div class="welcome-message">
-                    <p class="example-text">Try: "horrors of 90s" · "80s action" · "dark sci-fi like Interstellar"</p>
-                </div>
-            </div>
-        </section>
-    </main>
+    // Mood Picker
+    const moodPickerBtn = document.getElementById('moodPickerBtn');
+    const moodPickerPopup = document.getElementById('moodPickerPopup');
+    const moodInput = document.getElementById('moodInput');
+    
+    moodPickerBtn?.addEventListener('click', () => {
+      moodPickerPopup?.classList.toggle('open');
+      moodPickerBtn?.classList.toggle('active');
+    });
 
-    <footer class="home-footer">
-        <p>Powered by TMDB API</p>
-    </footer>
+    document.querySelectorAll('.mood-pick-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mood = btn.dataset.mood;
+        moodInput.value = mood;
+        moodPickerPopup?.classList.remove('open');
+        moodPickerBtn?.classList.remove('active');
+      });
+    });
 
-    <script src="script.js"></script>
+    // Close popup on outside click
+    document.addEventListener('click', (e) => {
+      if (!moodPickerPopup?.contains(e.target) && e.target !== moodPickerBtn) {
+        moodPickerPopup?.classList.remove('open');
+        moodPickerBtn?.classList.remove('active');
+      }
+    });
+
+    // Filters Toggle
+    const filtersBtn = document.getElementById('filtersBtn');
+    const filtersPanel = document.getElementById('filtersPanel');
+    
+    filtersBtn?.addEventListener('click', () => {
+      filtersPanel?.classList.toggle('open');
+      filtersBtn?.classList.toggle('active');
+    });
+
+    // Content Type Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+
+    // Mood Buttons
+    document.querySelectorAll('.mood-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        moodInput.value = btn.dataset.mood;
+      });
+    });
+  </script>
 </body>
 </html>

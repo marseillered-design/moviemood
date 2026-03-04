@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Favorites — MovieMood</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body class="home-body">
-
+  <!-- Background Effects -->
   <div class="bg-orbs">
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
@@ -17,51 +16,70 @@
   <div class="noise-overlay"></div>
 
   <!-- NAV -->
-    <a href="/" class="nav-logo">MovieMood</a>
-    <a href="favorites.html" class="nav-favorites" style="color:var(--neon);border-color:rgba(192,132,252,0.3)">❤️ Favorites</a>
   <nav class="home-nav">
-  <div class="nav-logo">MOVIEMOOD</div>
-  <div>
-    <a href="favorites.html" class="nav-favorites">⭐ Favorites</a>
-    <!-- ВСТАВЬ КНОПКУ СЮДА: -->
-    <button id="theme-toggle" class="theme-toggle" aria-label="Переключить тему">
-      <span class="icon-sun">☀️</span>
-      <span class="icon-moon">🌙</span>
-    </button>
-  </div>
-</nav> 
+    <div class="nav-logo">MOVIEMOOD</div>
+    <div>
+      <a href="index.html" class="nav-favorites">🏠 Home</a>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Переключить тему">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+    </div>
   </nav>
 
   <!-- HEADER -->
-  <header class="fav-header">
-    <h1 class="home-title" style="font-size: clamp(3rem, 8vw, 6rem)">My <span class="title-accent">Favorites</span></h1>
+  <header class="page-header">
+    <h1 class="page-title">My Favorites</h1>
     <p class="fav-count" id="favCount"></p>
   </header>
 
+  <!-- MAIN -->
   <main class="home-main">
-
     <!-- EMPTY STATE -->
-    <div class="fav-empty" id="emptyState" style="display:none">
+    <div class="fav-empty" id="emptyState" style="display: none;">
       <div class="fav-empty-icon">🎬</div>
       <h2>No favorites yet</h2>
       <p>Explore movies and hit ❤️ to save them here</p>
-      <a href="/" class="btn-discover">Discover Movies</a>
+      <a href="index.html" class="btn-discover">Discover Movies</a>
     </div>
 
-    <!-- GRID -->
+    <!-- FAVORITES GRID -->
     <div class="fav-grid" id="favoritesGrid"></div>
 
     <!-- CLEAR ALL -->
-    <div class="fav-actions" id="favActions" style="display:none">
+    <div class="fav-actions" id="favActions" style="display: none;">
       <button class="btn-clear-all" id="clearAllBtn">🗑️ Clear all favorites</button>
     </div>
-
   </main>
 
+  <!-- FOOTER -->
   <footer class="home-footer">
     <p>Powered by TMDB API</p>
   </footer>
 
+  <!-- THEME TOGGLE SCRIPT -->
+  <script>
+    const themeToggle = document.getElementById('theme-toggle');
+    const root = document.documentElement;
+    
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'light') {
+      root.setAttribute('data-theme', 'light');
+    } else if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+      root.setAttribute('data-theme', 'dark');
+    }
+    
+    themeToggle?.addEventListener('click', () => {
+      const currentTheme = root.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    });
+  </script>
+
+  <!-- FAVORITES SCRIPT -->
   <script src="favorites.js"></script>
 </body>
 </html>

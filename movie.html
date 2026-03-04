@@ -1,39 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MovieMood</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body class="movie-body">
+  <!-- NAV -->
+  <nav class="movie-nav">
+    <a href="index.html" class="nav-logo">MovieMood</a>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">🏠 Home</a>
+      <a href="favorites.html" class="nav-link">❤️ Favorites</a>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Переключить тему">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+    </div>
+  </nav>
 
   <!-- HERO SECTION -->
-  <div class="movie-hero-section" id="heroSection">
+  <section class="movie-hero-section">
     <div class="hero-backdrop" id="heroBackdrop"></div>
     <div class="hero-video-wrapper" id="heroVideoWrapper"></div>
     <div class="hero-gradient"></div>
-
-    <!-- NAV -->
-      <a href="/" class="nav-logo">MovieMood</a>
-      <div class="nav-links">
-        <a href="favorites.html" class="nav-link">❤️ Favorites</a>
-    <nav class="home-nav">
-  <div class="nav-logo">MOVIEMOOD</div>
-  <div>
-    <a href="favorites.html" class="nav-favorites">⭐ Favorites</a>
-    <!-- ВСТАВЬ КНОПКУ СЮДА: -->
-    <button id="theme-toggle" class="theme-toggle" aria-label="Переключить тему">
-      <span class="icon-sun">☀️</span>
-      <span class="icon-moon">🌙</span>
-    </button>
-  </div>
-</nav>
-      </div>
-    </nav>
-
-    <!-- HERO CONTENT -->
     <div class="hero-content">
       <div class="hero-left">
         <div class="hero-badges" id="heroBadges"></div>
@@ -43,59 +34,53 @@
         <div class="hero-actions">
           <button class="btn-play" id="btnPlayTrailer">▶ Play Trailer</button>
           <button class="btn-fav" id="btnFavorite">🤍 Add to Favorites</button>
-          <a class="btn-imdb" id="imdbLink" target="_blank" style="display:none">🎬 IMDb</a>
+          <a href="#" class="btn-imdb" id="imdbLink" style="display: none;">🎬 IMDb</a>
         </div>
         <div class="hero-providers" id="watchProviders"></div>
       </div>
     </div>
-
-    <!-- MUTE BUTTON -->
-    <button class="mute-btn" id="muteBtn" style="display:none">🔇</button>
-  </div>
+    <button class="mute-btn" id="muteBtn" style="display: none;">🔇</button>
+  </section>
 
   <!-- DETAILS SECTION -->
-  <div class="movie-details-section">
+  <section class="movie-details-section">
     <div class="details-grid">
-
-      <!-- POSTER -->
       <div class="details-poster">
-        <img id="moviePoster" src="" alt="">
+        <img id="moviePoster" src="" alt="Movie Poster">
       </div>
-
-      <!-- INFO -->
       <div class="details-info">
         <h2 class="details-title" id="detailsTitle"></h2>
-
+        
         <div class="info-row">
           <span class="info-label">Director</span>
           <div id="movieDirector"></div>
         </div>
-
+        
         <div class="info-row">
           <span class="info-label">Cast</span>
           <div class="cast-scroll" id="movieCast"></div>
         </div>
-
+        
         <div class="info-row">
           <span class="info-label">Genres</span>
           <div class="genre-tags" id="movieGenres"></div>
         </div>
-
+        
         <div class="info-row">
           <span class="info-label">Rating</span>
           <div class="ratings-row">
-            <span class="rating-badge tmdb-badge">⭐ <strong id="tmdbRating"></strong> TMDB</span>
+            <span class="rating-badge tmdb-badge">⭐ <span id="tmdbRating"></span> TMDB</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- SIMILAR MOVIES -->
-    <div class="similar-section" id="similarSection" style="display:none">
+    <!-- SIMILAR -->
+    <section class="similar-section" id="similarSection" style="display: none;">
       <h2 class="section-title">More Like This</h2>
       <div class="similar-grid" id="similarGrid"></div>
-    </div>
-  </div>
+    </section>
+  </section>
 
   <!-- TRAILER MODAL -->
   <div class="trailer-modal" id="trailerModal">
@@ -105,6 +90,29 @@
     </div>
   </div>
 
+  <!-- THEME TOGGLE SCRIPT -->
+  <script>
+    const themeToggle = document.getElementById('theme-toggle');
+    const root = document.documentElement;
+    
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'light') {
+      root.setAttribute('data-theme', 'light');
+    } else if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+      root.setAttribute('data-theme', 'dark');
+    }
+    
+    themeToggle?.addEventListener('click', () => {
+      const currentTheme = root.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    });
+  </script>
+
+  <!-- MOVIE SCRIPT -->
   <script src="movie.js"></script>
 </body>
 </html>
