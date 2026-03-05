@@ -1,4 +1,4 @@
-const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
+﻿const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 const TMDB_PROFILE_URL = 'https://image.tmdb.org/t/p/h632';
@@ -14,53 +14,46 @@ async function loadPerson() {
     fetch(`${TMDB_BASE_URL}/person/${personId}/combined_credits?api_key=${TMDB_API_KEY}`).then(r => r.json()),
   ]);
 
-  document.title = `${details.name} — MovieMood`;
+  document.title = `${details.name} - MovieMood`;
 
-  // Photo
   if (details.profile_path) {
     const photoEl = document.getElementById('personPhoto');
     photoEl.src = `${TMDB_PROFILE_URL}${details.profile_path}`;
 
-    // Blurred background
     document.getElementById('personHeroBlur').style.backgroundImage =
       `url(${TMDB_PROFILE_URL}${details.profile_path})`;
   }
 
-  // Name
   document.getElementById('personName').textContent = details.name;
 
-  // Badges — department/known for
   const dept = details.known_for_department || '';
-  const deptEmoji = dept === 'Acting' ? '🎭' : dept === 'Directing' ? '🎬' : dept === 'Writing' ? '✍️' : '🎥';
   document.getElementById('personBadges').innerHTML = dept
-    ? `<span class="person-badge">${deptEmoji} ${dept}</span>`
+    ? `<span class="person-badge">${dept}</span>`
     : '';
 
-  // Details row
   const detailParts = [];
   if (details.birthday) {
     const age = details.deathday
       ? null
       : Math.floor((Date.now() - new Date(details.birthday)) / (365.25 * 24 * 3600 * 1000));
     const born = new Date(details.birthday).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    detailParts.push(`🎂 Born ${born}${age ? ` · ${age} years old` : ''}`);
+    detailParts.push(`Born ${born}${age ? ` (${age} years old)` : ''}`);
   }
   if (details.deathday) {
-    detailParts.push(`✝️ ${details.deathday}`);
+    detailParts.push(`Died: ${details.deathday}`);
   }
   if (details.place_of_birth) {
-    detailParts.push(`📍 ${details.place_of_birth}`);
+    detailParts.push(`Place: ${details.place_of_birth}`);
   }
   document.getElementById('personDetails').innerHTML = detailParts
     .map(p => `<span class="person-detail-item">${p}</span>`)
     .join('');
 
-  // Bio — truncate with read more
   const bio = details.biography || '';
   const bioEl = document.getElementById('personBio');
   if (bio.length > 400) {
     const short = bio.slice(0, 400);
-    bioEl.innerHTML = `${short}… <button class="bio-read-more" id="bioBtn">Read more</button>`;
+    bioEl.innerHTML = `${short}... <button class="bio-read-more" id="bioBtn">Read more</button>`;
     document.getElementById('bioBtn').addEventListener('click', () => {
       bioEl.innerHTML = bio;
     });
@@ -68,7 +61,6 @@ async function loadPerson() {
     bioEl.textContent = bio;
   }
 
-  // Filmography
   const movies = [...(credits.cast || []), ...(credits.crew || [])]
     .filter((m, index, self) =>
       m.poster_path && self.findIndex(x => x.id === m.id) === index
@@ -91,7 +83,7 @@ async function loadPerson() {
       <div class="card-poster-wrapper">
         <img src="${TMDB_IMAGE_BASE_URL}${movie.poster_path}" class="movie-poster" loading="lazy">
         <div class="card-overlay">
-          ${rating ? `<span class="card-rating">⭐ ${rating}</span>` : ''}
+          ${rating ? `<span class="card-rating">Rating ${rating}</span>` : ''}
         </div>
       </div>
       <div class="card-info">

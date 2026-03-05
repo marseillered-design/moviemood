@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap');
 
 /* ==================== RESET ==================== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 /* ==================== CSS VARIABLES (THEMES) ==================== */
 :root {
-  /* 🌞 LIGHT THEME (Default) */
+  /* ðŸŒž LIGHT THEME (Default) */
   --bg: #f8f9ff;
   --bg2: #ffffff;
   --bg3: #edeef5;
@@ -27,7 +27,7 @@
 }
 
 [data-theme="dark"] {
-  /* 🌙 DARK THEME */
+  /* ðŸŒ™ DARK THEME */
   --bg: #0d0d14;
   --bg2: #12121e;
   --bg3: #1a1a2e;
@@ -1218,8 +1218,127 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
   to { opacity: 0; transform: scale(0.9); }
 }
 
+
+/* ==================== PERSON PAGE ==================== */
+.person-hero-section {
+  position: relative;
+  min-height: 560px;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 0 auto 36px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+}
+.person-hero-blur {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center top;
+  filter: blur(14px) saturate(0.8);
+  transform: scale(1.08);
+  opacity: 0.35;
+}
+.person-hero-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 32%, rgba(124, 58, 237, 0.35), transparent 45%),
+    linear-gradient(to top, rgba(8, 8, 14, 0.92), rgba(8, 8, 14, 0.72) 48%, rgba(8, 8, 14, 0.55));
+}
+.person-hero-content {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 28px;
+  align-items: end;
+  padding: 52px;
+}
+.person-photo-wrapper {
+  width: 100%;
+  max-width: 280px;
+}
+.person-photo {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+}
+.person-meta {
+  max-width: 820px;
+}
+.person-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.person-badge {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(124, 58, 237, 0.15);
+  color: var(--neon);
+  font-size: 0.8rem;
+}
+.person-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.6rem, 7vw, 5.2rem);
+  letter-spacing: 2px;
+  line-height: 0.95;
+  margin-bottom: 12px;
+}
+.person-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.person-detail-item {
+  font-size: 0.86rem;
+  color: var(--text-dim);
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+}
+.person-bio {
+  font-size: 0.96rem;
+  line-height: 1.75;
+  color: var(--text);
+  opacity: 0.9;
+  max-width: 68ch;
+}
+.bio-read-more {
+  border: none;
+  background: none;
+  color: var(--neon);
+  font-weight: 600;
+  cursor: pointer;
+}
+.person-films-section {
+  margin-top: 8px;
+}
+.section-heading {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 2px;
+  margin-bottom: 18px;
+  background: linear-gradient(135deg, var(--text), var(--neon));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 768px) {
+  .person-hero-section { min-height: auto; }
+  .person-hero-content { grid-template-columns: 1fr; padding: 20px; gap: 16px; }
+  .person-photo-wrapper { max-width: 180px; margin: 0 auto; }
+  .person-meta { text-align: center; }
+  .person-badges, .person-details { justify-content: center; }
   .home-nav { padding: 16px 20px; }
   .nav-logo { font-size: 1.6rem; }
   .nav-favorites { font-size: 0.8rem; padding: 6px 12px; }
@@ -1257,4 +1376,4 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
   .movie-nav { padding-top: max(12px, env(safe-area-inset-top)); }
   .home-footer { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
 }
-```
+

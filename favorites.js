@@ -1,4 +1,4 @@
-const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
+﻿const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
@@ -18,9 +18,14 @@ async function enrichMovie(movie) {
   }
 }
 
-function removeFavorite(id) {
+function normalizeMediaType(type) {
+  return type === 'tv' ? 'tv' : 'movie';
+}
+
+function removeFavorite(id, mediaType = 'movie') {
+  const normalizedType = normalizeMediaType(mediaType);
   let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-  favorites = favorites.filter(f => f.id !== id);
+  favorites = favorites.filter(f => !(f.id === id && normalizeMediaType(f.media_type) === normalizedType));
   localStorage.setItem('favorites', JSON.stringify(favorites));
 }
 
@@ -46,16 +51,17 @@ function createCard(movie) {
     ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}`
     : '';
 
-  const typeLabel = movie.media_type === 'tv' ? '📺 Series' : '🎬 Movie';
-  const rating = movie.rating ? `⭐ ${movie.rating}` : '';
+  const mediaType = normalizeMediaType(movie.media_type);
+  const typeLabel = mediaType === 'tv' ? 'Series' : 'Movie';
+  const rating = movie.rating ? `Rating ${movie.rating}` : '';
   const year = movie.year || '';
-  const genres = movie.genres?.join(' · ') || '';
+  const genres = movie.genres?.join(' / ') || '';
 
   card.innerHTML = `
     <div class="fav-card-poster">
       <img src="${poster}" alt="${movie.title}" loading="lazy">
       <div class="fav-card-overlay">
-        <button class="fav-remove-btn" title="Remove from favorites">✕ Remove</button>
+        <button class="fav-remove-btn" title="Remove from favorites">Remove</button>
       </div>
       ${rating ? `<span class="fav-rating">${rating}</span>` : ''}
     </div>
@@ -71,7 +77,7 @@ function createCard(movie) {
 
   card.querySelector('.fav-remove-btn').addEventListener('click', e => {
     e.stopPropagation();
-    removeFavorite(movie.id);
+    removeFavorite(movie.id, mediaType);
     card.style.animation = 'favCardOut 0.3s ease forwards';
     setTimeout(() => {
       card.remove();
@@ -84,7 +90,7 @@ function createCard(movie) {
   });
 
   card.addEventListener('click', () => {
-    window.open(`movie.html?id=${movie.id}&type=${movie.media_type || 'movie'}`, '_blank');
+    window.open(`movie.html?id=${movie.id}&type=${mediaType}`, '_blank');
   });
 
   return card;
@@ -141,3 +147,7 @@ async function loadFavorites() {
 }
 
 loadFavorites();
+
+
+
+

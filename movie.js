@@ -1,4 +1,4 @@
-const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
+﻿const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 const TMDB_BACKDROP_URL = 'https://image.tmdb.org/t/p/original';
@@ -24,7 +24,7 @@ const title = details.title || details.name;
 const year = (details.release_date || details.first_air_date || '').slice(0, 4);
 const runtime = details.runtime ? `${details.runtime} min` : details.episode_run_time?.[0] ? `${details.episode_run_time[0]} min/ep` : '';
 const rating = details.vote_average?.toFixed(1);
-document.title = `${title} — MovieMood`;
+document.title = `${title} - MovieMood`;
 // HERO
 if (details.backdrop_path) {
 document.getElementById('heroBackdrop').style.backgroundImage = `url(${TMDB_BACKDROP_URL}${details.backdrop_path})`;
@@ -34,8 +34,8 @@ document.getElementById('detailsTitle').textContent = title;
 document.getElementById('movieOverview').textContent = details.overview;
 document.getElementById('tmdbRating').textContent = rating;
 // Meta
-const metaParts = [year, runtime, rating ? `⭐ ${rating}` : ''].filter(Boolean);
-document.getElementById('heroMeta').innerHTML = metaParts.map(p => `<span>${p}</span>`).join('·');
+const metaParts = [year, runtime, rating ? `Rating ${rating}` : ''].filter(Boolean);
+document.getElementById('heroMeta').innerHTML = metaParts.map(p => `<span>${p}</span>`).join(' · ');
 // Badges (genres)
 const badges = details.genres?.slice(0, 3).map(g => `<span class="badge">${g.name}</span>`).join('') || '';
 document.getElementById('heroBadges').innerHTML = badges;
@@ -79,9 +79,9 @@ document.getElementById('movieCast').innerHTML = castHTML;
 const regionData = providers.results?.[region] || providers.results?.US;
 if (regionData) {
 const types = [
-{ key: 'flatrate', label: '▶ Stream' },
-{ key: 'rent',  label: '💲 Rent' },
-{ key: 'buy', label: '🛒 Buy' },
+{ key: 'flatrate', label: 'Stream' },
+{ key: 'rent',  label: 'Rent' },
+{ key: 'buy', label: 'Buy' },
 ];
 let html = '';
 types.forEach(({ key, label }) => {
@@ -125,7 +125,7 @@ const key = trailerKey;
 const muteParam = isMuted ? 1 : 0;
 iframe.src = `https://www.youtube.com/embed/${key}?autoplay=1&mute=${muteParam}&controls=0&loop=1&playlist=${key}&showinfo=0&rel=0&modestbranding=1`;
 }
-btn.textContent = isMuted ? '🔇' : '🔊';
+btn.textContent = isMuted ? 'Muted' : 'Sound on';
 }
 
 function openTrailerModal(key) {
@@ -144,25 +144,26 @@ document.body.style.overflow = '';
 
 function setupFavoriteBtn(details) {
 const btn = document.getElementById('btnFavorite');
-const id = parseInt(movieId);
+const id = parseInt(movieId, 10);
+const normalizedType = mediaType === 'tv' ? 'tv' : 'movie';
 const isFav = () => {
 const favs = JSON.parse(localStorage.getItem('favorites') || '[]');
-return favs.some(f => f.id === id);
+return favs.some(f => f.id === id && (f.media_type === normalizedType || (!f.media_type && normalizedType === 'movie')));
 };
 const update = () => {
-btn.textContent = isFav() ? '❤️ In Favorites' : '🤍 Add to Favorites';
+btn.textContent = isFav() ? 'In Favorites' : 'Add to Favorites';
 };
 update();
 btn.addEventListener('click', () => {
 let favs = JSON.parse(localStorage.getItem('favorites') || '[]');
 if (isFav()) {
-favs = favs.filter(f => f.id !== id);
+favs = favs.filter(f => !(f.id === id && (f.media_type === normalizedType || (!f.media_type && normalizedType === 'movie'))));
 } else {
 favs.push({
 id,
 title: details.title || details.name,
 poster_path: details.poster_path,
-media_type: mediaType
+media_type: normalizedType
 });
 }
 localStorage.setItem('favorites', JSON.stringify(favs));
@@ -171,3 +172,5 @@ update();
 }
 
 loadMovie();
+
+

@@ -1,4 +1,4 @@
-// TMDB
+﻿// TMDB
 const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
@@ -26,7 +26,7 @@ async function detectRegion() {
       countrySelect.value = country;
       const detected = document.getElementById('regionDetected');
       if (detected) {
-        detected.textContent = '📍 Auto-detected';
+        detected.textContent = 'Auto-detected';
         detected.style.opacity = '1';
         setTimeout(() => { detected.style.opacity = '0'; }, 3000);
       }
@@ -60,9 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
   document.getElementById('surpriseBtn').addEventListener('click', handleSurprise);
   
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // MOOD PICKER POPUP
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const moodPickerBtn = document.getElementById('moodPickerBtn');
   const moodPickerPopup = document.getElementById('moodPickerPopup');
   
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
       moodPickerPopup.classList.remove('open');
       moodPickerBtn.classList.remove('active');
       
-      // 🎲 RANDOM PAGE FOR VARIETY (1-10) - don't reset in handleSearch
+      // ðŸŽ² RANDOM PAGE FOR VARIETY (1-10) - don't reset in handleSearch
       currentPage = Math.floor(Math.random() * 10) + 1;
       
       handleSearch(false); // false = don't reset page
@@ -240,8 +240,8 @@ async function fetchByAiData(aiData, page = 1) {
           : `&first_air_date.lte=${aiData.year_to}-12-31`;
       }
       
-      // When filtering by era: sort by rating → best films of that period come first
-      // Without years: sort by popularity → well-known modern films first
+      // When filtering by era: sort by rating â†’ best films of that period come first
+      // Without years: sort by popularity â†’ well-known modern films first
       const sortBy = hasYears ? 'vote_average.desc' : 'popularity.desc';
       const minVotes = hasYears ? 200 : 50;
       
@@ -310,25 +310,31 @@ function removeLoadMoreBtn() {
   if (btn) btn.remove();
 }
 
+function normalizeMediaType(type) {
+  return type === 'tv' ? 'tv' : 'movie';
+}
+
 function toggleFavorite(movie) {
   let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-  const exists = favorites.find(f => f.id === movie.id);
+  const mediaType = normalizeMediaType(movie.media_type || currentType);
+  const exists = favorites.find(f => f.id === movie.id && normalizeMediaType(f.media_type) === mediaType);
   if (exists) {
-    favorites = favorites.filter(f => f.id !== movie.id);
+    favorites = favorites.filter(f => !(f.id === movie.id && normalizeMediaType(f.media_type) === mediaType));
   } else {
     favorites.push({
       id: movie.id,
       title: movie.title || movie.name,
       poster_path: movie.poster_path,
-      media_type: currentType
+      media_type: mediaType
     });
   }
   localStorage.setItem('favorites', JSON.stringify(favorites));
 }
 
-function isFavorite(id) {
+function isFavorite(id, mediaType = 'movie') {
   const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-  return favorites.some(f => f.id === id);
+  const normalizedType = normalizeMediaType(mediaType);
+  return favorites.some(f => f.id === id && normalizeMediaType(f.media_type) === normalizedType);
 }
 
 function createCard(movie) {
@@ -336,12 +342,13 @@ function createCard(movie) {
   card.className = 'movie-card';
   const poster = movie.poster_path ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}` : '';
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '';
-  const favIcon = isFavorite(movie.id) ? '❤️' : '🤍';
+  const cardMediaType = normalizeMediaType(movie.media_type || currentType);
+  const favIcon = isFavorite(movie.id, cardMediaType) ? 'In Favorites' : 'Add';
   
   card.innerHTML = `
     <div class="card-poster-wrapper">
       <img src="${poster}" class="movie-poster" loading="lazy">
-      <div class="card-overlay">${rating ? `⭐ ${rating}` : ''}</div>
+      <div class="card-overlay">${rating ? `Rating ${rating}` : ''}</div>
     </div>
     <div class="card-info">
       <h3 class="card-title">${movie.title || movie.name}</h3>
@@ -353,12 +360,17 @@ function createCard(movie) {
   card.querySelector('.fav-btn').addEventListener('click', e => {
     e.stopPropagation();
     toggleFavorite(movie);
-    e.target.textContent = isFavorite(movie.id) ? '❤️' : '🤍';
+    e.target.textContent = isFavorite(movie.id, cardMediaType) ? 'In Favorites' : 'Add';
   });
   
   card.addEventListener('click', () => {
-    window.open(`movie.html?id=${movie.id}&type=${currentType}&region=${currentRegion}`, '_blank');
+    window.open(`movie.html?id=${movie.id}&type=${cardMediaType}&region=${currentRegion}`, '_blank');
   });
   
   return card;
 }
+
+
+
+
+
