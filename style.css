@@ -137,7 +137,11 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
 }
+.nav-logo:hover { opacity: 0.8; }
 .nav-favorites {
   color: var(--text-dim);
   text-decoration: none;
@@ -663,7 +667,10 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
 }
+.movie-nav .nav-logo:hover { opacity: 0.8; }
 .nav-links { display: flex; gap: 20px; align-items: center; }
 .nav-link {
   color: var(--text-dim);
