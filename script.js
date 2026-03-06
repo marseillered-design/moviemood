@@ -395,7 +395,7 @@ function createCard(movie) {
   card.innerHTML = `
     <div class="card-poster-wrapper">
       <img src="${poster}" class="movie-poster" loading="lazy">
-      <div class="card-overlay">${rating ? `<span class="tmdb-mini-score">${rating}</span>` : ''}</div>
+      ${rating ? `<span class="tmdb-mini-score card-score">${rating}</span>` : ''}<div class="card-overlay"></div>
     </div>
     <div class="card-info">
       <h3 class="card-title">${movie.title || movie.name}</h3>
@@ -416,6 +416,7 @@ function createCard(movie) {
 
   return card;
 }
+
 
 
 

@@ -552,6 +552,10 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
   object-fit: cover;
   background: var(--bg3);
 }
+.card-poster-wrapper {
+  position: relative;
+  overflow: hidden;
+}
 .card-overlay {
   position: absolute;
   inset: 0;
@@ -1464,3 +1468,12 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
   font-weight: 700;
   line-height: 1;
 }
+
+.card-score {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+}
+
+
