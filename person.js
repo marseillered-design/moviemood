@@ -6,6 +6,36 @@ const TMDB_PROFILE_URL = 'https://image.tmdb.org/t/p/h632';
 const params = new URLSearchParams(window.location.search);
 const personId = params.get('id');
 
+function normalizeMediaType(type) {
+  return type === 'tv' ? 'tv' : 'movie';
+}
+
+function isFavoriteItem(id, mediaType) {
+  const type = normalizeMediaType(mediaType);
+  const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+  return favorites.some(f => f.id === id && normalizeMediaType(f.media_type) === type);
+}
+
+function toggleFavoriteItem(item) {
+  const type = normalizeMediaType(item.media_type);
+  let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+  const exists = favorites.some(f => f.id === item.id && normalizeMediaType(f.media_type) === type);
+
+  if (exists) {
+    favorites = favorites.filter(f => !(f.id === item.id && normalizeMediaType(f.media_type) === type));
+  } else {
+    favorites.push({
+      id: item.id,
+      title: item.title || item.name,
+      poster_path: item.poster_path,
+      media_type: type
+    });
+  }
+
+  localStorage.setItem('favorites', JSON.stringify(favorites));
+  return !exists;
+}
+
 async function loadPerson() {
   if (!personId) return;
 
@@ -77,26 +107,43 @@ async function loadPerson() {
   movies.forEach(movie => {
     const card = document.createElement('div');
     card.className = 'movie-card';
+
     const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '';
     const role = movie.character || movie.job || '';
+    const cardType = normalizeMediaType(movie.media_type || (movie.first_air_date ? 'tv' : 'movie'));
+    const favIcon = isFavoriteItem(movie.id, cardType) ? '\u2764\uFE0F' : '\uD83E\uDD0D';
+
     card.innerHTML = `
       <div class="card-poster-wrapper">
         <img src="${TMDB_IMAGE_BASE_URL}${movie.poster_path}" class="movie-poster" loading="lazy">
-        ${rating ? `<span class="tmdb-mini-score card-score">${rating}</span>` : ''}<div class="card-overlay"></div>
+        ${rating ? `<span class="tmdb-mini-score card-score">${rating}</span>` : ''}
+        <button class="fav-btn">${favIcon}</button>
+        <div class="card-overlay"></div>
       </div>
       <div class="card-info">
         <h3 class="card-title">${movie.title || movie.name}</h3>
         <span class="card-year">${role ? role : (movie.release_date || movie.first_air_date || '').slice(0,4)}</span>
       </div>
     `;
-    card.addEventListener('click', () => {
-      window.open(`movie.html?id=${movie.id}&type=${movie.media_type}`, '_blank');
+
+    const favBtn = card.querySelector('.fav-btn');
+    favBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const nowFavorite = toggleFavoriteItem({
+        id: movie.id,
+        title: movie.title || movie.name,
+        poster_path: movie.poster_path,
+        media_type: cardType
+      });
+      favBtn.textContent = nowFavorite ? '\u2764\uFE0F' : '\uD83E\uDD0D';
     });
+
+    card.addEventListener('click', () => {
+      window.open(`movie.html?id=${movie.id}&type=${cardType}`, '_blank');
+    });
+
     grid.appendChild(card);
   });
 }
 
 loadPerson();
-
-
-

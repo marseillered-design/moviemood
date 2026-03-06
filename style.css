@@ -987,12 +987,12 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
 }
 .similar-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 18px;
 }
 .similar-card {
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   transition: all 0.2s;
   background: var(--card-bg);
@@ -1011,8 +1011,8 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
 }
 .similar-card span {
   display: block;
-  padding: 8px;
-  font-size: 0.75rem;
+  padding: 10px;
+  font-size: 0.82rem;
   color: var(--text-dim);
   text-align: center;
   white-space: nowrap;
@@ -1464,12 +1464,15 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
   align-items: center;
   padding: 4px 9px;
   border-radius: 999px;
-  background: rgba(1, 180, 228, 0.14);
-  border: 1px solid rgba(1, 180, 228, 0.45);
-  color: #01b4e4;
+  background: rgba(8, 10, 18, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  color: #f7fbff;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
 }
 
 .card-score {
@@ -1478,6 +1481,45 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
   left: 10px;
   z-index: 2;
 }
+
+
+
+
+.similar-poster-wrap {
+  position: relative;
+}
+
+.similar-fav-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  background: rgba(13,13,20,0.72);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s;
+}
+.similar-card:hover .similar-fav-btn { opacity: 1; }
+.similar-fav-btn:hover {
+  background: rgba(236, 72, 153, 0.3);
+  border-color: var(--pink);
+  transform: scale(1.08);
+}
+@media (hover: none) {
+  .similar-fav-btn { opacity: 1 !important; }
+}
+
+
+
+
 
 
 
