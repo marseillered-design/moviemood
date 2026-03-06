@@ -4,22 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MovieMood</title>
-  <link rel="stylesheet" href="style.css?v=20260306a">
+  <link rel="stylesheet" href="style.css?v=20260306c">
 </head>
 <body class="movie-body">
-  <!-- NAV -->
   <nav class="movie-nav">
     <a href="index.html" class="nav-logo">MovieMood</a>
     <div class="nav-links">
-      <a href="favorites.html" class="nav-link">â¤ï¸ Favorites</a>
-      <button id="theme-toggle" class="theme-toggle" aria-label="ÐŸÐµÑ€ÐµÐºÐ»ÑŽÑ‡Ð¸Ñ‚ÑŒ Ñ‚ÐµÐ¼Ñƒ">
-        <span class="icon-sun">â˜€ï¸</span>
-        <span class="icon-moon">ðŸŒ™</span>
+      <a href="favorites.html" class="nav-link">Favorites</a>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+        <span class="icon-sun">Sun</span>
+        <span class="icon-moon">Moon</span>
       </button>
     </div>
   </nav>
 
-  <!-- HERO SECTION -->
   <section class="movie-hero-section">
     <div class="hero-backdrop" id="heroBackdrop"></div>
     <div class="hero-video-wrapper" id="heroVideoWrapper"></div>
@@ -31,17 +29,16 @@
         <div class="hero-meta" id="heroMeta"></div>
         <p class="hero-overview" id="movieOverview"></p>
         <div class="hero-actions">
-          <button class="btn-play" id="btnPlayTrailer">â–¶ Play Trailer</button>
-          <button class="btn-fav" id="btnFavorite">ðŸ¤ Add to Favorites</button>
-          <a href="#" class="btn-imdb" id="imdbLink" style="display: none;">ðŸŽ¬ IMDb</a>
+          <button class="btn-play" id="btnPlayTrailer">Play Trailer</button>
+          <button class="btn-fav" id="btnFavorite">Add to Favorites</button>
+          <a href="#" class="btn-imdb" id="imdbLink" style="display: none;">IMDb</a>
         </div>
         <div class="hero-providers" id="watchProviders"></div>
       </div>
     </div>
-    <button class="mute-btn" id="muteBtn" style="display: none;">ðŸ”‡</button>
+    <button class="mute-btn" id="muteBtn" style="display: none;">Muted</button>
   </section>
 
-  <!-- DETAILS SECTION -->
   <section class="movie-details-section">
     <div class="details-grid">
       <div class="details-poster">
@@ -49,69 +46,66 @@
       </div>
       <div class="details-info">
         <h2 class="details-title" id="detailsTitle"></h2>
-        
+
         <div class="info-row">
           <span class="info-label">Director</span>
           <div id="movieDirector"></div>
         </div>
-        
+
         <div class="info-row">
           <span class="info-label">Cast</span>
           <div class="cast-scroll" id="movieCast"></div>
         </div>
-        
+
         <div class="info-row">
           <span class="info-label">Genres</span>
           <div class="genre-tags" id="movieGenres"></div>
         </div>
-        
+
         <div class="info-row">
           <span class="info-label">Rating</span>
           <div class="ratings-row">
-            <span class="rating-badge tmdb-badge">â­ <span id="tmdbRating"></span> TMDB</span>
+            <span class="rating-badge tmdb-badge">Rating <span id="tmdbRating"></span> TMDB</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- SIMILAR -->
     <section class="similar-section" id="similarSection" style="display: none;">
       <h2 class="section-title">More Like This</h2>
       <div class="similar-grid" id="similarGrid"></div>
     </section>
   </section>
 
-  <!-- TRAILER MODAL -->
   <div class="trailer-modal" id="trailerModal">
     <div class="trailer-modal-inner">
-      <button class="modal-close" id="modalClose">âœ•</button>
+      <button class="modal-close" id="modalClose">X</button>
       <div id="trailerContainer"></div>
     </div>
   </div>
 
-  <!-- THEME TOGGLE SCRIPT -->
   <script>
     const themeToggle = document.getElementById('theme-toggle');
     const root = document.documentElement;
-    
-    const savedTheme = localStorage.getItem('theme');
+
+    let savedTheme = null;
+    try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
+
     if (savedTheme === 'light') {
       root.setAttribute('data-theme', 'light');
     } else if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
       root.setAttribute('data-theme', 'dark');
     }
-    
+
     themeToggle?.addEventListener('click', () => {
       const currentTheme = root.getAttribute('data-theme');
       const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
       root.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
+      try { localStorage.setItem('theme', newTheme); } catch (e) {}
     });
   </script>
 
-  <!-- MOVIE SCRIPT -->
-  <script src="movie.js?v=20260306a"></script>
+  <script src="movie.js?v=20260306c"></script>
 </body>
 </html>
