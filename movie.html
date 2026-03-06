@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MovieMood</title>
-  <link rel="stylesheet" href="style.css?v=20260306c">
+  <link rel="stylesheet" href="style.css?v=20260306d">
 </head>
 <body class="movie-body">
   <nav class="movie-nav">
     <a href="index.html" class="nav-logo">MovieMood</a>
     <div class="nav-links">
-      <a href="favorites.html" class="nav-link">Favorites</a>
+      <a href="favorites.html" class="nav-link">&#x2764;&#xFE0F; Favorites</a>
       <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
-        <span class="icon-sun">Sun</span>
-        <span class="icon-moon">Moon</span>
+        <span class="icon-sun">&#x2600;&#xFE0F;</span>
+        <span class="icon-moon">&#x1F319;</span>
       </button>
     </div>
   </nav>
@@ -29,14 +29,14 @@
         <div class="hero-meta" id="heroMeta"></div>
         <p class="hero-overview" id="movieOverview"></p>
         <div class="hero-actions">
-          <button class="btn-play" id="btnPlayTrailer">Play Trailer</button>
-          <button class="btn-fav" id="btnFavorite">Add to Favorites</button>
-          <a href="#" class="btn-imdb" id="imdbLink" style="display: none;">IMDb</a>
+          <button class="btn-play" id="btnPlayTrailer">&#x25B6; Play Trailer</button>
+          <button class="btn-fav" id="btnFavorite">&#x1F90D; Add to Favorites</button>
+          <a href="#" class="btn-imdb" id="imdbLink" style="display: none;">&#x1F3AC; IMDb</a>
         </div>
         <div class="hero-providers" id="watchProviders"></div>
       </div>
     </div>
-    <button class="mute-btn" id="muteBtn" style="display: none;">Muted</button>
+    <button class="mute-btn" id="muteBtn" style="display: none;">&#x1F507;</button>
   </section>
 
   <section class="movie-details-section">
@@ -65,7 +65,7 @@
         <div class="info-row">
           <span class="info-label">Rating</span>
           <div class="ratings-row">
-            <span class="rating-badge tmdb-badge">Rating <span id="tmdbRating"></span> TMDB</span>
+            <span class="rating-badge tmdb-badge">&#x2B50; <span id="tmdbRating"></span> TMDB</span>
           </div>
         </div>
       </div>
@@ -79,7 +79,7 @@
 
   <div class="trailer-modal" id="trailerModal">
     <div class="trailer-modal-inner">
-      <button class="modal-close" id="modalClose">X</button>
+      <button class="modal-close" id="modalClose">&#x2715;</button>
       <div id="trailerContainer"></div>
     </div>
   </div>
@@ -106,6 +106,6 @@
     });
   </script>
 
-  <script src="movie.js?v=20260306c"></script>
+  <script src="movie.js?v=20260306d"></script>
 </body>
 </html>

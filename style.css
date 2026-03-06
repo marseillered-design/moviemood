@@ -180,11 +180,12 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
   transform: translateY(-1px);
   color: var(--text);
 }
-[data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+[data-theme="dark"] .theme-toggle .icon-sun { display: inline; }
+[data-theme="light"] .theme-toggle .icon-sun,
+html:not([data-theme]) .theme-toggle .icon-sun { display: none; }
 [data-theme="light"] .theme-toggle .icon-moon,
-:not([data-theme]) .theme-toggle .icon-moon { display: none; }
-:not([data-theme]) .theme-toggle .icon-sun,
-[data-theme="light"] .theme-toggle .icon-sun { display: inline; }
+html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
 
 /* HERO */
 .home-hero {
@@ -406,16 +407,28 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
   padding: 9px 14px;
   font-size: 0.82rem;
   font-family: 'Inter', sans-serif;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(26, 20, 46, 0.95), rgba(18, 18, 30, 0.95));
+  border: 1px solid rgba(124, 58, 237, 0.55);
   border-radius: 10px;
   color: var(--text);
   outline: none;
   cursor: pointer;
   backdrop-filter: blur(8px);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  color-scheme: dark;
 }
-.country-select:focus { border-color: var(--purple-light); }
-.country-select option { background: var(--bg2); color: var(--text); }
+.country-select:focus,
+.country-select:focus-visible {
+  outline: none;
+  border-color: var(--purple-light);
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.35);
+}
+.country-select option {
+  background: #100f1f;
+  color: #f1f0ff;
+}
 
 /* MOOD PICKER */
 .mood-picker-btn {
@@ -435,16 +448,16 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
 
 .mood-picker-popup {
   position: absolute;
-  top: calc(100% + 8px); /* right below search-container */
-  left: 50%;
-  transform: translateX(-50%);
+  top: calc(100% + 12px);
+  left: 0;
+  transform: none;
   width: 100%;
   max-width: 780px;
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 16px;
-  z-index: 100;
+  z-index: 120;
   backdrop-filter: blur(20px);
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
   display: none;
@@ -455,8 +468,9 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
 }
 .mood-picker-popup.open { display: block; animation: popupIn 0.2s ease forwards; }
 @keyframes popupIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(-8px) scale(0.97); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0)    scale(1); }
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+
 }
 .mood-picker-arrow {
   position: absolute;
@@ -1409,5 +1423,12 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
   border-color: rgba(255, 255, 255, 0.35);
   background: rgba(0, 0, 0, 0.35);
 }
+
+
+
+
+
+
+
 
 

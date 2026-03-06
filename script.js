@@ -16,22 +16,50 @@ const countrySelect = document.getElementById('countrySelect');
 const moviesGrid = document.getElementById('moviesGrid');
 const SUPPORTED_REGIONS = ['US','CA','GB','DE','FR','IT','ES','NL','BE','AT','CH','SE','NO','DK','FI','PL','PT','IE','CZ','GR','UA'];
 
-async function detectRegion() {
+async function fetchJsonWithTimeout(url, timeoutMs = 2500) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch('https://ipapi.co/json/');
-    const data = await res.json();
-    const country = data.country_code;
+    const res = await fetch(url, { signal: controller.signal });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function detectRegion() {
+  const providers = [
+    async () => {
+      const data = await fetchJsonWithTimeout('https://ipapi.co/json/');
+      return data?.country_code;
+    },
+    async () => {
+      const data = await fetchJsonWithTimeout('https://ipwho.is/');
+      return data?.country_code;
+    },
+    async () => {
+      const data = await fetchJsonWithTimeout('https://ipinfo.io/json');
+      return data?.country;
+    }
+  ];
+
+  for (const getCountry of providers) {
+    const country = String(await getCountry() || '').toUpperCase();
     if (country && SUPPORTED_REGIONS.includes(country)) {
       currentRegion = country;
-      countrySelect.value = country;
+      if (countrySelect) countrySelect.value = country;
       const detected = document.getElementById('regionDetected');
       if (detected) {
         detected.textContent = 'Auto-detected';
         detected.style.opacity = '1';
         setTimeout(() => { detected.style.opacity = '0'; }, 3000);
       }
+      return;
     }
-  } catch (e) {}
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -388,6 +416,7 @@ function createCard(movie) {
   
   return card;
 }
+
 
 
 

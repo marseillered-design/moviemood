@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MovieMood - Discover Movies by Mood</title>
-  <link rel="stylesheet" href="style.css?v=20260306c">
+  <link rel="stylesheet" href="style.css?v=20260306e">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
@@ -19,10 +19,10 @@
   <nav class="home-nav">
     <a href="index.html" class="nav-logo">MOVIEMOOD</a>
     <div>
-      <a href="favorites.html" class="nav-favorites">Favorites</a>
+      <a href="favorites.html" class="nav-favorites">&#x2764;&#xFE0F; Favorites</a>
       <button id="theme-toggle" class="theme-toggle" onclick="window.__mmToggleTheme && window.__mmToggleTheme()" aria-label="Toggle theme">
-        <span class="icon-sun">Sun</span>
-        <span class="icon-moon">Moon</span>
+        <span class="icon-sun">&#x2600;&#xFE0F;</span>
+        <span class="icon-moon">&#x1F319;</span>
       </button>
     </div>
   </nav>
@@ -36,45 +36,45 @@
     <section class="search-section">
       <div class="search-container">
         <div class="search-input-wrapper">
-          <span class="search-icon">Search</span>
+          <span class="search-icon">&#x1F50D;</span>
           <input type="text" class="mood-input" placeholder="e.g. 'horrors of 90s' or 'dark sci-fi like Interstellar'" id="moodInput">
-          <button class="mood-picker-btn" id="moodPickerBtn">Mood</button>
+          <button class="mood-picker-btn" id="moodPickerBtn">&#x1F60A;</button>
         </div>
         <button class="search-btn" id="searchBtn">Search</button>
-        <button class="surprise-btn" id="surpriseBtn">Random</button>
-        <button class="filters-btn" id="filtersBtn">Filters</button>
-      </div>
+        <button class="surprise-btn" id="surpriseBtn">&#x1F3B2;</button>
+        <button class="filters-btn" id="filtersBtn">&#x2699;&#xFE0F; Filters</button>
 
-      <div class="mood-picker-popup" id="moodPickerPopup">
-        <div class="mood-picker-arrow"></div>
-        <div class="mood-picker-grid">
-          <button class="mood-pick-btn" data-mood="funny"><span class="mood-emoji">Fun</span><span class="mood-label">Funny</span></button>
-          <button class="mood-pick-btn" data-mood="sad"><span class="mood-emoji">Sad</span><span class="mood-label">Sad</span></button>
-          <button class="mood-pick-btn" data-mood="scary"><span class="mood-emoji">Fear</span><span class="mood-label">Scary</span></button>
-          <button class="mood-pick-btn" data-mood="action"><span class="mood-emoji">Act</span><span class="mood-label">Action</span></button>
-          <button class="mood-pick-btn" data-mood="romance"><span class="mood-emoji">Love</span><span class="mood-label">Romance</span></button>
-          <button class="mood-pick-btn" data-mood="mind"><span class="mood-emoji">Mind</span><span class="mood-label">Mind-blowing</span></button>
-          <button class="mood-pick-btn" data-mood="family"><span class="mood-emoji">Home</span><span class="mood-label">Family</span></button>
-          <button class="mood-pick-btn" data-mood="mystery"><span class="mood-emoji">Myst</span><span class="mood-label">Mystery</span></button>
-          <button class="mood-pick-btn" data-mood="inspiring"><span class="mood-emoji">Insp</span><span class="mood-label">Inspiring</span></button>
-          <button class="mood-pick-btn" data-mood="animated"><span class="mood-emoji">Anim</span><span class="mood-label">Animated</span></button>
-          <button class="mood-pick-btn" data-mood="historical"><span class="mood-emoji">Hist</span><span class="mood-label">Historical</span></button>
-          <button class="mood-pick-btn" data-mood="musical"><span class="mood-emoji">Music</span><span class="mood-label">Musical</span></button>
+        <div class="mood-picker-popup" id="moodPickerPopup">
+          <div class="mood-picker-arrow"></div>
+          <div class="mood-picker-grid">
+            <button class="mood-pick-btn" data-mood="funny"><span class="mood-emoji">&#x1F602;</span><span class="mood-label">Funny</span></button>
+            <button class="mood-pick-btn" data-mood="sad"><span class="mood-emoji">&#x1F622;</span><span class="mood-label">Sad</span></button>
+            <button class="mood-pick-btn" data-mood="scary"><span class="mood-emoji">&#x1F631;</span><span class="mood-label">Scary</span></button>
+            <button class="mood-pick-btn" data-mood="action"><span class="mood-emoji">&#x1F525;</span><span class="mood-label">Action</span></button>
+            <button class="mood-pick-btn" data-mood="romance"><span class="mood-emoji">&#x1F495;</span><span class="mood-label">Romance</span></button>
+            <button class="mood-pick-btn" data-mood="mind"><span class="mood-emoji">&#x1F914;</span><span class="mood-label">Mind-blowing</span></button>
+            <button class="mood-pick-btn" data-mood="family"><span class="mood-emoji">&#x1F468;&#x200D;&#x1F469;&#x200D;&#x1F467;</span><span class="mood-label">Family</span></button>
+            <button class="mood-pick-btn" data-mood="mystery"><span class="mood-emoji">&#x1F575;&#xFE0F;</span><span class="mood-label">Mystery</span></button>
+            <button class="mood-pick-btn" data-mood="inspiring"><span class="mood-emoji">&#x1F4AA;</span><span class="mood-label">Inspiring</span></button>
+            <button class="mood-pick-btn" data-mood="animated"><span class="mood-emoji">&#x1F3A8;</span><span class="mood-label">Animated</span></button>
+            <button class="mood-pick-btn" data-mood="historical"><span class="mood-emoji">&#x1F3DB;&#xFE0F;</span><span class="mood-label">Historical</span></button>
+            <button class="mood-pick-btn" data-mood="musical"><span class="mood-emoji">&#x1F3B5;</span><span class="mood-label">Musical</span></button>
+          </div>
         </div>
       </div>
 
       <div class="region-row">
-        <span class="region-label">Streaming region:</span>
+        <span class="region-label">&#x1F30D; Streaming region:</span>
         <select class="country-select" id="countrySelect">
-          <option value="US">United States</option>
-          <option value="CA">Canada</option>
-          <option value="GB">United Kingdom</option>
-          <option value="DE">Germany</option>
-          <option value="FR">France</option>
-          <option value="IT">Italy</option>
-          <option value="ES">Spain</option>
-          <option value="NL">Netherlands</option>
-          <option value="UA">Ukraine</option>
+          <option value="US">&#x1F1FA;&#x1F1F8; United States</option>
+          <option value="CA">&#x1F1E8;&#x1F1E6; Canada</option>
+          <option value="GB">&#x1F1EC;&#x1F1E7; United Kingdom</option>
+          <option value="DE">&#x1F1E9;&#x1F1EA; Germany</option>
+          <option value="FR">&#x1F1EB;&#x1F1F7; France</option>
+          <option value="IT">&#x1F1EE;&#x1F1F9; Italy</option>
+          <option value="ES">&#x1F1EA;&#x1F1F8; Spain</option>
+          <option value="NL">&#x1F1F3;&#x1F1F1; Netherlands</option>
+          <option value="UA">&#x1F1FA;&#x1F1E6; Ukraine</option>
         </select>
       </div>
 
@@ -83,16 +83,16 @@
           <div class="filter-group">
             <span class="filter-group-label">Content type</span>
             <div class="content-tabs">
-              <button class="tab active" data-type="movie">Movies</button>
-              <button class="tab" data-type="tv">Series</button>
-              <button class="tab" data-type="documentary">Documentary</button>
+              <button class="tab active" data-type="movie">&#x1F3AC; Movies</button>
+              <button class="tab" data-type="tv">&#x1F4FA; Series</button>
+              <button class="tab" data-type="documentary">&#x1F3A5; Documentary</button>
             </div>
           </div>
           <div class="filter-group">
             <span class="filter-group-label">Options</span>
             <label class="anime-toggle">
               <input type="checkbox" id="animeToggle">
-              Include Anime
+              &#x1F38C; Include Anime
             </label>
           </div>
         </div>
@@ -102,7 +102,7 @@
     <section class="results-section">
       <div class="movies-grid" id="moviesGrid">
         <div class="welcome-message">
-          <p class="example-text">Try: "horrors of 90s" - "80s action" - "dark sci-fi like Interstellar"</p>
+          <p class="example-text">Try: "horrors of 90s" &#x00B7; "80s action" &#x00B7; "dark sci-fi like Interstellar"</p>
         </div>
       </div>
       <button class="load-more-btn" id="loadMoreBtn" style="display: none;">Load More</button>
@@ -144,6 +144,6 @@
     themeToggle?.addEventListener('click', window.__mmToggleTheme);
   })();
   </script>
-  <script src="script.js?v=20260306c"></script>
+  <script src="script.js?v=20260306e"></script>
 </body>
 </html>
