@@ -117,6 +117,8 @@ function startHeroVideo(key) {
 const wrapper = document.getElementById('heroVideoWrapper');
 wrapper.innerHTML =  `<iframe id="heroIframe" src="https://www.youtube.com/embed/${key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${key}&rel=0&modestbranding=1&enablejsapi=1&playsinline=1" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
 document.getElementById('muteBtn').style.display = 'flex';
+const muteBtn = document.getElementById('muteBtn');
+if (muteBtn) muteBtn.textContent = '\uD83D\uDD07';
 }
 
 function toggleMute() {
@@ -129,7 +131,7 @@ const key = trailerKey;
 const muteParam = isMuted ? 1 : 0;
 iframe.src = `https://www.youtube.com/embed/${key}?autoplay=1&mute=${muteParam}&controls=0&loop=1&playlist=${key}&rel=0&modestbranding=1&playsinline=1`;
 }
-btn.textContent = isMuted ? 'Muted' : 'Sound on';
+btn.textContent = isMuted ? '\uD83D\uDD07' : '\uD83D\uDD0A';
 }
 
 function openTrailerModal(key) {
@@ -176,6 +178,7 @@ update();
 }
 
 loadMovie();
+
 
 
 
