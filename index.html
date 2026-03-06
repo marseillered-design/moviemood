@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MovieMood - Discover Movies by Mood</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20260306a">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
@@ -21,10 +21,10 @@
   <nav class="home-nav">
     <a href="index.html" class="nav-logo">MOVIEMOOD</a>
     <div>
-      <a href="favorites.html" class="nav-favorites">❤️ Favorites</a>
-      <button id="theme-toggle" class="theme-toggle" aria-label="Переключить тему">
-        <span class="icon-sun">☀️</span>
-        <span class="icon-moon">🌙</span>
+      <a href="favorites.html" class="nav-favorites">â¤ï¸ Favorites</a>
+      <button id="theme-toggle" class="theme-toggle" onclick="window.__mmToggleTheme && window.__mmToggleTheme()" aria-label="ÐŸÐµÑ€ÐµÐºÐ»ÑŽÑ‡Ð¸Ñ‚ÑŒ Ñ‚ÐµÐ¼Ñƒ">
+        <span class="icon-sun">â˜€ï¸</span>
+        <span class="icon-moon">ðŸŒ™</span>
       </button>
     </div>
   </nav>
@@ -32,7 +32,7 @@
   <!-- HERO -->
   <header class="home-hero">
     <h1 class="home-title">WHAT'S YOUR <span class="title-accent">MOOD?</span></h1>
-    <p class="home-subtitle">Tell us how you feel — we'll find the perfect film.</p>
+    <p class="home-subtitle">Tell us how you feel â€” we'll find the perfect film.</p>
   </header>
 
   <!-- MAIN -->
@@ -41,47 +41,47 @@
     <section class="search-section">
       <div class="search-container">
         <div class="search-input-wrapper">
-          <span class="search-icon">🔍</span>
-          <input type="text" class="mood-input" placeholder="e.g. 'horrors of 90s' or 'dark sci-fi like Interstellar' 😊" id="moodInput">
-          <button class="mood-picker-btn" id="moodPickerBtn">😊</button>
+          <span class="search-icon">ðŸ”</span>
+          <input type="text" class="mood-input" placeholder="e.g. 'horrors of 90s' or 'dark sci-fi like Interstellar' ðŸ˜Š" id="moodInput">
+          <button class="mood-picker-btn" id="moodPickerBtn">ðŸ˜Š</button>
         </div>
         <button class="search-btn" id="searchBtn">Search</button>
-        <button class="surprise-btn" id="surpriseBtn">🎲</button>
-        <button class="filters-btn" id="filtersBtn">⚙️ Filters</button>
+        <button class="surprise-btn" id="surpriseBtn">ðŸŽ²</button>
+        <button class="filters-btn" id="filtersBtn">âš™ï¸ Filters</button>
       </div>
 
       <!-- MOOD PICKER POPUP -->
       <div class="mood-picker-popup" id="moodPickerPopup">
         <div class="mood-picker-arrow"></div>
         <div class="mood-picker-grid">
-          <button class="mood-pick-btn" data-mood="funny"><span class="mood-emoji">😂</span><span class="mood-label">Funny</span></button>
-          <button class="mood-pick-btn" data-mood="sad"><span class="mood-emoji">😢</span><span class="mood-label">Sad</span></button>
-          <button class="mood-pick-btn" data-mood="scary"><span class="mood-emoji">😱</span><span class="mood-label">Scary</span></button>
-          <button class="mood-pick-btn" data-mood="action"><span class="mood-emoji">🔥</span><span class="mood-label">Action</span></button>
-          <button class="mood-pick-btn" data-mood="romance"><span class="mood-emoji">💕</span><span class="mood-label">Romance</span></button>
-          <button class="mood-pick-btn" data-mood="mind"><span class="mood-emoji">🤔</span><span class="mood-label">Mind-blowing</span></button>
-          <button class="mood-pick-btn" data-mood="family"><span class="mood-emoji">👨‍👩‍👧</span><span class="mood-label">Family</span></button>
-          <button class="mood-pick-btn" data-mood="mystery"><span class="mood-emoji">🕵️</span><span class="mood-label">Mystery</span></button>
-          <button class="mood-pick-btn" data-mood="inspiring"><span class="mood-emoji">💪</span><span class="mood-label">Inspiring</span></button>
-          <button class="mood-pick-btn" data-mood="animated"><span class="mood-emoji">🎨</span><span class="mood-label">Animated</span></button>
-          <button class="mood-pick-btn" data-mood="historical"><span class="mood-emoji">🏛️</span><span class="mood-label">Historical</span></button>
-          <button class="mood-pick-btn" data-mood="musical"><span class="mood-emoji">🎵</span><span class="mood-label">Musical</span></button>
+          <button class="mood-pick-btn" data-mood="funny"><span class="mood-emoji">ðŸ˜‚</span><span class="mood-label">Funny</span></button>
+          <button class="mood-pick-btn" data-mood="sad"><span class="mood-emoji">ðŸ˜¢</span><span class="mood-label">Sad</span></button>
+          <button class="mood-pick-btn" data-mood="scary"><span class="mood-emoji">ðŸ˜±</span><span class="mood-label">Scary</span></button>
+          <button class="mood-pick-btn" data-mood="action"><span class="mood-emoji">ðŸ”¥</span><span class="mood-label">Action</span></button>
+          <button class="mood-pick-btn" data-mood="romance"><span class="mood-emoji">ðŸ’•</span><span class="mood-label">Romance</span></button>
+          <button class="mood-pick-btn" data-mood="mind"><span class="mood-emoji">ðŸ¤”</span><span class="mood-label">Mind-blowing</span></button>
+          <button class="mood-pick-btn" data-mood="family"><span class="mood-emoji">ðŸ‘¨â€ðŸ‘©â€ðŸ‘§</span><span class="mood-label">Family</span></button>
+          <button class="mood-pick-btn" data-mood="mystery"><span class="mood-emoji">ðŸ•µï¸</span><span class="mood-label">Mystery</span></button>
+          <button class="mood-pick-btn" data-mood="inspiring"><span class="mood-emoji">ðŸ’ª</span><span class="mood-label">Inspiring</span></button>
+          <button class="mood-pick-btn" data-mood="animated"><span class="mood-emoji">ðŸŽ¨</span><span class="mood-label">Animated</span></button>
+          <button class="mood-pick-btn" data-mood="historical"><span class="mood-emoji">ðŸ›ï¸</span><span class="mood-label">Historical</span></button>
+          <button class="mood-pick-btn" data-mood="musical"><span class="mood-emoji">ðŸŽµ</span><span class="mood-label">Musical</span></button>
         </div>
       </div>
 
       <!-- REGION ROW -->
       <div class="region-row">
-        <span class="region-label">🌍 Streaming region:</span>
+        <span class="region-label">ðŸŒ Streaming region:</span>
         <select class="country-select" id="countrySelect">
-          <option value="US">🇺🇸 United States</option>
-          <option value="CA">🇨🇦 Canada</option>
-          <option value="GB">🇬 United Kingdom</option>
-          <option value="DE">🇩🇪 Germany</option>
-          <option value="FR">🇫 France</option>
-          <option value="IT">🇮 Italy</option>
-          <option value="ES">🇪🇸 Spain</option>
-          <option value="NL">🇳 Netherlands</option>
-          <option value="UA">🇺🇦 Ukraine</option>
+          <option value="US">ðŸ‡ºðŸ‡¸ United States</option>
+          <option value="CA">ðŸ‡¨ðŸ‡¦ Canada</option>
+          <option value="GB">ðŸ‡¬ United Kingdom</option>
+          <option value="DE">ðŸ‡©ðŸ‡ª Germany</option>
+          <option value="FR">ðŸ‡« France</option>
+          <option value="IT">ðŸ‡® Italy</option>
+          <option value="ES">ðŸ‡ªðŸ‡¸ Spain</option>
+          <option value="NL">ðŸ‡³ Netherlands</option>
+          <option value="UA">ðŸ‡ºðŸ‡¦ Ukraine</option>
         </select>
       </div>
 
@@ -91,16 +91,16 @@
           <div class="filter-group">
             <span class="filter-group-label">Content type</span>
             <div class="content-tabs">
-              <button class="tab active" data-type="movie">🎬 Movies</button>
-              <button class="tab" data-type="tv">📺 Series</button>
-              <button class="tab" data-type="documentary">🎥 Documentary</button>
+              <button class="tab active" data-type="movie">ðŸŽ¬ Movies</button>
+              <button class="tab" data-type="tv">ðŸ“º Series</button>
+              <button class="tab" data-type="documentary">ðŸŽ¥ Documentary</button>
             </div>
           </div>
           <div class="filter-group">
             <span class="filter-group-label">Options</span>
             <label class="anime-toggle">
               <input type="checkbox" id="animeToggle">
-              🎌 Include Anime
+              ðŸŽŒ Include Anime
             </label>
           </div>
         </div>
@@ -111,7 +111,7 @@
     <section class="results-section">
       <div class="movies-grid" id="moviesGrid">
         <div class="welcome-message">
-          <p class="example-text">Try: "horrors of 90s" · "80s action" · "dark sci-fi like Interstellar"</p>
+          <p class="example-text">Try: "horrors of 90s" Â· "80s action" Â· "dark sci-fi like Interstellar"</p>
         </div>
       </div>
       <button class="load-more-btn" id="loadMoreBtn" style="display: none;">Load More</button>
@@ -124,6 +124,39 @@
   </footer>
 
   <!-- SCRIPT -->
-  <script src="script.js"></script>
+  <script>
+  (function () {
+    const root = document.documentElement;
+
+    function safeGetTheme() {
+      try { return localStorage.getItem('theme'); } catch (e) { return null; }
+    }
+
+    function safeSetTheme(theme) {
+      try { localStorage.setItem('theme', theme); } catch (e) {}
+    }
+
+    function applyTheme(theme) {
+      root.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark');
+    }
+
+    const savedTheme = safeGetTheme();
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'light'));
+
+    window.__mmToggleTheme = function () {
+      const currentTheme = root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(newTheme);
+      safeSetTheme(newTheme);
+    };
+
+    const themeToggle = document.getElementById('theme-toggle');
+    themeToggle?.addEventListener('click', window.__mmToggleTheme);
+  })();
+</script>
+<script src="script.js?v=20260306b"></script>
 </body>
 </html>
+
+

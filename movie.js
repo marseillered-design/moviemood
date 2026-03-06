@@ -58,6 +58,10 @@ if (trailer) {
 trailerKey = trailer.key;
 // Autoplay muted in hero
 startHeroVideo(trailer.key);
+setTimeout(() => {
+  const heroIframe = document.getElementById('heroIframe');
+  if (!heroIframe && trailerKey) startHeroVideo(trailerKey);
+}, 600);
 }
 // Play trailer button
 document.getElementById('btnPlayTrailer').addEventListener('click', () => {
@@ -111,7 +115,7 @@ if (e.target === document.getElementById('trailerModal')) closeTrailerModal();
 
 function startHeroVideo(key) {
 const wrapper = document.getElementById('heroVideoWrapper');
-wrapper.innerHTML =  `<iframe id="heroIframe" src="https://www.youtube.com/embed/${key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${key}&rel=0&modestbranding=1&enablejsapi=1&playsinline=1" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+wrapper.innerHTML =  `<iframe id="heroIframe" src="https://www.youtube.com/embed/${key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${key}&rel=0&modestbranding=1&enablejsapi=1&playsinline=1" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
 document.getElementById('muteBtn').style.display = 'flex';
 }
 
@@ -130,7 +134,7 @@ btn.textContent = isMuted ? 'Muted' : 'Sound on';
 
 function openTrailerModal(key) {
 const modal = document.getElementById('trailerModal');
-document.getElementById('trailerContainer').innerHTML = `<iframe src="https://www.youtube.com/embed/${key}?autoplay=1&controls=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+document.getElementById('trailerContainer').innerHTML = `<iframe src="https://www.youtube.com/embed/${key}?autoplay=1&controls=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
 modal.classList.add('active');
 document.body.style.overflow = 'hidden';
 }
@@ -172,6 +176,7 @@ update();
 }
 
 loadMovie();
+
 
 
 

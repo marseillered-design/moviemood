@@ -1399,12 +1399,15 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
 [data-theme="light"] .movie-hero-section .hero-meta,
 [data-theme="light"] .movie-hero-section .hero-overview,
 [data-theme="light"] .movie-hero-section .providers-title,
-[data-theme="light"] .movie-hero-section .provider-label {
-  color: #f7f7fb;
-  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.65);
+[data-theme="light"] .movie-hero-section .provider-label,
+[data-theme="light"] .movie-hero-section .hero-badges .badge {
+  color: #f7f7fb !important;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.8) !important;
 }
 [data-theme="light"] .movie-hero-section .btn-fav {
-  color: #f7f7fb;
+  color: #f7f7fb !important;
   border-color: rgba(255, 255, 255, 0.35);
   background: rgba(0, 0, 0, 0.35);
 }
+
+

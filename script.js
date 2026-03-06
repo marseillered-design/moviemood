@@ -37,7 +37,8 @@ async function detectRegion() {
 document.addEventListener('DOMContentLoaded', () => {
   const themeToggle = document.getElementById('theme-toggle');
   const root = document.documentElement;
-  const savedTheme = localStorage.getItem('theme');
+  let savedTheme = null;
+  try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
   const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
   if (savedTheme === 'light') {
@@ -50,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentTheme = root.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     root.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
+    try { localStorage.setItem('theme', newTheme); } catch (e) {}
   });
 
   detectRegion();
@@ -387,6 +388,7 @@ function createCard(movie) {
   
   return card;
 }
+
 
 
 
