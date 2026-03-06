@@ -35,6 +35,24 @@ async function detectRegion() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  const themeToggle = document.getElementById('theme-toggle');
+  const root = document.documentElement;
+  const savedTheme = localStorage.getItem('theme');
+  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  if (savedTheme === 'light') {
+    root.setAttribute('data-theme', 'light');
+  } else if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+    root.setAttribute('data-theme', 'dark');
+  }
+
+  themeToggle?.addEventListener('click', () => {
+    const currentTheme = root.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  });
+
   detectRegion();
   
   searchBtn.addEventListener('click', handleSearch);
@@ -369,6 +387,7 @@ function createCard(movie) {
   
   return card;
 }
+
 
 
 

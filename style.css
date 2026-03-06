@@ -1377,3 +1377,34 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
   .home-footer { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
 }
 
+
+/* Movie hero video layer */
+.hero-video-wrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.hero-video-wrapper iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  transform: scale(1.08);
+  filter: saturate(1.05);
+}
+
+/* Keep hero text readable in light theme over backdrop */
+[data-theme="light"] .movie-hero-section .hero-title,
+[data-theme="light"] .movie-hero-section .hero-meta,
+[data-theme="light"] .movie-hero-section .hero-overview,
+[data-theme="light"] .movie-hero-section .providers-title,
+[data-theme="light"] .movie-hero-section .provider-label {
+  color: #f7f7fb;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.65);
+}
+[data-theme="light"] .movie-hero-section .btn-fav {
+  color: #f7f7fb;
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.35);
+}
