@@ -1443,13 +1443,16 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
   align-items: center;
   padding: 4px 9px;
   border-radius: 999px;
-  background: rgba(1, 180, 228, 0.14);
-  border: 1px solid rgba(1, 180, 228, 0.45);
-  color: #01b4e4;
+  background: rgba(8, 10, 18, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  color: #f7fbff;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1;
   letter-spacing: 0.2px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
 }
 
 .fav-rating {
@@ -1475,5 +1478,6 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
   left: 10px;
   z-index: 2;
 }
+
 
 
