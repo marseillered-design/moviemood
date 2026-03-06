@@ -1432,3 +1432,35 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
 
 
 
+
+
+.tmdb-mini-score {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(1, 180, 228, 0.14);
+  border: 1px solid rgba(1, 180, 228, 0.45);
+  color: #01b4e4;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.2px;
+}
+
+.fav-rating {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(1, 180, 228, 0.14);
+  border: 1px solid rgba(1, 180, 228, 0.45);
+  color: #01b4e4;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+}

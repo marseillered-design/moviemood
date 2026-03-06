@@ -53,7 +53,7 @@ function createCard(movie) {
 
   const mediaType = normalizeMediaType(movie.media_type);
   const typeLabel = mediaType === 'tv' ? 'Series' : 'Movie';
-  const rating = movie.rating ? `Rating ${movie.rating}` : '';
+  const rating = movie.rating ? `${movie.rating}` : '';
   const year = movie.year || '';
   const genres = movie.genres?.join(' / ') || '';
 
@@ -147,6 +147,8 @@ async function loadFavorites() {
 }
 
 loadFavorites();
+
+
 
 
 

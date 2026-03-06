@@ -83,7 +83,7 @@ async function loadPerson() {
       <div class="card-poster-wrapper">
         <img src="${TMDB_IMAGE_BASE_URL}${movie.poster_path}" class="movie-poster" loading="lazy">
         <div class="card-overlay">
-          ${rating ? `<span class="card-rating">Rating ${rating}</span>` : ''}
+          ${rating ? `<span class="tmdb-mini-score">${rating}</span>` : ''}
         </div>
       </div>
       <div class="card-info">
@@ -99,3 +99,5 @@ async function loadPerson() {
 }
 
 loadPerson();
+
+

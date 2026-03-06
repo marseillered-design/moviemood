@@ -390,12 +390,12 @@ function createCard(movie) {
   const poster = movie.poster_path ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}` : '';
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '';
   const cardMediaType = normalizeMediaType(movie.media_type || currentType);
-  const favIcon = isFavorite(movie.id, cardMediaType) ? 'In Favorites' : 'Add';
-  
+  const favIcon = isFavorite(movie.id, cardMediaType) ? '\u2764\uFE0F' : '\uD83E\uDD0D';
+
   card.innerHTML = `
     <div class="card-poster-wrapper">
       <img src="${poster}" class="movie-poster" loading="lazy">
-      <div class="card-overlay">${rating ? `Rating ${rating}` : ''}</div>
+      <div class="card-overlay">${rating ? `<span class="tmdb-mini-score">${rating}</span>` : ''}</div>
     </div>
     <div class="card-info">
       <h3 class="card-title">${movie.title || movie.name}</h3>
@@ -403,19 +403,20 @@ function createCard(movie) {
     </div>
     <button class="fav-btn">${favIcon}</button>
   `;
-  
+
   card.querySelector('.fav-btn').addEventListener('click', e => {
     e.stopPropagation();
     toggleFavorite(movie);
-    e.target.textContent = isFavorite(movie.id, cardMediaType) ? 'In Favorites' : 'Add';
+    e.target.textContent = isFavorite(movie.id, cardMediaType) ? '\u2764\uFE0F' : '\uD83E\uDD0D';
   });
-  
+
   card.addEventListener('click', () => {
     window.open(`movie.html?id=${movie.id}&type=${cardMediaType}&region=${currentRegion}`, '_blank');
   });
-  
+
   return card;
 }
+
 
 
 
