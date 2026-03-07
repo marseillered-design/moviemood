@@ -338,6 +338,7 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
   display: flex;
   gap: 24px;
   align-items: flex-start;
+  justify-content: center;
   padding: 16px 0 8px;
   flex-wrap: wrap;
 }
@@ -1745,5 +1746,11 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
 [data-theme="light"] .country-select:focus,
 [data-theme="light"] .country-select:focus-visible {
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18), 0 10px 26px rgba(111, 72, 183, 0.22);
+}
+
+
+.filters-panel-inner .filter-group:first-child {
+  align-items: center;
+  text-align: center;
 }
 
