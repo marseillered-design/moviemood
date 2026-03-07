@@ -1668,3 +1668,40 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
 
 
 
+
+
+[data-theme="light"] .search-btn,
+[data-theme="light"] .feed-btn-primary {
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.18);
+}
+
+[data-theme="light"] .nav-favorites,
+[data-theme="light"] .theme-toggle,
+[data-theme="light"] .filters-btn,
+[data-theme="light"] .surprise-btn,
+[data-theme="light"] .mood-input,
+[data-theme="light"] .country-select {
+  border-color: rgba(124, 58, 237, 0.32);
+}
+
+[data-theme="light"] .nav-favorites:hover,
+[data-theme="light"] .theme-toggle:hover,
+[data-theme="light"] .filters-btn:hover,
+[data-theme="light"] .surprise-btn:hover,
+[data-theme="light"] .country-select:hover {
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.10);
+}
+
+[data-theme="light"] .movie-card,
+[data-theme="light"] .fav-card,
+[data-theme="light"] .feed-player-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.74), rgba(248,243,255,0.72));
+}
+
+[data-theme="light"] .home-subtitle,
+[data-theme="light"] .region-label,
+[data-theme="light"] .example-text,
+[data-theme="light"] .home-footer {
+  color: #655a84;
+}
+
