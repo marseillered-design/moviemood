@@ -1523,3 +1523,112 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
 
 
 
+
+/* ==================== TRAILER FEED ==================== */
+.feed-body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+.feed-main {
+  position: relative;
+  z-index: 2;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 8px 24px 48px;
+}
+.feed-head {
+  text-align: center;
+  margin-bottom: 18px;
+}
+.feed-title {
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 2px;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+}
+.feed-subtitle {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+.feed-player-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--card-bg);
+  backdrop-filter: blur(8px);
+}
+.feed-player-wrap {
+  background: #000;
+  aspect-ratio: 16 / 9;
+}
+.feed-iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.feed-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+}
+.feed-item-title {
+  font-size: 1.25rem;
+  margin-bottom: 4px;
+}
+.feed-item-sub {
+  color: var(--text-dim);
+  font-size: 0.88rem;
+}
+.feed-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.feed-btn {
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.feed-btn:hover {
+  border-color: var(--purple-light);
+}
+.feed-btn-primary {
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  color: #fff;
+  border: none;
+}
+.feed-footer-controls {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+}
+.feed-nav-btn {
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.feed-counter {
+  min-width: 72px;
+  text-align: center;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+@media (max-width: 768px) {
+  .feed-main { padding: 8px 14px 30px; }
+  .feed-meta { flex-direction: column; align-items: flex-start; }
+  .feed-actions { width: 100%; }
+  .feed-btn { flex: 1; text-align: center; }
+}

@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trailer Feed - MovieMood</title>
+  <link rel="stylesheet" href="style.css?v=20260307a">
+</head>
+<body class="feed-body">
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+  <div class="noise-overlay"></div>
+
+  <nav class="home-nav">
+    <a href="index.html" class="nav-logo">MOVIEMOOD</a>
+    <div>
+      <a href="index.html" class="nav-favorites">&#x1F3E0; Home</a>
+      <a href="favorites.html" class="nav-favorites">&#x2764;&#xFE0F; Favorites</a>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+        <span class="icon-sun">&#x2600;&#xFE0F;</span>
+        <span class="icon-moon">&#x1F319;</span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="feed-main">
+    <header class="feed-head">
+      <h1 class="feed-title">ONE-CLICK TRAILER FEED</h1>
+      <p class="feed-subtitle" id="feedStatus">Loading trailers...</p>
+    </header>
+
+    <section class="feed-player-card" id="feedCard">
+      <div class="feed-player-wrap" id="feedPlayerWrap"></div>
+      <div class="feed-meta">
+        <div>
+          <h2 class="feed-item-title" id="feedItemTitle"></h2>
+          <p class="feed-item-sub" id="feedItemSub"></p>
+        </div>
+        <div class="feed-actions">
+          <button class="feed-btn" id="btnLike"></button>
+          <button class="feed-btn" id="btnWatchlist"></button>
+          <button class="feed-btn feed-btn-primary" id="btnOpenDetails">Open Details</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="feed-footer-controls">
+      <button class="feed-nav-btn" id="btnPrev">&#x25C0; Prev</button>
+      <span class="feed-counter" id="feedCounter">0 / 0</span>
+      <button class="feed-nav-btn" id="btnNext">Next &#x25B6;</button>
+    </footer>
+  </main>
+
+  <script>
+    (function () {
+      const root = document.documentElement;
+      let savedTheme = null;
+      try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      if (savedTheme === 'light') {
+        root.setAttribute('data-theme', 'light');
+      } else if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+        root.setAttribute('data-theme', 'dark');
+      }
+
+      const themeToggle = document.getElementById('theme-toggle');
+      themeToggle?.addEventListener('click', () => {
+        const currentTheme = root.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', newTheme);
+        try { localStorage.setItem('theme', newTheme); } catch (e) {}
+      });
+    })();
+  </script>
+  <script src="feed.js?v=20260307a"></script>
+</body>
+</html>
