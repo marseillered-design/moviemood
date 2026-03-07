@@ -295,3 +295,10 @@ buildFeed().catch(err => {
   console.error(err);
   elStatus.textContent = 'Failed to load feed. Try refresh.';
 });
+
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.feed-player-card')) return;
+  if (e.target.closest('.feed-footer-controls')) return;
+  if (e.target.closest('.home-nav')) return;
+  window.location.href = 'index.html';
+});
