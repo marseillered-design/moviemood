@@ -5,6 +5,9 @@ const feedState = {
   items: [],
   index: 0,
   muted: true,
+  moviePage: 1,
+  tvPage: 1,
+  loadingMore: false,
 };
 
 const elStatus = document.getElementById('feedStatus');
@@ -17,9 +20,14 @@ const btnWatchlist = document.getElementById('btnWatchlist');
 const btnOpenDetails = document.getElementById('btnOpenDetails');
 const btnPrev = document.getElementById('btnPrev');
 const btnNext = document.getElementById('btnNext');
+const btnLoadMore = document.getElementById('btnLoadMore');
 
 function normalizeMediaType(type) {
   return type === 'tv' ? 'tv' : 'movie';
+}
+
+function itemKey(item) {
+  return `${normalizeMediaType(item.media_type)}:${item.id}`;
 }
 
 function getFavorites() {
@@ -90,8 +98,8 @@ async function fetchJson(url) {
   return await res.json();
 }
 
-async function fetchTrending(mediaType) {
-  const data = await fetchJson(`${TMDB_BASE_URL}/trending/${mediaType}/week?api_key=${TMDB_API_KEY}`);
+async function fetchTrending(mediaType, page = 1) {
+  const data = await fetchJson(`${TMDB_BASE_URL}/trending/${mediaType}/week?api_key=${TMDB_API_KEY}&page=${page}`);
   return (data.results || []).map(item => ({ ...item, media_type: mediaType }));
 }
 
@@ -116,27 +124,73 @@ function shuffle(array) {
   return arr;
 }
 
-async function buildFeed() {
-  elStatus.textContent = 'Loading trailers...';
-
-  const [movies, tv] = await Promise.all([
-    fetchTrending('movie'),
-    fetchTrending('tv'),
-  ]);
-
-  const pool = shuffle([...movies.slice(0, 16), ...tv.slice(0, 16)]);
+async function collectTrailerItems(pool, targetCount = 12) {
+  const existing = new Set(feedState.items.map(itemKey));
   const selected = [];
 
-  for (const item of pool) {
-    if (selected.length >= 14) break;
+  for (const item of shuffle(pool)) {
+    if (selected.length >= targetCount) break;
+    if (existing.has(itemKey(item))) continue;
+
     const mediaType = normalizeMediaType(item.media_type);
     const trailerKey = await fetchTrailerKey(mediaType, item.id);
     if (!trailerKey) continue;
+
     selected.push({ ...item, media_type: mediaType, trailerKey });
+    existing.add(itemKey(item));
   }
 
-  feedState.items = selected;
+  return selected;
+}
+
+async function loadMoreTrailers(targetCount = 12) {
+  if (feedState.loadingMore) return 0;
+  feedState.loadingMore = true;
+  if (btnLoadMore) {
+    btnLoadMore.disabled = true;
+    btnLoadMore.textContent = 'Loading...';
+  }
+
+  let added = 0;
+  let attempts = 0;
+
+  while (added < targetCount && attempts < 4) {
+    attempts += 1;
+
+    const [movies, tv] = await Promise.all([
+      fetchTrending('movie', feedState.moviePage),
+      fetchTrending('tv', feedState.tvPage),
+    ]);
+
+    feedState.moviePage += 1;
+    feedState.tvPage += 1;
+
+    const pool = [...movies, ...tv].slice(0, 24);
+    const newItems = await collectTrailerItems(pool, targetCount - added);
+
+    if (!newItems.length) continue;
+
+    feedState.items.push(...newItems);
+    added += newItems.length;
+  }
+
+  feedState.loadingMore = false;
+  if (btnLoadMore) {
+    btnLoadMore.disabled = false;
+    btnLoadMore.textContent = 'Load more';
+  }
+
+  return added;
+}
+
+async function buildFeed() {
+  elStatus.textContent = 'Loading trailers...';
+  feedState.items = [];
   feedState.index = 0;
+  feedState.moviePage = 1;
+  feedState.tvPage = 1;
+
+  const added = await loadMoreTrailers(14);
 
   if (!feedState.items.length) {
     elStatus.textContent = 'No trailers found right now. Try again in a minute.';
@@ -147,7 +201,10 @@ async function buildFeed() {
     return;
   }
 
-  elStatus.textContent = 'Use Next / Prev or keyboard arrows.';
+  elStatus.textContent = added >= 14
+    ? 'Use Next / Prev or keyboard arrows.'
+    : 'Loaded limited trailers, click Load more for more.';
+
   renderCurrent();
 }
 
@@ -193,6 +250,16 @@ function prevItem() {
 
 btnNext.addEventListener('click', nextItem);
 btnPrev.addEventListener('click', prevItem);
+
+btnLoadMore?.addEventListener('click', async () => {
+  const added = await loadMoreTrailers(10);
+  if (added > 0) {
+    elStatus.textContent = `Added ${added} more trailers.`;
+    renderCurrent();
+  } else {
+    elStatus.textContent = 'No new trailers found on next pages yet.';
+  }
+});
 
 btnLike.addEventListener('click', () => {
   const item = feedState.items[feedState.index];
