@@ -62,6 +62,56 @@ async function detectRegion() {
   }
 }
 
+
+function initSearchPromptCarousel(inputEl) {
+  if (!inputEl) return;
+
+  const prompts = [
+    "horrors of 90s",
+    "dark sci-fi like Interstellar",
+    "feel-good movies for tonight",
+    "mind-bending thriller",
+    "best comfort anime"
+  ];
+
+  let idx = 0;
+  let timer = null;
+  let running = false;
+
+  const scheduleNext = () => {
+    if (!running) return;
+    inputEl.placeholder = prompts[idx];
+    idx = (idx + 1) % prompts.length;
+    timer = setTimeout(scheduleNext, 2300);
+  };
+
+  const stop = () => {
+    running = false;
+    if (timer) clearTimeout(timer);
+    timer = null;
+  };
+
+  const start = () => {
+    if (running || inputEl.value.trim()) return;
+    running = true;
+    scheduleNext();
+  };
+
+  inputEl.addEventListener('focus', () => {
+    stop();
+    inputEl.placeholder = 'Type your mood...';
+  });
+
+  inputEl.addEventListener('input', () => {
+    if (inputEl.value.trim()) stop();
+  });
+
+  inputEl.addEventListener('blur', () => {
+    if (!inputEl.value.trim()) start();
+  });
+
+  start();
+}
 document.addEventListener('DOMContentLoaded', () => {
   const themeToggle = document.getElementById('theme-toggle');
   const root = document.documentElement;
@@ -81,8 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
     root.setAttribute('data-theme', newTheme);
     try { localStorage.setItem('theme', newTheme); } catch (e) {}
   });
-
   detectRegion();
+  initSearchPromptCarousel(moodInput);
   
   searchBtn.addEventListener('click', handleSearch);
   moodInput.addEventListener('keypress', e => {
@@ -416,6 +466,7 @@ function createCard(movie) {
 
   return card;
 }
+
 
 
 
