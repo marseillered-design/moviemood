@@ -183,6 +183,14 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentType = tab.dataset.type;
+      currentPage = 1;
+      lastAiData = null;
+      removeLoadMoreBtn();
+      if (currentType === 'trending') {
+        currentQuery = '';
+        moodInput.value = '';
+        loadTrendingMixed();
+      }
     });
   });
   
@@ -237,30 +245,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function handleSearch(resetPage = true) {
   const query = moodInput.value.trim();
+
+  if (currentType === 'trending' && !query) {
+    await loadTrendingMixed(resetPage);
+    return;
+  }
+
   if (!query) return;
-  
-  // Only reset page for manual text search
+
   if (resetPage) {
     currentPage = 1;
     currentQuery = query;
     lastAiData = null;
     removeLoadMoreBtn();
   }
-  
+
   showSkeleton();
-  
-  // Always go through AI
+
+  if (currentType === 'trending') {
+    const results = await searchTMDB(query, currentPage);
+    hideSkeleton();
+    if (results.length > 0) {
+      displayMovies(results, false);
+      addLoadMoreBtn();
+      return;
+    }
+    renderEmptyState('No titles found. Try another search.');
+    return;
+  }
+
   const { results: aiResults, aiData } = await searchWithAI(query, currentPage);
   lastAiData = aiData;
-  
+
   if (aiResults.length > 0) {
     hideSkeleton();
     displayMovies(aiResults, false);
     addLoadMoreBtn();
     return;
   }
-  
-  // Fallback: direct TMDB search
+
   const results = await searchTMDB(query, currentPage);
   if (results.length > 0) {
     hideSkeleton();
@@ -268,11 +291,10 @@ async function handleSearch(resetPage = true) {
     addLoadMoreBtn();
     return;
   }
-  
-  hideSkeleton();
-  moviesGrid.innerHTML = `<p style="color:#ff6b6b; text-align:center; padding: 40px;">No movies found. Try a different mood!</p>`;
-}
 
+  hideSkeleton();
+  renderEmptyState('No movies found. Try a different mood!');
+}
 async function handleSurprise() {
   const genres = [28, 12, 16, 35, 80, 18, 14, 27, 9648, 10749, 878, 53, 37];
   const randomGenre = genres[Math.floor(Math.random() * genres.length)];
@@ -298,29 +320,90 @@ async function handleSurprise() {
     console.error(e);
   }
 }
+async function fetchTrendingMixed(page = 1) {
+  try {
+    const [movieRes, tvRes] = await Promise.all([
+      fetch(`${TMDB_BASE_URL}/trending/movie/week?api_key=${TMDB_API_KEY}&page=${page}`),
+      fetch(`${TMDB_BASE_URL}/trending/tv/week?api_key=${TMDB_API_KEY}&page=${page}`)
+    ]);
+
+    const movieData = movieRes.ok ? await movieRes.json() : { results: [] };
+    const tvData = tvRes.ok ? await tvRes.json() : { results: [] };
+
+    const merged = [
+      ...(movieData.results || []).map(item => ({ ...item, media_type: 'movie' })),
+      ...(tvData.results || []).map(item => ({ ...item, media_type: 'tv' }))
+    ]
+      .filter(item => item.poster_path)
+      .sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+
+    const seen = new Set();
+    return merged.filter(item => {
+      const key = `${item.media_type}:${item.id}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+}
+
+async function loadTrendingMixed(resetPage = true) {
+  if (resetPage) {
+    currentPage = 1;
+    currentQuery = '';
+    lastAiData = { mode: 'trending_mixed' };
+    removeLoadMoreBtn();
+  }
+
+  showSkeleton();
+  const results = await fetchTrendingMixed(currentPage);
+  hideSkeleton();
+
+  if (results.length > 0) {
+    displayMovies(results, false);
+    addLoadMoreBtn();
+    return;
+  }
+
+  renderEmptyState('No trending titles right now.');
+  removeLoadMoreBtn();
+}
 
 async function loadMore() {
   if (isLoading) return;
   isLoading = true;
   currentPage++;
-  
+
   let results = [];
-  if (lastAiData) {
+  if (lastAiData?.mode === 'trending_mixed') {
+    results = await fetchTrendingMixed(currentPage);
+  } else if (lastAiData) {
     results = await fetchByAiData(lastAiData, currentPage);
   } else {
     results = await searchTMDB(currentQuery, currentPage);
   }
-  
+
   if (results.length > 0) {
     displayMovies(results, true);
   } else {
     removeLoadMoreBtn();
   }
+
   isLoading = false;
 }
-
 async function searchTMDB(query, page = 1) {
   try {
+    if (currentType === 'trending') {
+      const res = await fetch(
+        `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&page=${page}`
+      );
+      const data = await res.json();
+      return (data.results || []).filter(item => item.media_type === 'movie' || item.media_type === 'tv');
+    }
+
     const endpoint = currentType === 'tv' ? 'tv' : 'movie';
     const res = await fetch(
       `${TMDB_BASE_URL}/search/${endpoint}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&page=${page}`
@@ -332,7 +415,6 @@ async function searchTMDB(query, page = 1) {
     return [];
   }
 }
-
 async function fetchByAiData(aiData, page = 1) {
   try {
     const endpoint = currentType === 'tv' ? 'tv' : 'movie';
@@ -422,6 +504,10 @@ function hideSkeleton() {
   document.querySelectorAll('.skeleton').forEach(s => s.remove());
 }
 
+function renderEmptyState(message) {
+  moviesGrid.innerHTML = `<p style="color:#ff6b6b; text-align:center; padding: 40px;">${message}</p>`;
+}
+
 function displayMovies(movies, append = false) {
   if (!append) moviesGrid.innerHTML = '';
   movies.forEach(movie => moviesGrid.appendChild(createCard(movie)));
@@ -501,6 +587,11 @@ function createCard(movie) {
 
   return card;
 }
+
+
+
+
+
 
 
 
