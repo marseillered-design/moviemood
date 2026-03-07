@@ -168,6 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   detectRegion();
   initSearchPromptCarousel(moodInput);
+  loadTrendingUnderSearch();
   
   searchBtn.addEventListener('click', handleSearch);
   moodInput.addEventListener('keypress', e => {
@@ -243,6 +244,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+
+async function loadTrendingUnderSearch() {
+  if (!moodInput || moodInput.value.trim()) return;
+
+  showSkeleton();
+  const results = await fetchTrendingMixed(1);
+  hideSkeleton();
+
+  if (results.length > 0) {
+    displayMovies(results.slice(0, 12), false);
+  } else {
+    renderEmptyState('Trending is unavailable right now.');
+  }
+
+  removeLoadMoreBtn();
+}
 async function handleSearch(resetPage = true) {
   const query = moodInput.value.trim();
 
@@ -587,6 +604,9 @@ function createCard(movie) {
 
   return card;
 }
+
+
+
 
 
 
