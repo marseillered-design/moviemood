@@ -1705,3 +1705,45 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
   color: #655a84;
 }
 
+
+
+/* LIGHT THEME BOOSTED ACCENT */
+[data-theme="light"] .search-section {
+  position: relative;
+}
+[data-theme="light"] .search-section::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -14px;
+  transform: translateX(-50%);
+  width: min(860px, 96vw);
+  height: 170px;
+  border-radius: 18px;
+  background: radial-gradient(circle at 50% 30%, rgba(124, 58, 237, 0.20), rgba(124, 58, 237, 0.06) 52%, transparent 74%);
+  pointer-events: none;
+  z-index: 0;
+}
+[data-theme="light"] .search-container,
+[data-theme="light"] .region-row {
+  position: relative;
+  z-index: 1;
+}
+[data-theme="light"] .mood-input,
+[data-theme="light"] .filters-btn,
+[data-theme="light"] .surprise-btn,
+[data-theme="light"] .country-select,
+[data-theme="light"] .theme-toggle,
+[data-theme="light"] .nav-favorites {
+  border-color: rgba(124, 58, 237, 0.42);
+  box-shadow: 0 6px 18px rgba(111, 72, 183, 0.14);
+}
+[data-theme="light"] .search-btn {
+  box-shadow: 0 12px 30px rgba(124, 58, 237, 0.28);
+}
+[data-theme="light"] .mood-input:focus,
+[data-theme="light"] .country-select:focus,
+[data-theme="light"] .country-select:focus-visible {
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18), 0 10px 26px rgba(111, 72, 183, 0.22);
+}
+
