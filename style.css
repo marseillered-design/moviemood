@@ -5,27 +5,26 @@
 
 /* ==================== CSS VARIABLES (THEMES) ==================== */
 :root {
-  /* ðŸŒž LIGHT THEME (Default) */
-  --bg: #f1effb;
-  --bg2: #fcfbff;
-  --bg3: #e7e2f7;
+  /* LIGHT THEME (Default) */
+  --bg: #ece7f6;
+  --bg2: #f7f4fd;
+  --bg3: #e2dbf1;
   --purple: #7c3aed;
   --purple-light: #a855f7;
   --neon: #6d28d9;
   --neon-glow: rgba(124, 58, 237, 0.15);
   --pink: #db2777;
-  --text: #201a33;
-  --text-dim: #695f8d;
+  --text: #231d36;
+  --text-dim: #6a6188;
   --border: rgba(101, 76, 177, 0.22);
-  --card-bg: rgba(255, 255, 255, 0.72);
+  --card-bg: rgba(255, 255, 255, 0.62);
   --accent: #dc2626;
-  --input-bg: rgba(255, 255, 255, 0.64);
+  --input-bg: rgba(255, 255, 255, 0.58);
   --overlay-gradient: linear-gradient(to top, rgba(248,249,255,0.9) 0%, transparent 50%);
   --overlay-gradient-fav: linear-gradient(to top, rgba(248,249,255,0.95) 0%, rgba(248,249,255,0.4) 50%, transparent 100%);
   --skeleton-base: #edeef5;
   --skeleton-shine: #f1f2f8;
 }
-
 [data-theme="dark"] {
   /* DARK THEME */
   --bg: #0d0d14;
@@ -428,6 +427,20 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
 .country-select option {
   background: #100f1f;
   color: #f1f0ff;
+}
+[data-theme="light"] .country-select {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(124, 58, 237, 0.4);
+  color: var(--text);
+  color-scheme: light;
+  box-shadow: 0 4px 14px rgba(91, 69, 148, 0.12);
+}
+[data-theme="light"] .country-select:hover {
+  border-color: rgba(124, 58, 237, 0.58);
+}
+[data-theme="light"] .country-select option {
+  background: #f7f3ff;
+  color: #231d36;
 }
 
 /* MOOD PICKER */
@@ -1637,10 +1650,10 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
 [data-theme="light"] .movie-body,
 [data-theme="light"] .feed-body {
   background:
-    radial-gradient(circle at 12% 8%, rgba(185, 157, 255, 0.32), transparent 38%),
-    radial-gradient(circle at 88% 18%, rgba(255, 178, 220, 0.22), transparent 34%),
-    radial-gradient(circle at 78% 82%, rgba(164, 178, 255, 0.2), transparent 36%),
-    var(--bg);
+    radial-gradient(circle at 10% 10%, rgba(173, 145, 244, 0.24), transparent 42%),
+    radial-gradient(circle at 90% 16%, rgba(255, 170, 212, 0.16), transparent 38%),
+    radial-gradient(circle at 76% 84%, rgba(152, 171, 245, 0.14), transparent 40%),
+    linear-gradient(180deg, #f7f3ff 0%, #ece7f6 45%, #e8e2f2 100%);
 }
 
 [data-theme="light"] .movie-card,
@@ -1648,4 +1661,10 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
 [data-theme="light"] .feed-player-card {
   box-shadow: 0 10px 26px rgba(73, 45, 122, 0.08);
 }
+
+
+
+
+
+
 
