@@ -719,6 +719,41 @@ function normalizeMediaType(type) {
   return type === 'tv' ? 'tv' : 'movie';
 }
 
+function getWatchedList() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem('watched') || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function toggleWatched(movie) {
+  let watched = getWatchedList();
+  const mediaType = normalizeMediaType(movie.media_type || currentType);
+  const exists = watched.find(w => w.id === movie.id && normalizeMediaType(w.media_type) === mediaType);
+
+  if (exists) {
+    watched = watched.filter(w => !(w.id === movie.id && normalizeMediaType(w.media_type) === mediaType));
+  } else {
+    watched.push({
+      id: movie.id,
+      title: movie.title || movie.name,
+      poster_path: movie.poster_path,
+      media_type: mediaType,
+      watched_at: Date.now()
+    });
+  }
+
+  localStorage.setItem('watched', JSON.stringify(watched));
+}
+
+function isWatched(id, mediaType = 'movie') {
+  const watched = getWatchedList();
+  const normalizedType = normalizeMediaType(mediaType);
+  return watched.some(w => w.id === id && normalizeMediaType(w.media_type) === normalizedType);
+}
+
 function toggleFavorite(movie) {
   let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
   const mediaType = normalizeMediaType(movie.media_type || currentType);
@@ -744,28 +779,53 @@ function isFavorite(id, mediaType = 'movie') {
 
 function createCard(movie) {
   const card = document.createElement('div');
-  card.className = 'movie-card';
   const poster = movie.poster_path ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}` : '';
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '';
   const cardMediaType = normalizeMediaType(movie.media_type || currentType);
-  const favIcon = isFavorite(movie.id, cardMediaType) ? '\u2764\uFE0F' : '\uD83E\uDD0D';
+  const favoriteActive = isFavorite(movie.id, cardMediaType);
+  const watchedActive = isWatched(movie.id, cardMediaType);
+  const favIcon = favoriteActive ? '\u2764\uFE0F' : '\uD83E\uDD0D';
+  const watchedIcon = watchedActive ? '\u2705' : '\uD83D\uDC41\uFE0F';
+
+  card.className = `movie-card${watchedActive ? ' watched' : ''}`;
 
   card.innerHTML = `
     <div class="card-poster-wrapper">
       <img src="${poster}" class="movie-poster" loading="lazy">
-      ${rating ? `<span class="tmdb-mini-score card-score">${rating}</span>` : ''}<div class="card-overlay"></div>
+      ${rating ? `<span class="tmdb-mini-score card-score">${rating}</span>` : ''}
+      ${watchedActive ? '<span class="watched-badge">Seen</span>' : ''}
+      <div class="card-overlay"></div>
     </div>
     <div class="card-info">
       <h3 class="card-title">${movie.title || movie.name}</h3>
       <span class="card-year">${(movie.release_date || movie.first_air_date || '').slice(0,4)}</span>
     </div>
     <button class="fav-btn">${favIcon}</button>
+    <button class="watched-btn">${watchedIcon}</button>
   `;
 
   card.querySelector('.fav-btn').addEventListener('click', e => {
     e.stopPropagation();
     toggleFavorite(movie);
-    e.target.textContent = isFavorite(movie.id, cardMediaType) ? '\u2764\uFE0F' : '\uD83E\uDD0D';
+    e.currentTarget.textContent = isFavorite(movie.id, cardMediaType) ? '\u2764\uFE0F' : '\uD83E\uDD0D';
+  });
+
+  card.querySelector('.watched-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    toggleWatched(movie);
+    const active = isWatched(movie.id, cardMediaType);
+    e.currentTarget.textContent = active ? '\u2705' : '\uD83D\uDC41\uFE0F';
+    card.classList.toggle('watched', active);
+
+    const posterWrap = card.querySelector('.card-poster-wrapper');
+    let badge = card.querySelector('.watched-badge');
+    if (active && !badge) {
+      badge = document.createElement('span');
+      badge.className = 'watched-badge';
+      badge.textContent = 'Seen';
+      posterWrap.appendChild(badge);
+    }
+    if (!active && badge) badge.remove();
   });
 
   card.addEventListener('click', () => {
@@ -774,6 +834,7 @@ function createCard(movie) {
 
   return card;
 }
+
 
 
 
