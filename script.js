@@ -74,16 +74,11 @@ function initSearchPromptCarousel(inputEl) {
     "best comfort anime"
   ];
 
-  let idx = 0;
+  let promptIndex = 0;
+  let charIndex = 0;
+  let deleting = false;
   let timer = null;
   let running = false;
-
-  const scheduleNext = () => {
-    if (!running) return;
-    inputEl.placeholder = prompts[idx];
-    idx = (idx + 1) % prompts.length;
-    timer = setTimeout(scheduleNext, 2300);
-  };
 
   const stop = () => {
     running = false;
@@ -91,10 +86,44 @@ function initSearchPromptCarousel(inputEl) {
     timer = null;
   };
 
+  const tick = () => {
+    if (!running) return;
+
+    const currentPrompt = prompts[promptIndex];
+
+    if (!deleting) {
+      charIndex += 1;
+      inputEl.placeholder = currentPrompt.slice(0, charIndex);
+
+      if (charIndex >= currentPrompt.length) {
+        timer = setTimeout(() => {
+          deleting = true;
+          tick();
+        }, 900);
+        return;
+      }
+
+      timer = setTimeout(tick, 48);
+      return;
+    }
+
+    charIndex -= 1;
+    inputEl.placeholder = currentPrompt.slice(0, Math.max(charIndex, 0));
+
+    if (charIndex <= 0) {
+      deleting = false;
+      promptIndex = (promptIndex + 1) % prompts.length;
+      timer = setTimeout(tick, 260);
+      return;
+    }
+
+    timer = setTimeout(tick, 28);
+  };
+
   const start = () => {
     if (running || inputEl.value.trim()) return;
     running = true;
-    scheduleNext();
+    tick();
   };
 
   inputEl.addEventListener('focus', () => {
@@ -107,9 +136,15 @@ function initSearchPromptCarousel(inputEl) {
   });
 
   inputEl.addEventListener('blur', () => {
-    if (!inputEl.value.trim()) start();
+    if (!inputEl.value.trim()) {
+      inputEl.placeholder = '';
+      charIndex = 0;
+      deleting = false;
+      start();
+    }
   });
 
+  inputEl.placeholder = '';
   start();
 }
 document.addEventListener('DOMContentLoaded', () => {
@@ -466,6 +501,7 @@ function createCard(movie) {
 
   return card;
 }
+
 
 
 
