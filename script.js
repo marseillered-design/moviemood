@@ -15,6 +15,10 @@ const searchBtn = document.getElementById('searchBtn');
 const countrySelect = document.getElementById('countrySelect');
 const moviesGrid = document.getElementById('moviesGrid');
 const SUPPORTED_REGIONS = ['US','CA','GB','DE','FR','IT','ES','NL','BE','AT','CH','SE','NO','DK','FI','PL','PT','IE','CZ','GR','UA'];
+const PERSONALIZATION_PROFILE_TTL_MS = 30 * 60 * 1000;
+const PROVIDER_AVAILABILITY_TTL_MS = 6 * 60 * 60 * 1000;
+let personalizationProfileCache = { signature: '', expiresAt: 0, profile: null };
+const providerAvailabilityCache = new Map();
 
 async function fetchJsonWithTimeout(url, timeoutMs = 2500) {
   const controller = new AbortController();
@@ -249,7 +253,7 @@ async function loadTrendingUnderSearch() {
   if (!moodInput || moodInput.value.trim()) return;
 
   showSkeleton();
-  const results = await fetchTrendingMixed(1);
+  const results = await fetchTrendingMixed(1, currentType);
   hideSkeleton();
 
   if (results.length > 0) {
@@ -337,7 +341,169 @@ async function handleSurprise() {
     console.error(e);
   }
 }
-async function fetchTrendingMixed(page = 1) {
+function safeGetFavorites() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem('favorites') || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function buildFavoritesSignature(favorites) {
+  return favorites
+    .map(f => `${normalizeMediaType(f.media_type)}:${f.id}`)
+    .sort()
+    .join('|');
+}
+
+function addGenreWeights(target, genreIds, weight = 1) {
+  genreIds.forEach(id => {
+    const key = String(id);
+    target[key] = (target[key] || 0) + weight;
+  });
+}
+
+function sumGenreBoost(genreIds, weights) {
+  if (!genreIds?.length || !weights) return 0;
+  return genreIds.reduce((sum, id) => sum + (weights[String(id)] || 0), 0);
+}
+
+function detectDominantType(movieWeights, tvWeights) {
+  const movieScore = Object.values(movieWeights).reduce((a, b) => a + b, 0);
+  const tvScore = Object.values(tvWeights).reduce((a, b) => a + b, 0);
+  if (movieScore === 0 && tvScore === 0) return null;
+  return tvScore > movieScore ? 'tv' : 'movie';
+}
+
+async function buildFavoritesGenreProfile(preferredType = 'trending') {
+  const favorites = safeGetFavorites().filter(f => Number.isFinite(Number(f.id))).slice(0, 20);
+  const signature = `${buildFavoritesSignature(favorites)}|${preferredType}`;
+  const now = Date.now();
+
+  if (
+    personalizationProfileCache.profile &&
+    personalizationProfileCache.signature === signature &&
+    personalizationProfileCache.expiresAt > now
+  ) {
+    return personalizationProfileCache.profile;
+  }
+
+  const movieWeights = {};
+  const tvWeights = {};
+
+  await Promise.all(
+    favorites.map(async fav => {
+      const type = normalizeMediaType(fav.media_type || 'movie');
+      try {
+        const res = await fetch(`${TMDB_BASE_URL}/${type}/${fav.id}?api_key=${TMDB_API_KEY}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const genreIds = (data.genres || []).map(g => g.id).filter(Boolean);
+        if (!genreIds.length) return;
+        if (type === 'tv') addGenreWeights(tvWeights, genreIds);
+        else addGenreWeights(movieWeights, genreIds);
+      } catch {
+        // ignore broken favorite detail fetch
+      }
+    })
+  );
+
+  const combinedWeights = { ...movieWeights };
+  Object.entries(tvWeights).forEach(([id, value]) => {
+    combinedWeights[id] = (combinedWeights[id] || 0) + value;
+  });
+
+  const profile = {
+    movieWeights,
+    tvWeights,
+    combinedWeights,
+    dominantType: detectDominantType(movieWeights, tvWeights)
+  };
+
+  personalizationProfileCache = {
+    signature,
+    expiresAt: now + PERSONALIZATION_PROFILE_TTL_MS,
+    profile
+  };
+
+  return profile;
+}
+
+async function isRegionAvailable(item, region) {
+  const mediaType = normalizeMediaType(item.media_type || 'movie');
+  const key = `${mediaType}:${item.id}:${region}`;
+  const cached = providerAvailabilityCache.get(key);
+  const now = Date.now();
+
+  if (cached && cached.expiresAt > now) {
+    return cached.available;
+  }
+
+  try {
+    const res = await fetch(`${TMDB_BASE_URL}/${mediaType}/${item.id}/watch/providers?api_key=${TMDB_API_KEY}`);
+    if (!res.ok) {
+      providerAvailabilityCache.set(key, { available: null, expiresAt: now + 10 * 60 * 1000 });
+      return null;
+    }
+
+    const data = await res.json();
+    const regionData = data?.results?.[region];
+    const available = !!(
+      regionData &&
+      ((regionData.flatrate && regionData.flatrate.length) ||
+       (regionData.rent && regionData.rent.length) ||
+       (regionData.buy && regionData.buy.length))
+    );
+
+    providerAvailabilityCache.set(key, { available, expiresAt: now + PROVIDER_AVAILABILITY_TTL_MS });
+    return available;
+  } catch {
+    providerAvailabilityCache.set(key, { available: null, expiresAt: now + 10 * 60 * 1000 });
+    return null;
+  }
+}
+
+async function personalizeItems(items, { preferredType = currentType } = {}) {
+  if (!Array.isArray(items) || !items.length) return [];
+
+  const list = items.filter(item => item && (item.media_type === 'movie' || item.media_type === 'tv' || !item.media_type));
+  if (!list.length) return [];
+
+  const profile = await buildFavoritesGenreProfile(preferredType);
+  const normalizedPreferred = preferredType === 'trending'
+    ? profile.dominantType
+    : normalizeMediaType(preferredType || 'movie');
+
+  const checked = list.slice(0, Math.min(24, list.length));
+  const availabilityMap = new Map();
+
+  await Promise.all(
+    checked.map(async item => {
+      const mediaType = normalizeMediaType(item.media_type || 'movie');
+      const available = await isRegionAvailable(item, currentRegion);
+      availabilityMap.set(`${mediaType}:${item.id}`, available);
+    })
+  );
+
+  return list
+    .map((item, index) => {
+      const mediaType = normalizeMediaType(item.media_type || 'movie');
+      const itemGenres = item.genre_ids || [];
+      const typeWeights = mediaType === 'tv' ? profile.tvWeights : profile.movieWeights;
+      const genreBoost = sumGenreBoost(itemGenres, typeWeights) || sumGenreBoost(itemGenres, profile.combinedWeights);
+      const typeBoost = normalizedPreferred ? (mediaType === normalizedPreferred ? 18 : -4) : 0;
+      const availableInRegion = availabilityMap.get(`${mediaType}:${item.id}`);
+      const regionBoost = availableInRegion === true ? 14 : (availableInRegion === false ? -2 : 0);
+      const baseScore = (item.popularity || 0) * 0.06 + (item.vote_average || 0) * 1.2;
+      const score = baseScore + genreBoost * 2.8 + typeBoost + regionBoost - index * 0.001;
+      return { item, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .map(x => x.item);
+}
+
+async function fetchTrendingMixed(page = 1, preferredType = currentType) {
   try {
     const [movieRes, tvRes] = await Promise.all([
       fetch(`${TMDB_BASE_URL}/trending/movie/week?api_key=${TMDB_API_KEY}&page=${page}`),
@@ -355,12 +521,14 @@ async function fetchTrendingMixed(page = 1) {
       .sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
 
     const seen = new Set();
-    return merged.filter(item => {
+    const deduped = merged.filter(item => {
       const key = `${item.media_type}:${item.id}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
+
+    return await personalizeItems(deduped, { preferredType });
   } catch (e) {
     console.error(e);
     return [];
@@ -376,7 +544,7 @@ async function loadTrendingMixed(resetPage = true) {
   }
 
   showSkeleton();
-  const results = await fetchTrendingMixed(currentPage);
+  const results = await fetchTrendingMixed(currentPage, 'trending');
   hideSkeleton();
 
   if (results.length > 0) {
@@ -396,7 +564,7 @@ async function loadMore() {
 
   let results = [];
   if (lastAiData?.mode === 'trending_mixed') {
-    results = await fetchTrendingMixed(currentPage);
+    results = await fetchTrendingMixed(currentPage, 'trending');
   } else if (lastAiData) {
     results = await fetchByAiData(lastAiData, currentPage);
   } else {
@@ -411,6 +579,7 @@ async function loadMore() {
 
   isLoading = false;
 }
+
 async function searchTMDB(query, page = 1) {
   try {
     if (currentType === 'trending') {
@@ -418,7 +587,8 @@ async function searchTMDB(query, page = 1) {
         `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&page=${page}`
       );
       const data = await res.json();
-      return (data.results || []).filter(item => item.media_type === 'movie' || item.media_type === 'tv');
+      const filtered = (data.results || []).filter(item => item.media_type === 'movie' || item.media_type === 'tv');
+      return await personalizeItems(filtered, { preferredType: 'trending' });
     }
 
     const endpoint = currentType === 'tv' ? 'tv' : 'movie';
@@ -604,6 +774,8 @@ function createCard(movie) {
 
   return card;
 }
+
+
 
 
 
