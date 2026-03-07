@@ -6,20 +6,20 @@
 /* ==================== CSS VARIABLES (THEMES) ==================== */
 :root {
   /* ðŸŒž LIGHT THEME (Default) */
-  --bg: #f8f9ff;
-  --bg2: #ffffff;
-  --bg3: #edeef5;
+  --bg: #f1effb;
+  --bg2: #fcfbff;
+  --bg3: #e7e2f7;
   --purple: #7c3aed;
   --purple-light: #a855f7;
   --neon: #6d28d9;
   --neon-glow: rgba(124, 58, 237, 0.15);
   --pink: #db2777;
-  --text: #1a1a2e;
-  --text-dim: #6b6b8a;
-  --border: rgba(124, 58, 237, 0.15);
-  --card-bg: rgba(255, 255, 255, 0.8);
+  --text: #201a33;
+  --text-dim: #695f8d;
+  --border: rgba(101, 76, 177, 0.22);
+  --card-bg: rgba(255, 255, 255, 0.72);
   --accent: #dc2626;
-  --input-bg: rgba(255, 255, 255, 0.6);
+  --input-bg: rgba(255, 255, 255, 0.64);
   --overlay-gradient: linear-gradient(to top, rgba(248,249,255,0.9) 0%, transparent 50%);
   --overlay-gradient-fav: linear-gradient(to top, rgba(248,249,255,0.95) 0%, rgba(248,249,255,0.4) 50%, transparent 100%);
   --skeleton-base: #edeef5;
@@ -27,7 +27,7 @@
 }
 
 [data-theme="dark"] {
-  /* ðŸŒ™ DARK THEME */
+  /* DARK THEME */
   --bg: #0d0d14;
   --bg2: #12121e;
   --bg3: #1a1a2e;
@@ -1632,3 +1632,20 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
   .feed-actions { width: 100%; }
   .feed-btn { flex: 1; text-align: center; }
 }
+
+[data-theme="light"] .home-body,
+[data-theme="light"] .movie-body,
+[data-theme="light"] .feed-body {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(185, 157, 255, 0.32), transparent 38%),
+    radial-gradient(circle at 88% 18%, rgba(255, 178, 220, 0.22), transparent 34%),
+    radial-gradient(circle at 78% 82%, rgba(164, 178, 255, 0.2), transparent 36%),
+    var(--bg);
+}
+
+[data-theme="light"] .movie-card,
+[data-theme="light"] .fav-card,
+[data-theme="light"] .feed-player-card {
+  box-shadow: 0 10px 26px rgba(73, 45, 122, 0.08);
+}
+
