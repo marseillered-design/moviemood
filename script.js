@@ -153,6 +153,18 @@ function initSearchPromptCarousel(inputEl) {
 }
 
 const CLIENT_MOOD_RULES = [
+  { pattern: /^funny$/i, data: { genres: [35] } },
+  { pattern: /^sad$/i, data: { genres: [18] } },
+  { pattern: /^scary$/i, data: { genres: [27, 53] } },
+  { pattern: /^action$/i, data: { genres: [28, 12] } },
+  { pattern: /^romance$/i, data: { genres: [10749, 35] } },
+  { pattern: /^mind$/i, data: { genres: [878, 9648, 53] } },
+  { pattern: /^family$/i, data: { genres: [16, 10751] } },
+  { pattern: /^mystery$/i, data: { genres: [9648, 53] } },
+  { pattern: /^inspiring$/i, data: { genres: [18, 36] } },
+  { pattern: /^animated$/i, data: { genres: [16, 10751] } },
+  { pattern: /^historical$/i, data: { genres: [36, 18] } },
+  { pattern: /^musical$/i, data: { genres: [10402, 35] } },
   { pattern: /female rage|revenge woman|angry woman/i, data: { genres: [18, 53] } },
   { pattern: /gothic romance|dark romance|victorian romance/i, data: { genres: [18, 10749, 9648] } },
   { pattern: /toxic romance|toxic relationship|obsessive love/i, data: { genres: [18, 10749] } },
