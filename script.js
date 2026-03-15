@@ -199,6 +199,52 @@ function inferClientMoodData(query) {
     }
   }
 
+  const genreMap = [
+    { pattern: /horror|horrors|horor|scary|creepy/, genre: 27 },
+    { pattern: /action|fight|adrenaline/, genre: 28 },
+    { pattern: /animation|animated|cartoon/, genre: 16 },
+    { pattern: /comedy|funny|laugh/, genre: 35 },
+    { pattern: /crime|criminal|gangster/, genre: 80 },
+    { pattern: /documentary|doc|docs/, genre: 99 },
+    { pattern: /drama|dramatic/, genre: 18 },
+    { pattern: /family|kids|children/, genre: 10751 },
+    { pattern: /fantasy|magical/, genre: 14 },
+    { pattern: /historical|history|period/, genre: 36 },
+    { pattern: /music|musical/, genre: 10402 },
+    { pattern: /mystery|mysterious/, genre: 9648 },
+    { pattern: /romance|romantic|love/, genre: 10749 },
+    { pattern: /sci[ -]?fi|space|future|cyberpunk/, genre: 878 },
+    { pattern: /thriller|tense|suspense/, genre: 53 },
+    { pattern: /war|military/, genre: 10752 },
+    { pattern: /western/, genre: 37 }
+  ];
+
+  const uniqueGenres = [...new Set(
+    genreMap
+      .filter(entry => entry.pattern.test(normalizedQuery))
+      .map(entry => entry.genre)
+  )];
+
+  const decadeMatch = normalizedQuery.match(/(?:19|20)?(\d{2})s/);
+  let year_from;
+  let year_to;
+  if (decadeMatch) {
+    let decade = Number(decadeMatch[1]);
+    decade += decade < 30 ? 2000 : 1900;
+    year_from = decade;
+    year_to = decade + 9;
+  }
+
+  const hasMoodSignals = /dark|feel-good|feel good|mind-bending|easy watch|cozy|disturbing|inspiring|sad|funny|scary|romance|mystery|historical|musical|animated|family/.test(normalizedQuery);
+
+  if (uniqueGenres.length || year_from || hasMoodSignals) {
+    return {
+      genres: uniqueGenres.length ? uniqueGenres : [18, 28],
+      ...(year_from ? { year_from, year_to } : {}),
+      inferred_client_side: true
+    };
+  }
+
   return null;
 }
 
