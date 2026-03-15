@@ -785,7 +785,7 @@ function createCard(movie) {
   const favoriteActive = isFavorite(movie.id, cardMediaType);
   const watchedActive = isWatched(movie.id, cardMediaType);
   const favIcon = favoriteActive ? '\u2764\uFE0F' : '\uD83E\uDD0D';
-  const watchedIcon = watchedActive ? '\\uD83C\\uDFAC' : '\\uD83C\\uDF7F';
+  const watchedIcon = watchedActive ? '\uD83C\uDFAC' : '\uD83C\uDF7F';
 
   card.className = `movie-card${watchedActive ? ' watched' : ''}`;
 
@@ -814,7 +814,7 @@ function createCard(movie) {
     e.stopPropagation();
     toggleWatched(movie);
     const active = isWatched(movie.id, cardMediaType);
-    e.currentTarget.textContent = active ? '\\uD83C\\uDFAC' : '\\uD83C\\uDF7F';
+    e.currentTarget.textContent = active ? '\uD83C\uDFAC' : '\uD83C\uDF7F';
     card.classList.toggle('watched', active);
 
     const posterWrap = card.querySelector('.card-poster-wrapper');
@@ -834,6 +834,7 @@ function createCard(movie) {
 
   return card;
 }
+
 
 
 
