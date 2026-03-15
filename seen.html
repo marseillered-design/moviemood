@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Favorites - MovieMood</title>
-  <link rel="stylesheet" href="style.css?v=20260306d">
+  <title>Seen - MovieMood</title>
+  <link rel="stylesheet" href="style.css?v=20260307c">
 </head>
 <body class="home-body">
   <div class="bg-orbs">
@@ -18,6 +18,7 @@
     <a href="index.html" class="nav-logo">MOVIEMOOD</a>
     <div>
       <a href="feed.html" class="nav-favorites">&#x1F3AC; Feed</a>
+      <a href="favorites.html" class="nav-favorites">&#x2764;&#xFE0F; Favorites</a>
       <a href="seen.html" class="nav-favorites">&#x1F37F; Seen</a>
       <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
         <span class="icon-sun">&#x2600;&#xFE0F;</span>
@@ -27,22 +28,22 @@
   </nav>
 
   <header class="page-header">
-    <h1 class="page-title">My Favorites</h1>
-    <p class="fav-count" id="favCount"></p>
+    <h1 class="page-title">Seen</h1>
+    <p class="fav-count" id="seenCount"></p>
   </header>
 
   <main class="home-main">
     <div class="fav-empty" id="emptyState" style="display: none;">
-      <div class="fav-empty-icon">&#x1F3AC;</div>
-      <h2>No favorites yet</h2>
-      <p>Explore movies and hit &#x2764;&#xFE0F; to save them here</p>
+      <div class="fav-empty-icon">&#x1F37F;</div>
+      <h2>No watched titles yet</h2>
+      <p>Mark movies and series as watched to keep your history here</p>
       <a href="index.html" class="btn-discover">Discover Movies</a>
     </div>
 
-    <div class="fav-grid" id="favoritesGrid"></div>
+    <div class="fav-grid" id="seenGrid"></div>
 
-    <div class="fav-actions" id="favActions" style="display: none;">
-      <button class="btn-clear-all" id="clearAllBtn">&#x1F5D1;&#xFE0F; Clear all favorites</button>
+    <div class="fav-actions" id="seenActions" style="display: none;">
+      <button class="btn-clear-all" id="clearSeenBtn">&#x1F5D1;&#xFE0F; Clear seen history</button>
     </div>
   </main>
 
@@ -72,11 +73,7 @@
     });
   </script>
 
-  <script src="favorites.js?v=20260306d"></script>
+  <script src="seen.js?v=20260307c"></script>
 </body>
 </html>
-
-
-
-
 

@@ -785,7 +785,7 @@ function createCard(movie) {
   const favoriteActive = isFavorite(movie.id, cardMediaType);
   const watchedActive = isWatched(movie.id, cardMediaType);
   const favIcon = favoriteActive ? '\u2764\uFE0F' : '\uD83E\uDD0D';
-  const watchedIcon = watchedActive ? '\u2705' : '\uD83D\uDC41\uFE0F';
+  const watchedIcon = watchedActive ? '\\uD83C\\uDFAC' : '\\uD83C\\uDF7F';
 
   card.className = `movie-card${watchedActive ? ' watched' : ''}`;
 
@@ -793,7 +793,7 @@ function createCard(movie) {
     <div class="card-poster-wrapper">
       <img src="${poster}" class="movie-poster" loading="lazy">
       ${rating ? `<span class="tmdb-mini-score card-score">${rating}</span>` : ''}
-      ${watchedActive ? '<span class="watched-badge">Seen</span>' : ''}
+      ${watchedActive ? '<span class="watched-badge">Watched</span>' : ''}
       <div class="card-overlay"></div>
     </div>
     <div class="card-info">
@@ -814,7 +814,7 @@ function createCard(movie) {
     e.stopPropagation();
     toggleWatched(movie);
     const active = isWatched(movie.id, cardMediaType);
-    e.currentTarget.textContent = active ? '\u2705' : '\uD83D\uDC41\uFE0F';
+    e.currentTarget.textContent = active ? '\\uD83C\\uDFAC' : '\\uD83C\\uDF7F';
     card.classList.toggle('watched', active);
 
     const posterWrap = card.querySelector('.card-poster-wrapper');
@@ -822,7 +822,7 @@ function createCard(movie) {
     if (active && !badge) {
       badge = document.createElement('span');
       badge.className = 'watched-badge';
-      badge.textContent = 'Seen';
+      badge.textContent = 'Watched';
       posterWrap.appendChild(badge);
     }
     if (!active && badge) badge.remove();
@@ -834,6 +834,7 @@ function createCard(movie) {
 
   return card;
 }
+
 
 
 
