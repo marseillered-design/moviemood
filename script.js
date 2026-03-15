@@ -646,10 +646,16 @@ async function fetchByAiData(aiData, page = 1) {
       const sortBy = hasYears ? 'vote_average.desc' : 'popularity.desc';
       const minVotes = hasYears ? 200 : 50;
       
-      const res = await fetch(
-        `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${genreParam}&sort_by=${sortBy}&vote_count.gte=${minVotes}&page=${page}${animeParam}${yearParam}`
-      );
-      const data = await res.json();
+      const buildDiscoverUrl = (genreValue, minimumVotes = minVotes) =>
+        `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${genreValue}&sort_by=${sortBy}&vote_count.gte=${minimumVotes}&page=${page}${animeParam}${yearParam}`;
+
+      let data = await fetch(buildDiscoverUrl(genreParam)).then(res => res.json());
+
+      if ((!data.results || data.results.length === 0) && aiData.genres.length > 1) {
+        const relaxedGenreParam = currentType === 'documentary' ? '99' : aiData.genres.join('|');
+        data = await fetch(buildDiscoverUrl(relaxedGenreParam, 20)).then(res => res.json());
+      }
+
       return data.results || [];
     }
     
