@@ -305,12 +305,15 @@ async function handleSearch(resetPage = true) {
     return;
   }
 
-  const results = await searchTMDB(query, currentPage);
-  if (results.length > 0) {
-    hideSkeleton();
-    displayMovies(results, false);
-    addLoadMoreBtn();
-    return;
+  const isTitleLikeQuery = !aiData || Boolean(aiData.search_query);
+  if (isTitleLikeQuery) {
+    const results = await searchTMDB(query, currentPage);
+    if (results.length > 0) {
+      hideSkeleton();
+      displayMovies(results, false);
+      addLoadMoreBtn();
+      return;
+    }
   }
 
   hideSkeleton();
