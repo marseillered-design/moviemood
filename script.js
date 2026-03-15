@@ -262,8 +262,8 @@ document.addEventListener('DOMContentLoaded', () => {
       moodPickerPopup.classList.remove('open');
       moodPickerBtn.classList.remove('active');
       
-      // ðŸŽ² RANDOM PAGE FOR VARIETY (1-10) - don't reset in handleSearch
-      currentPage = Math.floor(Math.random() * 10) + 1;
+      // Keep emoji moods stable; random deep pages can return empty results.
+      currentPage = 1;
       
       handleSearch(false); // false = don't reset page
     });
@@ -315,9 +315,10 @@ async function handleSearch(resetPage = true) {
 
   if (!query) return;
 
+  currentQuery = query;
+
   if (resetPage) {
     currentPage = 1;
-    currentQuery = query;
     lastAiData = null;
     removeLoadMoreBtn();
   }
@@ -896,6 +897,7 @@ function createCard(movie) {
 
   return card;
 }
+
 
 
 
