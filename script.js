@@ -151,6 +151,45 @@ function initSearchPromptCarousel(inputEl) {
   inputEl.placeholder = '';
   start();
 }
+
+const CLIENT_MOOD_RULES = [
+  { pattern: /female rage|revenge woman|angry woman/i, data: { genres: [18, 53] } },
+  { pattern: /gothic romance|dark romance|victorian romance/i, data: { genres: [18, 10749, 9648] } },
+  { pattern: /toxic romance|toxic relationship|obsessive love/i, data: { genres: [18, 10749] } },
+  { pattern: /villain wins|bad guy wins|no happy ending/i, data: { genres: [53, 80] } },
+  { pattern: /found footage|camcorder horror|mockumentary horror/i, data: { genres: [27, 53] } },
+  { pattern: /grief movie|grief|loss|mourning/i, data: { genres: [18] } },
+  { pattern: /unhinged woman|chaotic woman|unstable woman/i, data: { genres: [18, 53] } },
+  { pattern: /coquette movie|soft girl aesthetic|feminine aesthetic/i, data: { genres: [18, 10749] } },
+  { pattern: /messy relationships?|relationship drama|toxic couples?/i, data: { genres: [18, 10749] } },
+  { pattern: /brain.?melting|mind.?bending|mindfuck/i, data: { genres: [878, 9648, 53] } },
+  { pattern: /sad.*beautiful|beautiful.*sad/i, data: { genres: [18, 10749] } },
+  { pattern: /easy watch|easy watching|easy to watch|not too heavy|light watch/i, data: { genres: [35, 10749] } },
+  { pattern: /films? that ruin you|movie that ruins you|devastating|heartbreaking/i, data: { genres: [18, 10749] } },
+  { pattern: /wtf ending|crazy ending|shocking ending|twisted ending/i, data: { genres: [9648, 53] } }
+];
+
+function normalizeClientMoodQuery(query) {
+  return String(query || '')
+    .toLowerCase()
+    .replace(/[’']/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function inferClientMoodData(query) {
+  const normalizedQuery = normalizeClientMoodQuery(query);
+  if (!normalizedQuery) return null;
+
+  for (const rule of CLIENT_MOOD_RULES) {
+    if (rule.pattern.test(normalizedQuery)) {
+      return { ...rule.data, inferred_client_side: true };
+    }
+  }
+
+  return null;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const themeToggle = document.getElementById('theme-toggle');
   const root = document.documentElement;
@@ -257,13 +296,15 @@ async function loadTrendingUnderSearch() {
   hideSkeleton();
 
   if (results.length > 0) {
-    displayMovies(results.slice(0, 12), false);
+    displayMovies(results, false);
+    addLoadMoreBtn();
   } else {
     renderEmptyState('Trending is unavailable right now.');
   }
 
   removeLoadMoreBtn();
 }
+
 async function handleSearch(resetPage = true) {
   const query = moodInput.value.trim();
 
@@ -296,7 +337,8 @@ async function handleSearch(resetPage = true) {
   }
 
   const { results: aiResults, aiData } = await searchWithAI(query, currentPage);
-  lastAiData = aiData;
+  const resolvedAiData = aiData || inferClientMoodData(query);
+  lastAiData = resolvedAiData;
 
   if (aiResults.length > 0) {
     hideSkeleton();
@@ -305,7 +347,17 @@ async function handleSearch(resetPage = true) {
     return;
   }
 
-  const isTitleLikeQuery = !aiData || Boolean(aiData.search_query);
+  if (!aiData && resolvedAiData) {
+    const clientMoodResults = await fetchByAiData(resolvedAiData, currentPage);
+    if (clientMoodResults.length > 0) {
+      hideSkeleton();
+      displayMovies(clientMoodResults, false);
+      addLoadMoreBtn();
+      return;
+    }
+  }
+
+  const isTitleLikeQuery = !resolvedAiData || Boolean(resolvedAiData.search_query);
   if (isTitleLikeQuery) {
     const results = await searchTMDB(query, currentPage);
     if (results.length > 0) {
@@ -319,6 +371,7 @@ async function handleSearch(resetPage = true) {
   hideSkeleton();
   renderEmptyState('No movies found. Try a different mood!');
 }
+
 async function handleSurprise() {
   const genres = [28, 12, 16, 35, 80, 18, 14, 27, 9648, 10749, 878, 53, 37];
   const randomGenre = genres[Math.floor(Math.random() * genres.length)];
