@@ -1,31 +1,31 @@
-export default async function handler(req, res) {
+﻿export default async function handler(req, res) {
   try {
     const { query } = req.body;
     if (!query) {
       return res.status(200).json({ genres: [18, 28], fallback: true });
     }
 
-    // ══════════════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
     // STEP 1: Check local database first (instant, free)
-    // ══════════════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
     const dbResult = lookupPrompt(query);
     if (dbResult) {
-      console.log(`[DB HIT] "${query}" → ${JSON.stringify(dbResult)}`);
+      console.log(`[DB HIT] "${query}" â†’ ${JSON.stringify(dbResult)}`);
       return res.status(200).json(dbResult);
     }
 
-    console.log(`[DB MISS] "${query}" → calling Gemini`);
+    console.log(`[DB MISS] "${query}" â†’ calling Gemini`);
 
-    // ══════════════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
     // STEP 2: Fallback to Gemini AI
-    // ══════════════════════════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
     const prompt = `You are an expert movie recommendation assistant. Convert ANY user request into TMDB search parameters.
 Return ONLY valid JSON, no extra text, no markdown. Choose ONE of these formats:
-FORMAT A — for studios/companies:
+FORMAT A â€” for studios/companies:
 {"company_id": number}
-FORMAT B — for genres/moods:
+FORMAT B â€” for genres/moods:
 {"genres": [number], "year_from": number, "year_to": number}
-FORMAT C — for specific titles/directors/actors/languages:
+FORMAT C â€” for specific titles/directors/actors/languages:
 {"search_query": "string", "year_from": number, "year_to": number}
 year_from and year_to are always optional.
 COMPANY IDs:
@@ -50,14 +50,14 @@ search_query for directors, actors, franchises, national cinemas
 genres for moods, emotions, situations, descriptors
 Add year_from/year_to when time period is mentioned
 EXAMPLES:
-"something like inception" → {"genres": [9648, 878]}
-"cozy sunday" → {"genres": [35, 10749]}
-"zombie apocalypse" → {"genres": [27, 878]}
-"revenge story" → {"genres": [28, 53]}
-"cyberpunk action" → {"genres": [878, 28]}
-"medical drama" → {"genres": [18]}
-"prison escape" → {"genres": [18, 28]}
-"dark 90s thriller" → {"genres": [53, 18], "year_from": 1990, "year_to": 1999}
+"something like inception" â†’ {"genres": [9648, 878]}
+"cozy sunday" â†’ {"genres": [35, 10749]}
+"zombie apocalypse" â†’ {"genres": [27, 878]}
+"revenge story" â†’ {"genres": [28, 53]}
+"cyberpunk action" â†’ {"genres": [878, 28]}
+"medical drama" â†’ {"genres": [18]}
+"prison escape" â†’ {"genres": [18, 28]}
+"dark 90s thriller" â†’ {"genres": [53, 18], "year_from": 1990, "year_to": 1999}
 User request: "${query}"`;
 
     const geminiResponse = await fetch(
@@ -112,13 +112,13 @@ User request: "${query}"`;
   }
 }
 
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // PROMPTS DATABASE (1000+ entries)
-// ══════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const promptsDB = {
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // STUDIOS & COMPANIES
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   "pixar": { company_id: 3 },
   "pixar movies": { company_id: 3 },
   "pixar films": { company_id: 3 },
@@ -203,9 +203,9 @@ const promptsDB = {
   "lionsgate": { company_id: 1632 },
   "miramax": { company_id: 14 },
 
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // FRANCHISES
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   "star wars": { search_query: "star wars" },
   "star wars movies": { search_query: "star wars" },
   "harry potter": { search_query: "harry potter" },
@@ -269,9 +269,9 @@ const promptsDB = {
   "big hero 6": { search_query: "big hero 6" },
   "wreck it ralph": { search_query: "wreck-it ralph" },
 
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // DIRECTORS
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   "nolan": { search_query: "christopher nolan" },
   "christopher nolan": { search_query: "christopher nolan" },
   "nolan movies": { search_query: "christopher nolan" },
@@ -329,9 +329,9 @@ const promptsDB = {
   "raimi": { search_query: "sam raimi" },
   "christopher nolan early films": { search_query: "christopher nolan", year_from: 1998, year_to: 2006 },
 
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // ACTORS & ACTRESSES
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   "tom hanks": { search_query: "tom hanks" },
   "tom hanks movies": { search_query: "tom hanks" },
   "leonardo dicaprio": { search_query: "leonardo dicaprio" },
@@ -374,8 +374,8 @@ const promptsDB = {
   "jennifer lawrence": { search_query: "jennifer lawrence" },
   "anne hathaway": { search_query: "anne hathaway" },
   "charlize theron": { search_query: "charlize theron" },
-  "timothee chalamet": { search_query: "timothée chalamet" },
-  "chalamet": { search_query: "timothée chalamet" },
+  "timothee chalamet": { search_query: "timothÃ©e chalamet" },
+  "chalamet": { search_query: "timothÃ©e chalamet" },
   "florence pugh": { search_query: "florence pugh" },
   "zendaya": { search_query: "zendaya" },
   "pedro pascal": { search_query: "pedro pascal" },
@@ -440,9 +440,9 @@ const promptsDB = {
   "marilyn monroe": { search_query: "marilyn monroe" },
   "clint eastwood actor": { search_query: "clint eastwood" },
 
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // NATIONAL CINEMAS
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   "korean": { search_query: "korean" },
   "korean movies": { search_query: "korean" },
   "korean drama": { search_query: "korean" },
@@ -520,9 +520,9 @@ const promptsDB = {
   "argentinian": { search_query: "argentinian film" },
   "brazilian": { search_query: "brazilian film" },
 
-  // ══════════════════════════════════════════════
-  // GENRES — PURE
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // GENRES â€” PURE
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   "action": { genres: [28] },
   "action movies": { genres: [28] },
   "action films": { genres: [28] },
@@ -569,9 +569,9 @@ const promptsDB = {
   "westerns": { genres: [37] },
   "western movies": { genres: [37] },
 
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // GENRE COMBINATIONS
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   "romantic comedy": { genres: [10749, 35] },
   "romcom": { genres: [10749, 35] },
   "rom com": { genres: [10749, 35] },
@@ -623,9 +623,9 @@ const promptsDB = {
   "vampire": { genres: [27, 14] },
   "vampire movies": { genres: [27, 14] },
 
-  // ══════════════════════════════════════════════
-  // DECADES — GENRES BY ERA
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // DECADES â€” GENRES BY ERA
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // 1930s-40s
   "1930s": { year_from: 1930, year_to: 1939 },
   "30s movies": { year_from: 1930, year_to: 1939 },
@@ -764,9 +764,9 @@ const promptsDB = {
   "vintage films": { year_from: 1940, year_to: 1985 },
   "retro movies": { year_from: 1960, year_to: 1990 },
 
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // MOODS & EMOTIONS
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   "sad": { genres: [18] },
   "want to cry": { genres: [18] },
   "need to cry": { genres: [18] },
@@ -775,6 +775,18 @@ const promptsDB = {
   "tearjerker": { genres: [18] },
   "emotional": { genres: [18] },
   "heartbreaking": { genres: [18] },
+  "female rage": { genres: [18, 53] },
+  "toxic romance": { genres: [18, 10749] },
+  "toxic relationship": { genres: [18, 10749] },
+  "grief movie": { genres: [18] },
+  "grief": { genres: [18] },
+  "villain wins": { genres: [53, 80] },
+  "found footage": { genres: [27, 53] },
+  "unhinged woman": { genres: [18, 53] },
+  "coquette movie": { genres: [18, 10749] },
+  "gothic romance": { genres: [18, 10749, 9648] },
+  "messy relationships": { genres: [18, 10749] },
+  "messy relationship": { genres: [18, 10749] },
   "make me cry": { genres: [18] },
   "cry my eyes out": { genres: [18] },
   "happy": { genres: [35, 10749] },
@@ -814,8 +826,13 @@ const promptsDB = {
   "chill movie": { genres: [35, 10749] },
   "something light": { genres: [35, 10749] },
   "easy watching": { genres: [35, 10749] },
+  "easy watch": { genres: [35, 10749] },
+  "easy watch movie": { genres: [35, 10749] },
+  "easy-going": { genres: [35, 10749] },
   "not too heavy": { genres: [35, 10749] },
   "easy to watch": { genres: [35, 10749] },
+  "sad but beautiful": { genres: [18, 10749] },
+  "beautifully sad": { genres: [18, 10749] },
   "inspired": { genres: [18, 36] },
   "motivating": { genres: [18, 36] },
   "motivational": { genres: [18, 36] },
@@ -833,6 +850,8 @@ const promptsDB = {
   "thought provoking": { genres: [18, 878] },
   "mind blowing": { genres: [878, 9648] },
   "mind-blowing": { genres: [878, 9648] },
+  "brain melting": { genres: [878, 9648, 53] },
+  "brain-melting": { genres: [878, 9648, 53] },
   "mind bending": { genres: [878, 9648] },
   "mind-bending": { genres: [878, 9648] },
   "plot twist": { genres: [9648, 53] },
@@ -869,9 +888,9 @@ const promptsDB = {
   "cannot stop watching": { genres: [53, 9648] },
   "binge worthy": { genres: [53, 9648] },
 
-  // ══════════════════════════════════════════════
-  // SITUATIONS — VERY DETAILED
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // SITUATIONS â€” VERY DETAILED
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // DATE & RELATIONSHIP
   "date night": { genres: [10749, 35] },
   "date night movie": { genres: [10749, 35] },
@@ -1048,9 +1067,9 @@ const promptsDB = {
   "lazy sunday": { genres: [35, 18] },
   "nothing on tv": { genres: [28, 35] },
 
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // STYLE & QUALITY
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   "oscar winner": { genres: [18] },
   "oscar winners": { genres: [18] },
   "oscar nominated": { genres: [18] },
@@ -1090,10 +1109,20 @@ const promptsDB = {
   "book adaptation": { genres: [18, 14] },
   "deep meaning": { genres: [18, 878] },
   "meaningful": { genres: [18] },
+  "films that ruin you": { genres: [18, 10749] },
+  "movie that ruins you": { genres: [18, 10749] },
+  "devastating": { genres: [18, 10749] },
+  "heartbreaking": { genres: [18, 10749] },
+  "life-changing movie": { genres: [18, 878] },
+  "life changing movie": { genres: [18, 878] },
+  "must watch before you die": { genres: [18, 12] },
+  "must-watch before you die": { genres: [18, 12] },
+  "wtf ending": { genres: [9648, 53] },
+  "crazy ending": { genres: [9648, 53] },
 
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // TOPICS & THEMES
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   "space": { genres: [878] },
   "space movies": { genres: [878] },
   "space exploration": { genres: [878, 12] },
@@ -1210,81 +1239,249 @@ const promptsDB = {
   "mecha": { search_query: "mecha anime" },
 };
 
+function normalizeToken(token) {
+  const aliases = {
+    horrors: 'horror',
+    horor: 'horror',
+    hororr: 'horror',
+    horrer: 'horror',
+    thrillers: 'thriller',
+    thriler: 'thriller',
+    thrillerz: 'thriller',
+    comedies: 'comedy',
+    comdy: 'comedy',
+    comedys: 'comedy',
+    dramas: 'drama',
+    drma: 'drama',
+    romances: 'romance',
+    romnace: 'romance',
+    romantic: 'romance',
+    actions: 'action',
+    acion: 'action',
+    aventure: 'adventure',
+    docs: 'documentary',
+    doc: 'documentary',
+    docu: 'documentary',
+    dokumentary: 'documentary',
+    documentry: 'documentary',
+    documetary: 'documentary',
+    scifi: 'sci-fi',
+    scify: 'sci-fi',
+    scyfi: 'sci-fi',
+    scyfy: 'sci-fi',
+    scifis: 'sci-fi',
+    scifii: 'sci-fi',
+    romcoms: 'romcom',
+    feelgood: 'feel-good',
+    feelgoods: 'feel-good',
+    easywatch: 'easy watch',
+    easygoing: 'easy-going',
+    brainmelting: 'brain-melting',
+    mindbending: 'mind-bending',
+    wtfending: 'wtf ending',
+    lifechanging: 'life-changing',
+    mustwatch: 'must-watch'
+    femalerage: 'female rage',
+    toxicromance: 'toxic romance',
+    villainwins: 'villain wins',
+    foundfootage: 'found footage',
+    griefmovie: 'grief movie'
+    unhingedwoman: 'unhinged woman',
+    coquettemovie: 'coquette movie',
+    gothicromance: 'gothic romance',
+    messyrelationships: 'messy relationships'
+    moovie: 'movie',
+    moovies: 'movies',
+    moviez: 'movies',
+    movis: 'movies',
+    moveis: 'movies',
+    flim: 'film',
+    flims: 'films',
+    seris: 'series',
+    seires: 'series',
+    tvshow: 'tv',
+    tvshows: 'tv',
+    kdrama: 'k-drama',
+    kdramas: 'k-drama'
+  };
+
+  if (aliases[token]) return aliases[token];
+  if (token.endsWith('ies') && token.length > 4) return `${token.slice(0, -3)}y`;
+  if (token.endsWith('s') && token.length > 4 && !token.endsWith('ss')) return token.slice(0, -1);
+  return token;
+}
+
+function normalizePromptQuery(query) {
+  return String(query || '')
+    .toLowerCase()
+    .replace(/[’']/g, '')
+    .replace(/\b(\d{2})\s*s\b/g, '$1s')
+    .replace(/\bsci\s*[- ]?fi\b/g, 'sci-fi')
+    .replace(/\brom\s*[- ]?com\b/g, 'romcom')
+    .replace(/\bfeel\s*[- ]?good\b/g, 'feel-good')
+    .replace(/\beasy\s+watch\b/g, 'easy watch')
+    .replace(/\bbrain\s*[- ]?melting\b/g, 'brain-melting')
+    .replace(/\bmind\s*[- ]?bending\b/g, 'mind-bending')
+    .replace(/\bmind\s+fuck\b/g, 'mindfuck')
+    .replace(/\bk\s*[- ]?drama\b/g, 'k-drama')
+    .replace(/\bbased\s+on\s+(a\s+)?true\s+story\b/g, 'based on true story')
+    .replace(/\btrue\s+story\b/g, 'based on true story')
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(normalizeToken)
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getMeaningfulTokens(query) {
+  const stopWords = new Set([
+    'a', 'an', 'the', 'of', 'for', 'and', 'with', 'to', 'like', 'something',
+    'i', 'im', 'want', 'need', 'maybe', 'some', 'any', 'really', 'very', 'that',
+    'which', 'about', 'around', 'kind', 'kinda', 'sort', 'please', 'show', 'me',
+    'find', 'looking', 'lookingfor', 'watch', 'watching', 'tonight', 'now', 'good', 'but',
+    'movie', 'movies', 'film', 'films', 'series', 'tv', 'stuff'
+  ]);
+  return normalizePromptQuery(query)
+    .split(/\s+/)
+    .filter(token => token && !stopWords.has(token));
+}
+
+function sortTokens(tokens) {
+  return [...tokens].sort().join(' ');
+}
+
+function getEditDistance(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+
+  const matrix = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+  for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+  for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
+      );
+    }
+  }
+
+  return matrix[a.length][b.length];
+}
+
+function tokensMatch(queryToken, keyToken) {
+  if (queryToken === keyToken) return true;
+  const distance = getEditDistance(queryToken, keyToken);
+  if (Math.max(queryToken.length, keyToken.length) <= 5) return distance <= 1;
+  return distance <= 2;
+}
+
 function lookupPrompt(query) {
-  const q = query.toLowerCase().trim();
+  const normalizedQuery = normalizePromptQuery(query);
+  if (!normalizedQuery) return null;
 
-  // 1. Exact match
-  if (promptsDB[q]) return promptsDB[q];
+  if (promptsDB[normalizedQuery]) return promptsDB[normalizedQuery];
 
-  // 2. Query contains a known key (trim keys before matching!)
-  const keys = Object.keys(promptsDB);
-  for (const key of keys) {
-    const trimmedKey = key.trim();
-    if (trimmedKey.length > 4 && q.includes(trimmedKey)) {
-      return promptsDB[key];
+  const queryTokens = getMeaningfulTokens(normalizedQuery);
+  const sortedQuery = sortTokens(queryTokens);
+  const entries = Object.entries(promptsDB).map(([key, value]) => {
+    const normalizedKey = normalizePromptQuery(key);
+    const keyTokens = getMeaningfulTokens(normalizedKey);
+    return { key, value, normalizedKey, keyTokens, sortedKey: sortTokens(keyTokens) };
+  });
+
+  for (const entry of entries) {
+    if (!entry.normalizedKey) continue;
+    if (entry.normalizedKey === normalizedQuery) return entry.value;
+    if (entry.sortedKey && entry.sortedKey === sortedQuery) return entry.value;
+  }
+
+  let bestMatch = null;
+  let bestScore = 0;
+
+  for (const entry of entries) {
+    if (!entry.keyTokens.length) continue;
+
+    const matchedWords = entry.keyTokens.filter(keyToken =>
+      queryTokens.some(queryToken => tokensMatch(queryToken, keyToken))
+    );
+
+    if (!matchedWords.length) continue;
+
+    const coverage = matchedWords.length / entry.keyTokens.length;
+    const density = matchedWords.length / Math.max(queryTokens.length, 1);
+    const orderBonus = entry.keyTokens.length > 1 && entry.keyTokens.every(token => normalizedQuery.includes(token)) ? 0.15 : 0;
+    const score = coverage * 0.8 + density * 0.2 + orderBonus;
+
+    if (coverage === 1 && score > bestScore) {
+      bestMatch = entry.value;
+      bestScore = score;
     }
   }
 
-  // 3. All words of multi-word key appear in query
-  for (const key of keys) {
-    const trimmedKey = key.trim();
-    const kWords = trimmedKey.split(/\s+/);
-    if (kWords.length >= 2 && kWords.every(w => q.includes(w))) {
-      return promptsDB[key];
-    }
-  }
-
-  return null;
+  return bestScore >= 0.85 ? bestMatch : null;
 }
 
 function keywordFallback(query) {
-  const q = query.toLowerCase();
+  const q = normalizePromptQuery(query);
+  const qTokens = getMeaningfulTokens(q);
+  const hasKeyword = (phrase) => {
+    const phraseTokens = getMeaningfulTokens(phrase);
+    if (!phraseTokens.length) return false;
+    return phraseTokens.every(phraseToken => qTokens.some(queryToken => tokensMatch(queryToken, phraseToken)));
+  };
 
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // DECADE DETECTION (NEW!)
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const decadeMatch = q.match(/(19|20)?(\d{2})s/);
   if (decadeMatch) {
     let year = parseInt(decadeMatch[2]);
     if (year < 100) year += 1900;
 
-    if (q.includes('horror')) return { genres: [27], year_from: year, year_to: year + 9 };
-    if (q.includes('action')) return { genres: [28], year_from: year, year_to: year + 9 };
-    if (q.includes('comedy')) return { genres: [35], year_from: year, year_to: year + 9 };
-    if (q.includes('drama')) return { genres: [18], year_from: year, year_to: year + 9 };
-    if (q.includes('sci-fi') || q.includes('sci fi')) return { genres: [878], year_from: year, year_to: year + 9 };
-    if (q.includes('thriller')) return { genres: [53], year_from: year, year_to: year + 9 };
-    if (q.includes('romance')) return { genres: [10749], year_from: year, year_to: year + 9 };
+    if (hasKeyword('horror')) return { genres: [27], year_from: year, year_to: year + 9 };
+    if (hasKeyword('action')) return { genres: [28], year_from: year, year_to: year + 9 };
+    if (hasKeyword('comedy')) return { genres: [35], year_from: year, year_to: year + 9 };
+    if (hasKeyword('drama')) return { genres: [18], year_from: year, year_to: year + 9 };
+    if (hasKeyword('sci-fi') || hasKeyword('sci fi')) return { genres: [878], year_from: year, year_to: year + 9 };
+    if (hasKeyword('thriller')) return { genres: [53], year_from: year, year_to: year + 9 };
+    if (hasKeyword('romance')) return { genres: [10749], year_from: year, year_to: year + 9 };
     return { year_from: year, year_to: year + 9 };
   }
 
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // STUDIO DETECTION
-  // ══════════════════════════════════════════════
-  if (q.includes('pixar')) return { company_id: 3 };
-  if (q.includes('ghibli') || q.includes('miyazaki')) return { company_id: 10342 };
-  if (q.includes('dreamworks')) return { company_id: 521 };
-  if (q.includes('a24')) return { company_id: 41077 };
-  if (q.includes('blumhouse')) return { company_id: 3172 };
-  if (q.includes('marvel') || q.includes('mcu')) return { company_id: 420 };
-  if (q.includes('batman') || q.includes('superman') || q.includes('dc movie')) return { company_id: 9993 };
-  if (q.includes('disney')) return { company_id: 2 };
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  if (hasKeyword('pixar')) return { company_id: 3 };
+  if (hasKeyword('ghibli') || hasKeyword('miyazaki')) return { company_id: 10342 };
+  if (hasKeyword('dreamworks')) return { company_id: 521 };
+  if (hasKeyword('a24')) return { company_id: 41077 };
+  if (hasKeyword('blumhouse')) return { company_id: 3172 };
+  if (hasKeyword('marvel') || hasKeyword('mcu')) return { company_id: 420 };
+  if (hasKeyword('batman') || hasKeyword('superman') || hasKeyword('dc movie')) return { company_id: 9993 };
+  if (hasKeyword('disney')) return { company_id: 2 };
 
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // DIRECTOR DETECTION
-  // ══════════════════════════════════════════════
-  if (q.includes('nolan')) return { search_query: 'christopher nolan' };
-  if (q.includes('tarantino')) return { search_query: 'quentin tarantino' };
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  if (hasKeyword('nolan')) return { search_query: 'christopher nolan' };
+  if (hasKeyword('tarantino')) return { search_query: 'quentin tarantino' };
 
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // NATIONAL CINEMA DETECTION
-  // ══════════════════════════════════════════════
-  if (q.includes('korean') || q.includes('k-drama')) return { search_query: 'korean' };
-  if (q.includes('bollywood')) return { search_query: 'bollywood' };
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  if (hasKeyword('korean') || hasKeyword('k-drama')) return { search_query: 'korean' };
+  if (hasKeyword('bollywood')) return { search_query: 'bollywood' };
 
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // GENRE DETECTION
-  // ══════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   if (q.match(/horror|scary|ghost|monster|creepy/)) return { genres: [27, 53] };
   if (q.match(/action|fight|battle|adrenaline/)) return { genres: [28, 12] };
   if (q.match(/funny|comedy|laugh|humor/)) return { genres: [35] };
@@ -1292,8 +1489,32 @@ function keywordFallback(query) {
   if (q.match(/sci.?fi|space|future|robot/)) return { genres: [878, 28] };
   if (q.match(/mystery|crime|detective|thriller/)) return { genres: [9648, 53] };
   if (q.match(/family|kids|children|cartoon/)) return { genres: [16, 10751] };
+  if (q.match(/wtf ending|crazy ending|shocking ending|twisted ending/)) return { genres: [9648, 53] };
+  if (q.match(/female rage|revenge woman|angry woman/)) return { genres: [18, 53] };
+  if (q.match(/toxic romance|toxic relationship|obsessive love/)) return { genres: [18, 10749] };
+  if (q.match(/villain wins|bad guy wins|no happy ending/)) return { genres: [53, 80] };
+  if (q.match(/found footage|camcorder horror|mockumentary horror/)) return { genres: [27, 53] };
+  if (q.match(/grief movie|grief|loss|mourning/)) return { genres: [18] };
+  if (q.match(/unhinged woman|chaotic woman|unstable woman/)) return { genres: [18, 53] };
+  if (q.match(/coquette movie|soft girl aesthetic|feminine aesthetic/)) return { genres: [18, 10749] };
+  if (q.match(/gothic romance|dark romance|victorian romance/)) return { genres: [18, 10749, 9648] };
+  if (q.match(/messy relationships?|relationship drama|toxic couples?/)) return { genres: [18, 10749] };
+  if (q.match(/must.?watch before you die|essential watch|all time classic/)) return { genres: [18, 12] };
+  if (q.match(/films? that ruin you|movie that ruins you|devastating|heartbreaking/)) return { genres: [18, 10749] };
+  if (q.match(/life.?changing movie|life.?changing film/)) return { genres: [18, 878] };
+  if (q.match(/brain.?melting|mind.?bending|mindfuck/)) return { genres: [878, 9648, 53] };
+  if (q.match(/disturbing|unsettling/)) return { genres: [27, 9648, 18] };
+  if (q.match(/sad.*beautiful|beautiful.*sad/)) return { genres: [18, 10749] };
+  if (q.match(/easy watch|easy watching|easy to watch|not too heavy|light watch/)) return { genres: [35, 10749] };
   if (q.match(/sad|cry|emotional|drama/)) return { genres: [18] };
   if (q.match(/cozy|chill|relax|calm/)) return { genres: [35, 10749] };
 
   return { genres: [18, 28] };
 }
+
+
+
+
+
+
+
