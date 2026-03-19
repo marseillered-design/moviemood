@@ -432,19 +432,27 @@ async function handleSearch(resetPage = true) {
 }
 
 async function handleSurprise() {
-  const genres = [28, 12, 16, 35, 80, 18, 14, 27, 9648, 10749, 878, 53, 37];
-  const randomGenre = genres[Math.floor(Math.random() * genres.length)];
   const randomPage = Math.floor(Math.random() * 5) + 1;
   currentPage = randomPage;
-  lastAiData = { genres: [randomGenre] };
   removeLoadMoreBtn();
   showSkeleton();
-  
-  const endpoint = currentType === 'tv' ? 'tv' : 'movie';
+
+  let url;
+
+  if (currentType === 'documentary') {
+    // Documentary — always genre 99, movie endpoint
+    lastAiData = { genres: [99] };
+    url = `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=99&sort_by=popularity.desc&vote_count.gte=100&page=${randomPage}`;
+  } else {
+    const genres = [28, 12, 16, 35, 80, 18, 14, 27, 9648, 10749, 878, 53, 37];
+    const randomGenre = genres[Math.floor(Math.random() * genres.length)];
+    lastAiData = { genres: [randomGenre] };
+    const endpoint = currentType === 'tv' ? 'tv' : 'movie';
+    url = `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${randomGenre}&sort_by=popularity.desc&vote_count.gte=100&page=${randomPage}`;
+  }
+
   try {
-    const res = await fetch(
-      `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${randomGenre}&sort_by=popularity.desc&vote_count.gte=100&page=${randomPage}`
-    );
+    const res = await fetch(url);
     const data = await res.json();
     hideSkeleton();
     if (data.results?.length) {
