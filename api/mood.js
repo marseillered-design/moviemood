@@ -1,6 +1,12 @@
 export default async function handler(req, res) {
   try {
     const { query } = req.body;
+    // { debug: true } in the request adds _ai: what happened with Gemini (no key, HTTP error, ok)
+    const debug = req.body.debug === true;
+    const reply = (body, aiStatus) => res.status(200).json(debug ? { ...body, _ai: aiStatus } : body);
+    // a key pasted with a stray space or line break is rejected by Google
+    const geminiKey = (process.env.GEMINI_API_KEY || '').trim();
+
     if (!query) {
       return res.status(200).json({ genres: [18, 28], fallback: true });
     }
@@ -24,9 +30,9 @@ export default async function handler(req, res) {
     };
 
     // A half-understood query goes to the AI instead of matching on a single known word
-    if (local.confident || !process.env.GEMINI_API_KEY) {
+    if (local.confident || !geminiKey) {
       console.log(`[LOCAL] "${query}" (${lookupText}) → ${JSON.stringify(local.result)}`);
-      return res.status(200).json(localFallback());
+      return reply(localFallback(), local.confident ? 'not_needed' : 'no_key');
     }
 
     console.log(`[LOCAL MISS] "${query}" (${lookupText}) → calling Gemini`);
@@ -83,7 +89,7 @@ User request: "${query}"`;
     // gemini-1.5-flash was retired; override with GEMINI_MODEL env var if needed
     const geminiModel = process.env.GEMINI_MODEL || 'gemini-flash-latest';
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${encodeURIComponent(geminiKey)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -101,23 +107,24 @@ User request: "${query}"`;
       }
     ).catch(error => {
       console.error("Gemini request failed:", error);
-      return null;
+      return { requestError: String(error?.name || error) };
     });
 
-    if (!geminiResponse) {
-      return res.status(200).json(localFallback());
+    if (geminiResponse.requestError) {
+      return reply(localFallback(), `request_failed: ${geminiResponse.requestError}`);
     }
 
     if (!geminiResponse.ok) {
-      console.error("Gemini API error:", geminiResponse.status, await geminiResponse.text());
-      return res.status(200).json(localFallback());
+      const errorText = await geminiResponse.text();
+      console.error("Gemini API error:", geminiResponse.status, errorText);
+      return reply(localFallback(), `http_${geminiResponse.status}: ${errorText.slice(0, 300)}`);
     }
 
     const data = await geminiResponse.json();
     const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!content) {
-      return res.status(200).json(localFallback());
+      return reply(localFallback(), `empty_answer: ${data.candidates?.[0]?.finishReason || 'no candidates'}`);
     }
 
     let parsed;
@@ -128,18 +135,18 @@ User request: "${query}"`;
       parsed = JSON.parse(jsonMatch[0]);
 
       if (!parsed.genres && !parsed.search_query && !parsed.company_id) {
-        return res.status(200).json(localFallback());
+        return reply(localFallback(), `unusable_answer: ${content.slice(0, 200)}`);
       }
       if (parsed.genres && !Array.isArray(parsed.genres)) {
         parsed.genres = [18, 28];
       }
     } catch (e) {
       console.error("JSON parse error:", e, "Raw:", content);
-      return res.status(200).json(localFallback());
+      return reply(localFallback(), `bad_json: ${content.slice(0, 200)}`);
     }
 
     // The AI only returns genres/years; the topic, country and movie/series come from the parser
-    return res.status(200).json(enrich(parsed, local.parsed));
+    return reply(enrich(parsed, local.parsed), 'ok');
   } catch (error) {
     console.error("Handler error:", error);
     return res.status(200).json({ genres: [18, 28], fallback: true });
