@@ -8,13 +8,28 @@ export default async function handler(req, res) {
     // ══════════════════════════════════════════════
     // STEP 1: Check local database first (instant, free)
     // ══════════════════════════════════════════════
-    const dbResult = lookupPrompt(query);
-    if (dbResult) {
-      console.log(`[DB HIT] "${query}" → ${JSON.stringify(dbResult)}`);
-      return res.status(200).json(dbResult);
+    // Ukrainian / Russian / French / Spanish queries are mapped to English first
+    const translated = translateQuery(query);
+    const lookupText = translated.changed ? translated.text : query;
+
+    // Phrase database + concept parser (genre, mood, topic, decade, country)
+    const local = resolveLocally(lookupText);
+
+    // If Gemini is unavailable: best local guess, or a plain title search when nothing
+    // was understood. title_query lets the client try a title search first
+    // ("Звёздные войны" must not become a war movie list).
+    const localFallback = () => {
+      if (!local.result) return { search_query: query };
+      return local.maybeTitle ? { ...local.result, title_query: query } : local.result;
+    };
+
+    // A half-understood query goes to the AI instead of matching on a single known word
+    if (local.confident || !process.env.GEMINI_API_KEY) {
+      console.log(`[LOCAL] "${query}" (${lookupText}) → ${JSON.stringify(local.result)}`);
+      return res.status(200).json(localFallback());
     }
 
-    console.log(`[DB MISS] "${query}" → calling Gemini`);
+    console.log(`[LOCAL MISS] "${query}" (${lookupText}) → calling Gemini`);
 
     // ══════════════════════════════════════════════
     // STEP 2: Fallback to Gemini AI
@@ -49,7 +64,12 @@ company_id for studios/brands (pixar, marvel, dc, ghibli, a24...)
 search_query for directors, actors, franchises, national cinemas
 genres for moods, emotions, situations, descriptors
 Add year_from/year_to when time period is mentioned
+The request can be in any language (English, Ukrainian, Russian, French, Spanish...). Understand it in its own language; the JSON format stays the same. For search_query use the English or original title/name.
 EXAMPLES:
+"фильм про шахматиста" → {"genres": [18]}
+"щось як Інтерстеллар" → {"genres": [878, 18]}
+"films de Tarantino" → {"search_query": "quentin tarantino"}
+"películas de Studio Ghibli" → {"company_id": 10342}
 "something like inception" → {"genres": [9648, 878]}
 "cozy sunday" → {"genres": [35, 10749]}
 "zombie apocalypse" → {"genres": [27, 878]}
@@ -60,8 +80,10 @@ EXAMPLES:
 "dark 90s thriller" → {"genres": [53, 18], "year_from": 1990, "year_to": 1999}
 User request: "${query}"`;
 
+    // gemini-1.5-flash was retired; override with GEMINI_MODEL env var if needed
+    const geminiModel = process.env.GEMINI_MODEL || 'gemini-flash-latest';
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -69,22 +91,33 @@ User request: "${query}"`;
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             temperature: 0.1,
-            maxOutputTokens: 150,
+            // newer models spend output tokens on thinking, 150 cuts the JSON off
+            maxOutputTokens: 1000,
+            responseMimeType: "application/json",
           },
         }),
+        // a slow AI must not leave the visitor without results
+        signal: AbortSignal.timeout(6000),
       }
-    );
+    ).catch(error => {
+      console.error("Gemini request failed:", error);
+      return null;
+    });
+
+    if (!geminiResponse) {
+      return res.status(200).json(localFallback());
+    }
 
     if (!geminiResponse.ok) {
-      console.error("Gemini API error:", geminiResponse.status);
-      return res.status(200).json(keywordFallback(query));
+      console.error("Gemini API error:", geminiResponse.status, await geminiResponse.text());
+      return res.status(200).json(localFallback());
     }
 
     const data = await geminiResponse.json();
     const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!content) {
-      return res.status(200).json(keywordFallback(query));
+      return res.status(200).json(localFallback());
     }
 
     let parsed;
@@ -95,17 +128,18 @@ User request: "${query}"`;
       parsed = JSON.parse(jsonMatch[0]);
 
       if (!parsed.genres && !parsed.search_query && !parsed.company_id) {
-        return res.status(200).json(keywordFallback(query));
+        return res.status(200).json(localFallback());
       }
       if (parsed.genres && !Array.isArray(parsed.genres)) {
         parsed.genres = [18, 28];
       }
     } catch (e) {
       console.error("JSON parse error:", e, "Raw:", content);
-      return res.status(200).json(keywordFallback(query));
+      return res.status(200).json(localFallback());
     }
 
-    return res.status(200).json(parsed);
+    // The AI only returns genres/years; the topic, country and movie/series come from the parser
+    return res.status(200).json(enrich(parsed, local.parsed));
   } catch (error) {
     console.error("Handler error:", error);
     return res.status(200).json({ genres: [18, 28], fallback: true });
@@ -1983,90 +2017,539 @@ const promptsDB = {
 
 };
 
+// ══════════════════════════════════════════════
+// MULTILINGUAL QUERIES (uk, ru, fr, es → English)
+// Mood/genre words are mapped to the English vocabulary of promptsDB,
+// so "уютный дождливый вечер" is looked up as "cozy rainy evening".
+// "*" at the end of a word = any ending (уютн* → уютный, уютное, ...).
+// An empty key ('') lists filler words that are simply dropped.
+// ══════════════════════════════════════════════
+const I18N_TERMS = {
+  // content type
+  "movie": ["фильм*", "фільм*", "кино", "кіно", "киношк*", "pelicula*", "peli", "pelis"],
+  "series": ["сериал*", "серіал*", "serie"],
+  "cartoon": ["мультик*", "мультфильм*", "мультфільм*", "dessin anime", "dessins animes", "dibujos animados"],
+  "anime": ["аниме", "аніме"],
+  "documentary": ["документал*", "documentaire*", "documental*"],
+
+  // genres
+  "comedy": ["комеди*", "комеді*", "comedie*", "comedia*"],
+  "funny": ["смешн*", "смішн*", "весел*", "drole*", "marrant*", "gracios*", "divertid*"],
+  "laugh": ["посмеят*", "посміят*", "поржать", "поржати", "rire", "rigoler", "reir", "reirse"],
+  "horror": ["ужас*", "жах*", "хоррор*", "horreur", "epouvante", "terror"],
+  "scary": ["страшн*", "жутк*", "моторошн*", "лячн*", "effrayant*", "qui fait peur", "de miedo", "da miedo", "terrorific*"],
+  "action": ["боевик*", "бойовик*", "экшн", "экшен", "екшн", "екшен", "accion"],
+  "thriller": ["триллер*", "трилер*"],
+  "mystery": ["детектив*", "загадочн*", "загадков*", "mystere*", "misterio*", "policier*"],
+  "drama": ["драм*", "drame*"],
+  "romantic": ["романтич*", "romantique*", "romantico*", "romantica*"],
+  "romance": ["мелодрам*", "любов*", "любви", "кохан*", "amour", "amor"],
+  "fantasy": ["фэнтези", "фентези", "фентезі", "fantastique*", "fantasia"],
+  "sci-fi": ["фантастик*", "science fiction", "ciencia ficcion"],
+  "adventure": ["приключен*", "пригод*", "aventure*", "aventura*"],
+  "family": ["семейн*", "сімейн*", "родинн*", "с семьей", "з сім'єю", "з родиною", "с родителями", "з батьками", "en famille", "famille", "familial*", "en familia", "familia"],
+  "with kids": ["с детьми", "з дітьми", "для детей", "для дітей", "детск*", "дитяч*", "avec les enfants", "pour enfants", "enfants", "con ninos", "para ninos", "infantil*"],
+  "historical": ["историческ*", "історичн*", "historique*", "historico*", "historica*"],
+  "war": ["войн*", "війн*", "военн*", "воєнн*", "guerre", "guerra"],
+  "western": ["вестерн*"],
+  "musical": ["мюзикл*", "comedie musicale"],
+  "crime": ["криминал*", "кримінал*", "crimen"],
+  "gangster": ["гангстер*", "мафи*", "мафі*"],
+  "superhero": ["супергеро*", "superheros", "super-heros", "superheroe*"],
+  "zombie": ["зомби", "зомбі", "zombi", "zombis"],
+  "vampire": ["вампир*", "вампір*", "vampiro*"],
+  "space": ["космос*", "космич*", "космічн*", "espace", "espacio"],
+  "based on true story": ["на реальных событиях", "на реальних подіях", "реальн* истори*", "реальн* істор*", "histoire vraie", "faits reels", "historia real", "hechos reales"],
+  "time travel": ["путешестви* во времени", "подорож* у часі", "voyage dans le temps", "viajes en el tiempo", "viaje en el tiempo"],
+  "suspense": ["напряженн*", "напружен*"],
+  "psychological thriller": ["психологическ* триллер*", "психологічн* трилер*", "thriller psychologique", "thriller psicologico"],
+
+  // moods
+  "cozy": ["уютн*", "затишн*", "cocooning", "douillet*", "acogedor*"],
+  "chill": ["расслаб*", "розслаб*", "спокойн*", "спокійн*", "detendre", "detente", "relajar*", "relajante*", "tranquil*"],
+  "something light": ["легк*", "легеньк*", "ненапряжн*", "leger", "legere", "ligero", "ligera"],
+  "dark": ["мрачн*", "темн*", "похмур*", "sombre*", "oscuro", "oscura"],
+  "sad": ["грустн*", "сумн*", "печальн*", "triste*"],
+  "want to cry": ["поплакат*", "поплакати", "плакат*", "поплач*", "pleurer", "llorar"],
+  "feel good": ["позитивн*", "жизнеутверждающ*", "життєствердн*", "для настроения", "для настрою", "поднять настроение", "підняти настрій", "pour le moral", "bonne humeur", "buen humor"],
+  "uplifting": ["трогательн*", "зворушлив*", "душевн*", "добр* фильм*", "добр* фільм*", "emouvant*", "touchant*", "conmovedor*", "emotiv*"],
+  "inspiring": ["вдохновля*", "мотивир*", "мотивац*", "надиха*", "мотиву*", "inspirant*", "motivant*", "inspirador*", "motivador*"],
+  "mind bending": ["взрыв мозга", "вынос мозга", "вибух мозку", "винос мозку", "запутанн*", "заплутан*", "неожиданн* концовк*", "несподіван* кінцівк*"],
+  "bored": ["скучно", "скучаю", "нудно", "нудьг*", "ennuie", "ennui", "aburrid*"],
+  "lonely": ["одинок*", "самотн*", "seul", "seule", "solitari*"],
+  "alone": ["наедине", "наодинці", "сам на сам", "tout seul", "toute seule", "a solas"],
+  "tired": ["устал*", "втомил*", "втомлен*", "fatigue*", "cansad*"],
+  "after hard day": ["после тяжелого дня", "после работы", "після важкого дня", "після роботи", "apres le travail", "apres une dure journee", "despues del trabajo", "despues de un dia duro"],
+  "broken heart": ["расставан*", "розставан*", "разбит* сердц*", "розбит* серц*", "apres une rupture", "coeur brise", "ruptura", "corazon roto"],
+  "nostalgic": ["ностальги*", "ностальгі*", "nostalgi*"],
+  "epic": ["эпическ*", "эпичн*", "епічн*", "epique*", "epico", "epica"],
+
+  // time, season, company
+  "tonight": ["сегодня вечером", "сьогодні ввечері", "сьогодні увечері", "на вечер", "на вечір", "ce soir", "esta noche"],
+  "evening": ["вечер*", "вечір*", "вечор*", "ввечері", "увечері", "soir", "soiree"],
+  "late night": ["ночь*", "ночи", "ніч*", "ночі", "вночі", "на ніч", "nuit", "noche"],
+  "rainy day": ["дожд*", "дощ*", "pluie", "pluvieu*", "lluvia", "lluvios*"],
+  "winter evening": ["зимн*", "зимов*", "зима", "зимой", "взимку", "hiver", "invierno"],
+  "cozy autumn": ["осен*", "осін*", "восени", "automne", "otono"],
+  "summer vibes": ["летн*", "літн*", "лето", "летом", "літо", "влітку", "verano"],
+  "christmas": ["рождеств*", "різдв*", "новогодн*", "новорічн*", "noel", "navidad*", "naviden*"],
+  "halloween": ["хэллоуин*", "хеллоуин*", "хелловін*", "гелловін*"],
+  "weekend": ["выходн*", "вихідн*", "week-end", "fin de semana"],
+  "sunday": ["воскресень*", "неділ*", "dimanche", "domingo"],
+  "date night": ["свидани*", "побаченн*", "с девушкой", "з дівчиною", "с парнем", "з хлопцем", "с женой", "з дружиною", "с мужем", "з чоловіком", "вдвоем", "удвох", "вдвох", "en couple", "en amoureux", "rendez-vous", "en pareja", "con mi novia", "con mi novio", "cita"],
+  "with friends": ["с друзьями", "з друзями", "с подругами", "з подругами", "в компании", "в компанії", "entre amis", "avec des amis", "entre potes", "con amigos", "con amigas"],
+
+  // topics (see TOPIC_WORDS)
+  "ghost": ["призрак*", "привид*", "fantome*", "fantasma*"],
+  "witch": ["ведьм*", "відьм*", "sorciere*", "bruja*"],
+  "magic": ["маги*", "магі*", "волшеб*", "чарівн*", "magie", "magia"],
+  "dragon": ["дракон*"],
+  "heist": ["ограблен*", "пограбуван*", "braquage*", "atraco*"],
+  "alien": ["инопланет*", "пришельц*", "прибульц*", "іншопланет*", "extraterrestre*"],
+  "robot": ["робот*"],
+  "prison": ["тюрьм*", "тюрем*", "в'язниц*", "carcel"],
+  "survival": ["выживан*", "виживан*", "survie", "supervivencia"],
+  "revenge": ["месть", "мести", "помст*", "venganza"],
+  "spy": ["шпион*", "шпигун*", "espion*", "espia*"],
+  "serial killer": ["маньяк*", "маніяк*", "серийн* убийц*", "серійн* вбивц*", "tueur en serie", "asesino en serie"],
+  "dog": ["собак*", "пес", "песик*", "chien*", "perro*"],
+  "cat": ["кот", "коты", "кошк*", "кіт", "коти", "кішк*", "gato*"],
+  "dinosaur": ["динозавр*", "dinosaure*", "dinosaurio*"],
+  "shark": ["акул*", "requin*", "tiburon*"],
+  "pirate": ["пират*", "пірат*"],
+  "wedding": ["свадьб*", "свадеб*", "весіл*", "mariage", "boda", "bodas"],
+  "high school": ["школ*", "шкільн*", "lycee", "ecole", "escuela", "instituto"],
+  "teen": ["подростк*", "підлітк*", "ados", "adolescent*"],
+  "sports": ["спорт*", "deporte*"],
+  "football": ["футбол*", "futbol"],
+  "boxing": ["бокс*", "boxe", "boxeo"],
+  "dance": ["танц*", "danse", "baile*"],
+  "music": ["музык*", "музик*", "musique", "musica"],
+  "cooking": ["кулинар*", "кулінар*", "готовк*", "про еду", "про їжу", "cuisine", "cocina"],
+  "world war ii": ["втор* миров*", "друг* світов*", "seconde guerre mondiale", "segunda guerra mundial"],
+  "biography": ["биографи*", "біографі*", "байопик*", "biographi*", "biografi*"],
+  "monster": ["монстр*", "чудовищ*", "чудовиськ*", "monstre*", "monstruo*"],
+  "demon": ["демон*"],
+  "end of the world": ["конец света", "кінець світу", "fin du monde", "fin del mundo"],
+  "apocalypse": ["апокалипс*", "апокаліпс*"],
+  "post apocalyptic": ["постапокалип*", "постапокаліп*"],
+  "dystopia": ["антиутопи*", "антиутопі*", "dystopie*", "distopi*"],
+  "cyberpunk": ["киберпанк*", "кіберпанк*"],
+  "friendship": ["дружб*", "amitie", "amistad"],
+  "fairy tale": ["сказк*", "сказоч*", "казк*", "казков*", "conte de fees", "cuento de hadas"],
+  "police": ["полицейск*", "поліцейськ*", "policia*"],
+  "doctor": ["врач*", "лікар*", "medecin*", "medico*"],
+  "lawyer": ["адвокат*", "avocat*", "abogad*"],
+  "hacker": ["хакер*"],
+  "martial arts": ["боевые искусства", "боевых искусств*", "бойові мистецтва", "кунг-фу", "каратэ", "карате", "arts martiaux", "artes marciales"],
+  "samurai": ["самура*"],
+  "ninja": ["ниндзя", "ніндзя"],
+  "princess": ["принцесс*", "принцес*", "princesse*", "princesa*"],
+  "road trip": ["роуд-муви", "роуд муви", "дорожн* приключен*", "дорожн* пригод*"],
+  "summer": ["про лето", "про літо"],
+  "coming of age": ["взрослени*", "дорослішан*"],
+  "treasure": ["сокровищ*", "скарб*", "tresor*", "tesoro*"],
+
+  // decades in words
+  "70s": ["семидесят*", "сімдесят*"],
+  "80s": ["восьмидесят*", "вісімдесят*"],
+  "90s": ["девяност*", "дев'яност*"],
+  "2000s": ["двухтысячн*", "двотисячн*", "нулевых", "нульових"],
+
+  // origin
+  "korean": ["корейск*", "корейськ*", "coreen*", "corean*"],
+  "k drama": ["дорам*"],
+  "japanese": ["японск*", "японськ*", "japonais*", "japones*"],
+  "french": ["французск*", "французьк*", "francais*", "frances", "francesa*"],
+  "italian": ["итальянск*", "італійськ*", "italien*", "italiano*", "italiana*"],
+  "spanish": ["испанск*", "іспанськ*", "espagnol*", "espanol*"],
+  "german": ["немецк*", "німецьк*", "allemand*", "aleman*"],
+  "indian": ["индийск*", "індійськ*", "болливуд*", "боллівуд*"],
+  "chinese": ["китайск*", "китайськ*", "chinois*"],
+  "ukrainian": ["украинск*", "українськ*", "ukrainien*", "ucranian*"],
+  "turkish": ["турецк*", "турецьк*", "turque*", "turco*"],
+
+  // glue words
+  "best": ["лучш*", "найкращ*", "кращ*", "meilleur*", "mejor*"],
+  "new": ["нов*", "свеж*", "свіж*", "nouveau", "nouveaux", "nouveautes", "nuevo*", "nueva*"],
+  "classic": ["классик*", "классическ*", "класик*", "класичн*", "classique*", "clasico*", "clasica*"],
+  "old": ["стары*", "старо*", "старі*", "старе", "vieux", "vieil*", "viejo*", "vieja*"],
+  "like": ["похож* на", "схож* на", "типа", "в стиле", "у стилі", "comme", "dans le style de", "como", "parecid* a", "al estilo de"],
+  "something": ["что-то", "что то", "что-нибудь", "что нибудь", "щось", "quelque chose", "algo"],
+  "for": ["для", "pour", "para"],
+  "watch": ["посмотреть", "глянуть", "подивитис*", "глянути", "regarder", "ver"],
+  "": ["про", "как", "это", "мне", "мені", "или", "або", "под", "что", "які", "des", "les", "une", "del", "los", "las", "una", "que", "avec", "dans", "qui", "por", "muy", "хочу", "хочется", "хочеться", "хотим", "хочемо", "посоветуй*", "порадь*", "порекомендуй*", "подскажи*", "підкажи*", "покажи*", "найди*", "знайди*", "пожалуйста", "будь ласка", "хорош*", "гарн*", "интересн*", "цікав*", "какой-нибудь", "какой нибудь", "какой-то", "який-небудь", "якийсь", "очень", "дуже", "чтобы", "щоб", "можно", "можна", "сегодня", "сьогодні", "просто", "настроени*", "настрі*", "под настроение", "je veux", "j'ai envie de", "j'ai envie d'un", "quiero", "busco", "recomienda*", "recommande*", "s'il vous plait", "por favor"]
+};
+
+function normalizeForMatch(text) {
+  return String(text || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .replace(/[’ʼ`]/g, "'")
+    .replace(/(?<=\p{Script=Cyrillic})'(?=\p{Script=Cyrillic})/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+const escapeRegExp = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Longest patterns first, so "сегодня вечером" wins over "вечер*"
+const I18N_RULES = Object.entries(I18N_TERMS)
+  .flatMap(([en, patterns]) => patterns.map(p => ({ en, source: normalizeForMatch(p) })))
+  .sort((a, b) => b.source.length - a.source.length)
+  .map(({ en, source }) => {
+    const body = source
+      .split(' ')
+      .map(word => word.endsWith('*') ? `${escapeRegExp(word.slice(0, -1))}\\p{L}*` : escapeRegExp(word))
+      .join("[\\s'-]+");
+    return { en, re: new RegExp(`(?<![\\p{L}\\p{N}])${body}(?![\\p{L}\\p{N}])`, 'gu') };
+  });
+
+const DECADE_LABEL = d => (d === '00' ? '2000s' : d === '10' ? '2010s' : d === '20' ? '2020s' : `${d}s`);
+
+// Returns { text, changed, leftover }:
+//   text     — the query with known words replaced by English ones
+//   changed  — whether anything was translated at all
+//   leftover — a meaningful non-English word stayed untranslated (the AI should decide)
+function translateQuery(query) {
+  const original = normalizeForMatch(query);
+  let text = original
+    // "90-х", "1980-ые", "80-ті"
+    .replace(/(?<![\p{L}\p{N}])(?:19|20)?(\d0)\s*-?\s*(?:х|ых|ые|е|их|тих|ті)(?![\p{L}\p{N}])/gu, (_, d) => ` ${DECADE_LABEL(d)} `)
+    // "années 90", "años 80", "de los 90"
+    .replace(/(?<![\p{L}\p{N}])(?:annees|anos|los)\s+(?:19|20)?(\d0)(?![\p{L}\p{N}])/gu, (_, d) => ` ${DECADE_LABEL(d)} `);
+
+  // Replaced fragments are parked behind markers so later rules cannot re-translate them
+  const parked = [];
+  for (const { en, re } of I18N_RULES) {
+    text = text.replace(re, () => {
+      parked.push(en);
+      return `\u0001${parked.length - 1}\u0001`;
+    });
+  }
+
+  const leftover = /\p{Script=Cyrillic}{4,}/u.test(text);
+  text = text
+    .replace(/\u0001(\d+)\u0001/g, (_, i) => ` ${parked[Number(i)]} `)
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return { text, changed: text !== original, leftover };
+}
+
+// Finds the best promptsDB entry for a query: { key, value, exact } or null
 function lookupPrompt(query) {
   const q = query.toLowerCase().trim();
 
   // 1. Exact match
-  if (promptsDB[q]) return promptsDB[q];
+  if (promptsDB[q]) return { key: q, value: promptsDB[q], exact: true };
 
-  // 2. Query contains a known key (trim keys before matching!)
+  const qWords = q.split(/[^\p{L}\p{N}'-]+/u).filter(Boolean);
+  const paddedQuery = ` ${qWords.join(' ')} `;
+  const qWordSet = new Set(qWords);
   const keys = Object.keys(promptsDB);
+
+  // 2. Query contains a known key as whole words — the most specific (longest) key wins,
+  //    so "cozy rainy evening" matches "rainy evening", not the generic "evening"
+  let bestKey = null;
   for (const key of keys) {
     const trimmedKey = key.trim();
-    if (trimmedKey.length > 4 && q.includes(trimmedKey)) {
-      return promptsDB[key];
+    if (trimmedKey.length < 4) continue;
+    // 4-letter keys: only mood words ("cozy", "dark"), not titles ("soul", "sing")
+    if (trimmedKey.length === 4 && !promptsDB[key].genres) continue;
+    if (!paddedQuery.includes(` ${trimmedKey} `)) continue;
+    if (!bestKey || trimmedKey.length > bestKey.trim().length) bestKey = key;
+  }
+
+  // 3. All words of a multi-word key appear in query (any order) — most words wins
+  let bestWordsKey = null;
+  let bestWordCount = 0;
+  for (const key of keys) {
+    const kWords = key.trim().split(/\s+/);
+    if (kWords.length < 2 || kWords.length <= bestWordCount) continue;
+    if (kWords.every(w => qWordSet.has(w))) {
+      bestWordsKey = key;
+      bestWordCount = kWords.length;
     }
   }
 
-  // 3. All words of multi-word key appear in query
-  for (const key of keys) {
-    const trimmedKey = key.trim();
-    const kWords = trimmedKey.split(/\s+/);
-    if (kWords.length >= 2 && kWords.every(w => q.includes(w))) {
-      return promptsDB[key];
-    }
+  // A scattered match only beats a phrase match when it covers more of the query
+  if (bestWordsKey && (!bestKey || bestWordCount > bestKey.trim().split(/\s+/).length)) {
+    return { key: bestWordsKey, value: promptsDB[bestWordsKey], exact: false };
   }
+  if (bestKey) return { key: bestKey, value: promptsDB[bestKey], exact: false };
 
   return null;
 }
 
-function keywordFallback(query) {
-  const q = query.toLowerCase();
+// ══════════════════════════════════════════════
+// CONCEPT PARSER
+// promptsDB knows fixed phrases; this part understands any combination of
+// genre + mood + topic + decade + country + type ("funny zombie movie from the 80s"),
+// which covers far more queries than a phrase list ever could.
+// Phrases are separated by "|" and matched as whole words.
+// ══════════════════════════════════════════════
+const GENRE_WORDS = [
+  [28, 'action|fight|fights|fighting|explosions|shootout|adrenaline|badass'],
+  [12, 'adventure|adventures|adventurous|quest|expedition'],
+  [16, 'animation|animated|cartoon|cartoons'],
+  [35, 'comedy|comedies|comedic|funny|hilarious|humor|humour|humorous|laugh|laughs|laughing|goofy|silly|witty|sitcom|rom com|romcom'],
+  [80, 'crime|criminal|criminals'],
+  [99, 'documentary|documentaries|docu|docuseries'],
+  [18, 'drama|dramas|dramatic'],
+  [10751, 'family|kids|kid|children|child'],
+  [14, 'fantasy'],
+  [36, 'history|historical|historic|period piece|costume drama'],
+  [27, 'horror|horrors|scary|creepy|spooky|terrifying|frightening'],
+  [10402, 'music|musical|musicals'],
+  [9648, 'mystery|mysteries|mysterious'],
+  [10749, 'romance|romantic|love story|about love|rom com|romcom'],
+  [878, 'sci fi|scifi|science fiction|futuristic'],
+  [53, 'thriller|thrillers|suspense|suspenseful|tense'],
+  [10752, 'war|military|wartime'],
+  [37, 'western|westerns']
+];
 
-  // ══════════════════════════════════════════════
-  // DECADE DETECTION (NEW!)
-  // ══════════════════════════════════════════════
-  const decadeMatch = q.match(/(19|20)?(\d{2})s/);
-  if (decadeMatch) {
-    let year = parseInt(decadeMatch[2]);
-    if (year < 100) year += 1900;
+const MOOD_WORDS = [
+  [[18], 'sad|cry|crying|want to cry|tearjerker|tear jerker|emotional|heartbreaking|melancholy|melancholic|depressing|moving|touching'],
+  [[35, 10749], 'cozy|cosy|comfort|comforting|warm|girls night'],
+  [[35, 18], 'feel good|feelgood|uplifting|heartwarming|wholesome|positive|happy|cheerful|optimistic'],
+  [[35], 'chill|relax|relaxing|easy|light|something light|lighthearted|light hearted|calm|quiet|peaceful|fun|lazy|hangover|hungover'],
+  [[53, 18], 'dark|gritty|bleak|disturbing|intense|grim'],
+  [[878, 9648], 'mind bending|mindbending|mind blowing|mindblowing|trippy|mindfuck|confusing|thought provoking|smart|clever'],
+  [[9648, 53], 'twist|twists|twisty|unpredictable|plot twist'],
+  [[18, 36], 'inspiring|inspirational|motivational|motivating|motivation'],
+  [[12, 28], 'epic|exciting|thrilling'],
+  [[10749, 35], 'date|date night|girlfriend|boyfriend|wife|husband|couple|valentine|valentines'],
+  [[10749, 18], 'breakup|break up|heartbroken|broken heart'],
+  [[35, 28], 'with friends|friends|party|guys night|boys night'],
+  [[10751, 35], 'with parents|parents|with family|grandparents|grandma|all ages'],
+  [[16, 10751], 'with kids|for kids|toddlers']
+];
 
-    if (q.includes('horror')) return { genres: [27], year_from: year, year_to: year + 9 };
-    if (q.includes('action')) return { genres: [28], year_from: year, year_to: year + 9 };
-    if (q.includes('comedy')) return { genres: [35], year_from: year, year_to: year + 9 };
-    if (q.includes('drama')) return { genres: [18], year_from: year, year_to: year + 9 };
-    if (q.includes('sci-fi') || q.includes('sci fi')) return { genres: [878], year_from: year, year_to: year + 9 };
-    if (q.includes('thriller')) return { genres: [53], year_from: year, year_to: year + 9 };
-    if (q.includes('romance')) return { genres: [10749], year_from: year, year_to: year + 9 };
-    return { year_from: year, year_to: year + 9 };
+// TMDB keyword id → trigger phrases
+const TOPIC_WORDS = [
+  [12377, 'zombie|zombies|undead'], [3133, 'vampire|vampires'], [12564, 'werewolf|werewolves'],
+  [162846, 'ghost|ghosts'], [3358, 'haunted house|haunted'], [10714, 'serial killer|serial killers|maniac'],
+  [10051, 'heist|heists|robbery'], [15363, 'bank robbery'], [4379, 'time travel|time traveling|time travelling'],
+  [10854, 'time loop|groundhog day'], [9951, 'alien|aliens|extraterrestrial'], [14909, 'alien invasion'],
+  [14544, 'robot|robots|android|androids'], [310, 'artificial intelligence|ai'], [4565, 'dystopia|dystopian'],
+  [4458, 'post apocalyptic|postapocalyptic'], [12332, 'apocalypse|apocalyptic'], [10150, 'end of the world'],
+  [9715, 'superhero|superheroes'], [9672, 'based on true story|true story|true events|real story'],
+  [818, 'based on book|based on a book|based on novel|book adaptation'], [5565, 'biography|biopic|biographical'],
+  [207317, 'christmas|xmas|holiday'], [3335, 'halloween'], [13027, 'wedding|weddings|bride'],
+  [6270, 'high school|highschool|school'], [3616, 'college|university|campus'], [296608, 'teen|teens|teenage|teenager|teenagers'],
+  [7312, 'road trip|roadtrip|road movie'], [10683, 'coming of age'], [6054, 'friendship'],
+  [9748, 'revenge|vengeance'], [378, 'prison|jail'], [10685, 'escape|prison break'], [10349, 'survival|survive'],
+  [12616, 'dinosaur|dinosaurs'], [12554, 'dragon|dragons'], [2343, 'magic|magical'], [616, 'witch|witches'],
+  [177912, 'wizard|wizards'], [12988, 'pirate|pirates'], [470, 'spy|spies|espionage|secret agent'],
+  [782, 'assassin|assassins|hitman'], [10391, 'mafia|mob'], [3149, 'gangster|gangsters'],
+  [779, 'martial arts|kung fu|karate'], [1462, 'samurai'], [10278, 'ninja|ninjas'], [12190, 'cyberpunk'],
+  [336874, 'multiverse|parallel universe'], [1453, 'amnesia|memory loss'], [10410, 'conspiracy'],
+  [33519, 'courtroom|trial'], [10909, 'lawyer|lawyers'], [703, 'detective|detectives'], [12570, 'whodunit|murder mystery'],
+  [1930, 'kidnapping|kidnapped'], [1562, 'hostage|hostages'], [830, 'racing|car race|car racing|race cars'],
+  [6075, 'sports|sport'], [209476, 'boxing|boxer'], [579, 'american football'], [13042, 'football|soccer'],
+  [6496, 'basketball'], [1480, 'baseball'], [4048, 'musician|band|rock star'], [1691, 'dance|dancing|dancer'],
+  [1918, 'cooking|food'], [18293, 'chef'], [15162, 'dog|dogs|puppy'], [977, 'cat|cats|kitten'], [2673, 'horse|horses'],
+  [15097, 'shark|sharks'], [1299, 'monster|monsters'], [161791, 'kaiju|godzilla'], [12339, 'slasher'],
+  [163053, 'found footage'], [2626, 'exorcism|possession'], [15001, 'demon|demons'], [6158, 'cult'],
+  [1956, 'world war ii|world war 2|ww2|wwii|second world war'], [2957, 'vietnam war|vietnam'], [2106, 'cold war'],
+  [5049, 'ancient rome|roman empire|gladiator'], [242, 'new york|nyc'], [90, 'paris'], [212, 'london'], [12369, 'tokyo'],
+  [13088, 'summer'], [966, 'beach'], [2041, 'island'], [10787, 'jungle'], [18034, 'desert'], [270, 'ocean|sea'],
+  [339, 'submarine'], [3800, 'airplane|plane'], [13008, 'train'], [188957, 'virus|outbreak'], [188973, 'pandemic'],
+  [3205, 'fairy tale|fairytale'], [2035, 'mythology|myth'], [2036, 'greek mythology'], [158718, 'lgbt|lgbtq|gay|lesbian|queer'],
+  [240119, 'father and son|father son'], [10508, 'teacher'], [13005, 'doctor|hospital|medical'], [736, 'journalist|journalism'],
+  [13028, 'writer|author'], [2157, 'hacker|hackers|hacking'], [282, 'video game|video games|gaming'], [316, 'chess'],
+  [395, 'gambling|poker'], [585, 'casino'], [14964, 'drugs|drug'], [6782, 'addiction'], [894, 'depression'], [9872, 'grief|loss'],
+  [128, 'love triangle'], [3691, 'forbidden love'], [157303, 'first love'], [15160, 'divorce'], [1326, 'infidelity|cheating|affair'],
+  [10121, 'stop motion'], [11800, 'mockumentary'], [8201, 'satire|satirical'], [9755, 'parody|spoof'],
+  [10123, 'dark comedy|black comedy'], [167316, 'buddy cop'], [207268, 'neo noir'], [9807, 'film noir|noir'],
+  [10028, 'steampunk'], [161176, 'space opera'], [9882, 'space|outer space'], [14626, 'astronaut|astronauts'],
+  [240, 'underdog'], [7376, 'princess'], [9920, 'royal|royalty'], [6956, 'treasure|treasure hunt'],
+  [1415, 'small town'], [6149, 'police|cop|cops'], [1812, 'fbi'], [6078, 'politics|political'], [13065, 'soldier|soldiers'],
+  [14760, 'scientist|scientists'], [15016, 'twins'], [12392, 'best friend|best friends'], [6733, 'bullying|bully'],
+  [5938, 'mermaid|mermaids'], [4563, 'virtual reality|vr'], [267848, 'talking animals|talking animal'], [210024, 'anime']
+];
+
+const LANGUAGE_WORDS = [
+  ['ko', 'korean|south korean'], ['ko-tv', 'k drama|kdrama|k dramas|korean series'], ['ja', 'japanese'], ['fr', 'french'], ['es', 'spanish'],
+  ['it', 'italian'], ['de', 'german'], ['hi', 'indian|bollywood|hindi'], ['zh', 'chinese'], ['uk', 'ukrainian'],
+  ['tr', 'turkish'], ['pl', 'polish'], ['sv', 'swedish'], ['da', 'danish']
+];
+
+const TV_WORDS = 'series|tv show|tv shows|show|shows|tv|sitcom|miniseries|mini series|k drama|kdrama|k dramas';
+const OLD_WORDS = 'classic|classics|old|vintage|retro|old school|oldschool';
+const NEW_WORDS = 'new|recent|latest|modern|newest';
+
+// Words that carry no meaning for the search
+const STOP_WORDS = new Set(('a an the and or but of in on at to for from with without about like as is are was be it its this that these those ' +
+  'i me my we our you your he she they them love enjoy something anything some any kind sort type good great best top nice awesome amazing cool ' +
+  'movie movies film films flick flicks picture watch watching see seen show me find give need want wanna looking look search ' +
+  'recommend recommendation recommendations suggest suggestion please really very so too just more most much many few little bit ' +
+  'tonight today now evening night day weekend after before when while what which who where how can could should would will ' +
+  'similar style vibe vibes mood feeling feel get got have has had do does did not no yes ok one two all every ever also').split(' '));
+
+function compileConcepts(rows) {
+  return rows
+    .flatMap(([payload, phrases]) => phrases.split('|').map(phrase => ({ payload, words: phrase.split(' ') })))
+    .sort((a, b) => b.words.length - a.words.length);
+}
+
+const GENRE_CONCEPTS = compileConcepts(GENRE_WORDS);
+const MOOD_CONCEPTS = compileConcepts(MOOD_WORDS);
+const TOPIC_CONCEPTS = compileConcepts(TOPIC_WORDS);
+const TOPIC_LABELS = Object.fromEntries(TOPIC_WORDS.map(([id, phrases]) => [id, phrases.split('|')[0]]));
+const LANGUAGE_CONCEPTS = compileConcepts(LANGUAGE_WORDS);
+// "show me ..." is a request, not a TV show
+const TV_CONCEPTS = compileConcepts([['tv', TV_WORDS], ['skip', 'show me']]);
+const OLD_CONCEPTS = compileConcepts([['old', OLD_WORDS]]);
+const NEW_CONCEPTS = compileConcepts([['new', NEW_WORDS]]);
+
+// Calls onMatch(payload) for every phrase found; marks its words as used so that
+// "new york" is not also read as "new", and "dark comedy" not also as "dark"
+function matchConcepts(tokens, used, concepts, onMatch) {
+  for (const { payload, words } of concepts) {
+    for (let i = 0; i + words.length <= tokens.length; i++) {
+      if (!words.every((word, j) => tokens[i + j] === word && !used[i + j])) continue;
+      words.forEach((_, j) => { used[i + j] = true; });
+      onMatch(payload);
+    }
+  }
+}
+
+function parseConcepts(text) {
+  const tokens = text.toLowerCase().replace(/['’]/g, '').split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  const used = tokens.map(() => false);
+  const parsed = { genres: [], moodGenres: [], keywords: [], tokens, used };
+  const add = (list, value) => { if (!list.includes(value)) list.push(value); };
+
+  // Decades and years: "90s", "1980s", "1994"
+  tokens.forEach((token, i) => {
+    const decade = token.match(/^(19|20)?(\d0)s$/);
+    const year = token.match(/^(19[2-9]\d|20[0-2]\d)$/);
+    if (decade) {
+      const start = decade[1] ? Number(decade[1] + decade[2]) : Number(decade[2]) + (Number(decade[2]) < 30 ? 2000 : 1900);
+      parsed.year_from = start;
+      parsed.year_to = start + 9;
+      used[i] = true;
+    } else if (year) {
+      parsed.year_from = parsed.year_to = Number(year[1]);
+      used[i] = true;
+    }
+  });
+
+  // Topics first: their phrases are the most specific ("dark comedy", "love triangle", "new york")
+  matchConcepts(tokens, used, TOPIC_CONCEPTS, id => add(parsed.keywords, id));
+  matchConcepts(tokens, used, LANGUAGE_CONCEPTS, code => {
+    parsed.language = parsed.language || code.slice(0, 2);
+    if (code.endsWith('-tv')) parsed.media_type = 'tv';
+  });
+  matchConcepts(tokens, used, TV_CONCEPTS, payload => { if (payload === 'tv') parsed.media_type = 'tv'; });
+  matchConcepts(tokens, used, MOOD_CONCEPTS, genres => genres.forEach(g => add(parsed.moodGenres, g)));
+  // Genres are matched on their own: "k drama" is still a drama, a "dark comedy" still a comedy
+  for (const { payload, words } of GENRE_CONCEPTS) {
+    for (let i = 0; i + words.length <= tokens.length; i++) {
+      if (!words.every((word, j) => tokens[i + j] === word)) continue;
+      words.forEach((_, j) => { used[i + j] = true; });
+      add(parsed.genres, payload);
+    }
   }
 
-  // ══════════════════════════════════════════════
-  // STUDIO DETECTION
-  // ══════════════════════════════════════════════
-  if (q.includes('pixar')) return { company_id: 3 };
-  if (q.includes('ghibli') || q.includes('miyazaki')) return { company_id: 10342 };
-  if (q.includes('dreamworks')) return { company_id: 521 };
-  if (q.includes('a24')) return { company_id: 41077 };
-  if (q.includes('blumhouse')) return { company_id: 3172 };
-  if (q.includes('marvel') || q.includes('mcu')) return { company_id: 420 };
-  if (q.includes('batman') || q.includes('superman') || q.includes('dc movie')) return { company_id: 9993 };
-  if (q.includes('disney')) return { company_id: 2 };
+  if (!parsed.year_from) {
+    matchConcepts(tokens, used, OLD_CONCEPTS, () => { parsed.year_to = 1989; });
+    matchConcepts(tokens, used, NEW_CONCEPTS, () => { parsed.year_from = new Date().getFullYear() - 3; });
+  }
 
-  // ══════════════════════════════════════════════
-  // DIRECTOR DETECTION
-  // ══════════════════════════════════════════════
-  if (q.includes('nolan')) return { search_query: 'christopher nolan' };
-  if (q.includes('tarantino')) return { search_query: 'quentin tarantino' };
+  // Anime is animation, and a "dark comedy" is still a comedy
+  if (parsed.keywords.includes(210024)) add(parsed.genres, 16);
+  if (parsed.keywords.includes(10123)) add(parsed.genres, 35);
 
-  // ══════════════════════════════════════════════
-  // NATIONAL CINEMA DETECTION
-  // ══════════════════════════════════════════════
-  if (q.includes('korean') || q.includes('k-drama')) return { search_query: 'korean' };
-  if (q.includes('bollywood')) return { search_query: 'bollywood' };
+  return parsed;
+}
 
-  // ══════════════════════════════════════════════
-  // GENRE DETECTION
-  // ══════════════════════════════════════════════
-  if (q.match(/horror|scary|ghost|monster|creepy/)) return { genres: [27, 53] };
-  if (q.match(/action|fight|battle|adrenaline/)) return { genres: [28, 12] };
-  if (q.match(/funny|comedy|laugh|humor/)) return { genres: [35] };
-  if (q.match(/romance|love|romantic/)) return { genres: [10749, 35] };
-  if (q.match(/sci.?fi|space|future|robot/)) return { genres: [878, 28] };
-  if (q.match(/mystery|crime|detective|thriller/)) return { genres: [9648, 53] };
-  if (q.match(/family|kids|children|cartoon/)) return { genres: [16, 10751] };
-  if (q.match(/sad|cry|emotional|drama/)) return { genres: [18] };
-  if (q.match(/cozy|chill|relax|calm/)) return { genres: [35, 10749] };
+// How much of the query was understood: { known, unknown } word counts
+function countCoverage(parsed, extraKnownWords = []) {
+  const extra = new Set(extraKnownWords);
+  let known = 0;
+  let unknown = 0;
+  parsed.tokens.forEach((token, i) => {
+    if (parsed.used[i] || extra.has(token)) known += 1;
+    else if (token.length > 2 && !STOP_WORDS.has(token) && !/^\d+$/.test(token)) unknown += 1;
+  });
+  return { known, unknown };
+}
 
-  return { genres: [18, 28] };
+// Builds TMDB parameters from parsed concepts, or null when nothing useful was found
+function composeFromConcepts(parsed) {
+  let genres = parsed.genres.slice(0, 3);
+  if (!genres.length) {
+    genres = parsed.moodGenres.slice(0, 2);
+  } else if (genres.length === 1) {
+    // "sad comedy" → comedy + drama
+    const extra = parsed.moodGenres.find(g => !genres.includes(g));
+    if (extra) genres.push(extra);
+  }
+
+  if (!genres.length && !parsed.keywords.length && !parsed.language && !parsed.year_from && !parsed.year_to) return null;
+  return genres.length ? { genres } : {};
+}
+
+// Adds what the phrase database cannot express: topic, years, country, movie/series
+function enrich(result, parsed) {
+  if (!result || result.search_query) return result;
+  const enriched = { ...result };
+  if (!result.company_id && parsed.keywords.length && !enriched.keywords) {
+    enriched.keywords = parsed.keywords.slice(0, 2);
+    // names the page shows as "#zombie" so the visitor sees what was understood
+    enriched.topics = enriched.keywords.map(id => TOPIC_LABELS[id]).filter(Boolean);
+  }
+  if (!enriched.year_from && !enriched.year_to) {
+    if (parsed.year_from) enriched.year_from = parsed.year_from;
+    if (parsed.year_to) enriched.year_to = parsed.year_to;
+  }
+  if (parsed.language) enriched.language = parsed.language;
+  if (parsed.media_type) enriched.media_type = parsed.media_type;
+  return enriched;
+}
+
+// Best answer without the AI. confident = false means the AI should have a say first.
+function resolveLocally(text) {
+  const db = lookupPrompt(text);
+  const parsed = parseConcepts(text);
+  const composed = composeFromConcepts(parsed);
+
+  const dbValue = db?.value;
+  const dbIsEntity = Boolean(dbValue && (dbValue.search_query || dbValue.company_id));
+  const dbKeyWords = db ? db.key.trim().split(/\s+/).length : 0;
+  // A title search for the word "korean" or "anime" finds titles, not korean films or anime
+  const weakSearch = Boolean(dbValue?.search_query && composed && (parsed.language || parsed.keywords.includes(210024)));
+  const uncoveredGenre = parsed.genres.some(g => !(dbValue?.genres || []).includes(g));
+
+  let base;
+  if (db && !weakSearch && (db.exact || dbIsEntity)) {
+    base = dbValue;
+  } else if (db && !weakSearch && dbKeyWords >= 2 && !uncoveredGenre) {
+    base = dbValue;
+  } else if (composed && (composed.genres || parsed.keywords.length || parsed.language)) {
+    base = composed;
+  } else if (db && !weakSearch) {
+    base = dbValue;
+  } else {
+    base = composed;
+  }
+
+  const result = enrich(base, parsed);
+  const usedDb = Boolean(db) && base === dbValue;
+  const coverage = countCoverage(parsed, usedDb ? db.key.toLowerCase().replace(/['’]/g, '').split(/[^\p{L}\p{N}]+/u) : []);
+  const known = coverage.known;
+  const unknown = usedDb && db.exact ? 0 : coverage.unknown;
+
+  return {
+    result,
+    parsed,
+    confident: Boolean(result) && unknown <= known,
+    // Half of the query is unknown words: it may well be a title ("The Dark Knight")
+    maybeTitle: Boolean(result) && !result.search_query && unknown > 0 && unknown >= known
+  };
 }
