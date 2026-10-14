@@ -1,0 +1,10 @@
+{
+  "rewrites": [
+    { "source": "/moods", "destination": "/api/page?kind=moods" },
+    { "source": "/moods/:slug", "destination": "/api/page?kind=mood&slug=:slug" },
+    { "source": "/movie/:id", "destination": "/api/page?kind=title&type=movie&id=:id" },
+    { "source": "/tv/:id", "destination": "/api/page?kind=title&type=tv&id=:id" },
+    { "source": "/sitemap.xml", "destination": "/api/page?kind=sitemap" },
+    { "source": "/robots.txt", "destination": "/api/page?kind=robots" }
+  ]
+}

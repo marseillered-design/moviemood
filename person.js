@@ -1,4 +1,4 @@
-﻿const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
+const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 const TMDB_PROFILE_URL = 'https://image.tmdb.org/t/p/h632';
@@ -40,8 +40,8 @@ async function loadPerson() {
   if (!personId) return;
 
   const [details, credits] = await Promise.all([
-    fetch(`${TMDB_BASE_URL}/person/${personId}?api_key=${TMDB_API_KEY}`).then(r => r.json()),
-    fetch(`${TMDB_BASE_URL}/person/${personId}/combined_credits?api_key=${TMDB_API_KEY}`).then(r => r.json()),
+    fetch(`${TMDB_BASE_URL}/person/${personId}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`).then(r => r.json()),
+    fetch(`${TMDB_BASE_URL}/person/${personId}/combined_credits?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`).then(r => r.json()),
   ]);
 
   document.title = `${details.name} - MovieMood`;
@@ -66,14 +66,15 @@ async function loadPerson() {
     const age = details.deathday
       ? null
       : Math.floor((Date.now() - new Date(details.birthday)) / (365.25 * 24 * 3600 * 1000));
-    const born = new Date(details.birthday).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    detailParts.push(`Born ${born}${age ? ` (${age} years old)` : ''}`);
+    const born = new Date(details.birthday).toLocaleDateString(TMDB_LANG, { year: 'numeric', month: 'long', day: 'numeric' });
+    detailParts.push(t('person.born', { date: born }));
+    if (age) detailParts.push(t('person.age', { n: age }));
   }
   if (details.deathday) {
-    detailParts.push(`Died: ${details.deathday}`);
+    detailParts.push(t('person.died', { date: details.deathday }));
   }
   if (details.place_of_birth) {
-    detailParts.push(`Place: ${details.place_of_birth}`);
+    detailParts.push(t('person.place', { place: details.place_of_birth }));
   }
   document.getElementById('personDetails').innerHTML = detailParts
     .map(p => `<span class="person-detail-item">${p}</span>`)
@@ -83,7 +84,7 @@ async function loadPerson() {
   const bioEl = document.getElementById('personBio');
   if (bio.length > 400) {
     const short = bio.slice(0, 400);
-    bioEl.innerHTML = `${short}... <button class="bio-read-more" id="bioBtn">Read more</button>`;
+    bioEl.innerHTML = `${short}... <button class="bio-read-more" id="bioBtn">${t('person.read_more')}</button>`;
     document.getElementById('bioBtn').addEventListener('click', () => {
       bioEl.innerHTML = bio;
     });
@@ -99,7 +100,7 @@ async function loadPerson() {
     .slice(0, 24);
 
   document.getElementById('personMoviesTitle').textContent =
-    `Films & Series with ${details.name}`;
+    t('person.filmography', { name: details.name });
 
   const grid = document.getElementById('moviesGrid');
   grid.innerHTML = '';
@@ -139,7 +140,7 @@ async function loadPerson() {
     });
 
     card.addEventListener('click', () => {
-      window.open(`movie.html?id=${movie.id}&type=${cardType}`, '_blank');
+      window.location.href = `movie.html?id=${movie.id}&type=${cardType}`;
     });
 
     grid.appendChild(card);

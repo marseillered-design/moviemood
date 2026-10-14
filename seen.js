@@ -1,4 +1,4 @@
-﻿const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
+const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
@@ -28,7 +28,7 @@ function removeSeen(id, mediaType = 'movie') {
 async function enrichTitle(item) {
   try {
     const mediaType = normalizeMediaType(item.media_type);
-    const res = await fetch(`${TMDB_BASE_URL}/${mediaType}/${item.id}?api_key=${TMDB_API_KEY}`);
+    const res = await fetch(`${TMDB_BASE_URL}/${mediaType}/${item.id}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`);
     const data = await res.json();
     return {
       ...item,
@@ -48,7 +48,7 @@ function updateSeenCount() {
   const actionsEl = document.getElementById('seenActions');
 
   if (seen.length > 0) {
-    countEl.textContent = `${seen.length} ${seen.length === 1 ? 'title' : 'titles'} watched`;
+    countEl.textContent = t('seen.count', { n: seen.length });
     actionsEl.style.display = 'flex';
   } else {
     countEl.textContent = '';
@@ -63,7 +63,7 @@ function createSeenCard(item) {
 
   const poster = item.poster_path ? `${TMDB_IMAGE_BASE_URL}${item.poster_path}` : '';
   const mediaType = normalizeMediaType(item.media_type);
-  const typeLabel = mediaType === 'tv' ? 'Series' : 'Movie';
+  const typeLabel = mediaType === 'tv' ? t('type.one_series') : t('type.movie');
   const rating = item.rating ? `${item.rating}` : '';
   const year = item.year || '';
   const genres = item.genres?.join(' / ') || '';
@@ -72,10 +72,10 @@ function createSeenCard(item) {
     <div class="fav-card-poster">
       <img src="${poster}" alt="${item.title}" loading="lazy">
       <div class="fav-card-overlay">
-        <button class="fav-remove-btn" title="Remove from seen">Remove</button>
+        <button class="fav-remove-btn" title="${t('card.remove')}">${t('card.remove')}</button>
       </div>
       ${rating ? `<span class="fav-rating">${rating}</span>` : ''}
-      <span class="watched-badge watched-badge-static">Watched</span>
+      <span class="watched-badge watched-badge-static">${t('card.watched')}</span>
     </div>
     <div class="fav-card-info">
       <h3 class="fav-card-title">${item.title}</h3>
@@ -102,7 +102,7 @@ function createSeenCard(item) {
   });
 
   card.addEventListener('click', () => {
-    window.open(`movie.html?id=${item.id}&type=${mediaType}`, '_blank');
+    window.location.href = `movie.html?id=${item.id}&type=${mediaType}`;
   });
 
   return card;
@@ -145,7 +145,7 @@ async function loadSeen() {
   });
 
   document.getElementById('clearSeenBtn').addEventListener('click', () => {
-    if (confirm('Remove all watched titles?')) {
+    if (confirm(t('seen.clear_confirm'))) {
       localStorage.removeItem('watched');
       grid.innerHTML = '';
       emptyState.style.display = 'flex';

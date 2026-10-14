@@ -1,11 +1,11 @@
-﻿const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
+const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
 async function enrichMovie(movie) {
   try {
     const endpoint = movie.media_type === 'tv' ? 'tv' : 'movie';
-    const res = await fetch(`${TMDB_BASE_URL}/${endpoint}/${movie.id}?api_key=${TMDB_API_KEY}`);
+    const res = await fetch(`${TMDB_BASE_URL}/${endpoint}/${movie.id}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`);
     const data = await res.json();
     return {
       ...movie,
@@ -34,7 +34,7 @@ function updateCount() {
   const countEl = document.getElementById('favCount');
   const actionsEl = document.getElementById('favActions');
   if (favorites.length > 0) {
-    countEl.textContent = `${favorites.length} ${favorites.length === 1 ? 'film' : 'films'} saved`;
+    countEl.textContent = t('fav.count', { n: favorites.length });
     actionsEl.style.display = 'flex';
   } else {
     countEl.textContent = '';
@@ -52,7 +52,7 @@ function createCard(movie) {
     : '';
 
   const mediaType = normalizeMediaType(movie.media_type);
-  const typeLabel = mediaType === 'tv' ? 'Series' : 'Movie';
+  const typeLabel = mediaType === 'tv' ? t('type.one_series') : t('type.movie');
   const rating = movie.rating ? `${movie.rating}` : '';
   const year = movie.year || '';
   const genres = movie.genres?.join(' / ') || '';
@@ -61,7 +61,7 @@ function createCard(movie) {
     <div class="fav-card-poster">
       <img src="${poster}" alt="${movie.title}" loading="lazy">
       <div class="fav-card-overlay">
-        <button class="fav-remove-btn" title="Remove from favorites">Remove</button>
+        <button class="fav-remove-btn" title="${t('card.unfavorite')}">${t('card.remove')}</button>
       </div>
       ${rating ? `<span class="fav-rating">${rating}</span>` : ''}
     </div>
@@ -90,7 +90,7 @@ function createCard(movie) {
   });
 
   card.addEventListener('click', () => {
-    window.open(`movie.html?id=${movie.id}&type=${mediaType}`, '_blank');
+    window.location.href = `movie.html?id=${movie.id}&type=${mediaType}`;
   });
 
   return card;
@@ -137,7 +137,7 @@ async function loadFavorites() {
 
   // Clear all button
   document.getElementById('clearAllBtn').addEventListener('click', () => {
-    if (confirm('Remove all favorites?')) {
+    if (confirm(t('fav.clear_confirm'))) {
       localStorage.removeItem('favorites');
       grid.innerHTML = '';
       emptyState.style.display = 'flex';

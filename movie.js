@@ -1,11 +1,13 @@
-﻿const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
+const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 const TMDB_BACKDROP_URL = 'https://image.tmdb.org/t/p/original';
 
 const params = new URLSearchParams(window.location.search);
-const movieId = params.get('id');
-const mediaType = params.get('type') || 'movie';
+// Pretty URLs (/movie/603-the-matrix) are rendered by api/page.js, which passes the id here
+const serverPage = window.__MM_PAGE || null;
+const movieId = serverPage?.id || params.get('id');
+const mediaType = serverPage?.type || params.get('type') || 'movie';
 const region = params.get('region') || 'US';
 
 let trailerKey = null;
@@ -46,19 +48,28 @@ async function loadMovie() {
 
   const endpoint = normalizeMediaType(mediaType);
   const [details, credits, videos, providers, similar] = await Promise.all([
-    fetch(`${TMDB_BASE_URL}/${endpoint}/${movieId}?api_key=${TMDB_API_KEY}&language=en-US`).then(r => r.json()),
-    fetch(`${TMDB_BASE_URL}/${endpoint}/${movieId}/credits?api_key=${TMDB_API_KEY}&language=en-US`).then(r => r.json()),
+    fetch(`${TMDB_BASE_URL}/${endpoint}/${movieId}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`).then(r => r.json()),
+    fetch(`${TMDB_BASE_URL}/${endpoint}/${movieId}/credits?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`).then(r => r.json()),
     fetch(`${TMDB_BASE_URL}/${endpoint}/${movieId}/videos?api_key=${TMDB_API_KEY}&language=en-US`).then(r => r.json()),
     fetch(`${TMDB_BASE_URL}/${endpoint}/${movieId}/watch/providers?api_key=${TMDB_API_KEY}`).then(r => r.json()),
-    fetch(`${TMDB_BASE_URL}/${endpoint}/${movieId}/similar?api_key=${TMDB_API_KEY}&language=en-US`).then(r => r.json()),
+    fetch(`${TMDB_BASE_URL}/${endpoint}/${movieId}/similar?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`).then(r => r.json()),
   ]);
+
+  // Many titles have no description in Ukrainian, Russian etc. — fall back to the English one
+  let englishOverview = '';
+  if (!details.overview && TMDB_LANG !== 'en-US') {
+    englishOverview = await fetch(`${TMDB_BASE_URL}/${endpoint}/${movieId}?api_key=${TMDB_API_KEY}&language=en-US`)
+      .then(r => r.json())
+      .then(data => data.overview || '')
+      .catch(() => '');
+  }
 
   const title = details.title || details.name;
   const year = (details.release_date || details.first_air_date || '').slice(0, 4);
-  const runtime = details.runtime ? `${details.runtime} min` : details.episode_run_time?.[0] ? `${details.episode_run_time[0]} min/ep` : '';
+  const runtime = details.runtime ? t('movie.minutes', { n: details.runtime }) : details.episode_run_time?.[0] ? t('movie.minutes_episode', { n: details.episode_run_time[0] }) : '';
   const rating = details.vote_average?.toFixed(1);
 
-  document.title = `${title} - MovieMood`;
+  if (!serverPage) document.title = `${title} - MovieMood`;
 
   if (details.backdrop_path) {
     document.getElementById('heroBackdrop').style.backgroundImage = `url(${TMDB_BACKDROP_URL}${details.backdrop_path})`;
@@ -66,10 +77,10 @@ async function loadMovie() {
 
   document.getElementById('movieTitle').textContent = title;
   document.getElementById('detailsTitle').textContent = title;
-  document.getElementById('movieOverview').textContent = details.overview;
+  document.getElementById('movieOverview').textContent = details.overview || englishOverview;
   document.getElementById('tmdbRating').textContent = rating;
 
-  const metaParts = [year, runtime, rating ? `Rating ${rating}` : ''].filter(Boolean);
+  const metaParts = [year, runtime, rating ? `${t('movie.rating')} ${rating}` : ''].filter(Boolean);
   document.getElementById('heroMeta').innerHTML = metaParts.map(p => `<span>${p}</span>`).join(' · ');
 
   const badges = details.genres?.slice(0, 3).map(g => `<span class="badge">${g.name}</span>`).join('') || '';
@@ -110,14 +121,14 @@ async function loadMovie() {
   const director = credits.crew?.find(p => p.job === 'Director') || credits.crew?.find(p => p.department === 'Directing');
   if (director) {
     document.getElementById('movieDirector').innerHTML =
-      `<span class="person-chip" onclick="window.open('person.html?id=${director.id}', '_blank')">
+      `<span class="person-chip" onclick="window.location.href='person.html?id=${director.id}'">
         <img src="${director.profile_path ? 'https://image.tmdb.org/t/p/w185' + director.profile_path : 'https://via.placeholder.com/32x32?text=?'}" alt="${director.name}">
         ${director.name}
       </span>`;
   }
 
   const castHTML = credits.cast?.slice(0, 8).map(a =>
-    `<div class="actor-card" onclick="window.open('person.html?id=${a.id}', '_blank')">
+    `<div class="actor-card" onclick="window.location.href='person.html?id=${a.id}'">
       <img src="${a.profile_path ? 'https://image.tmdb.org/t/p/w185' + a.profile_path : 'https://via.placeholder.com/70x100?text=?'}" alt="${a.name}">
       <span class="actor-name">${a.name}</span>
       <span class="actor-char">${a.character}</span>
@@ -125,25 +136,29 @@ async function loadMovie() {
   ).join('') || '';
   document.getElementById('movieCast').innerHTML = castHTML;
 
-  const regionData = providers.results?.[region] || providers.results?.US;
+  const providerRegion = providers.results?.[region] ? region : 'US';
+  const regionData = providers.results?.[providerRegion];
   if (regionData) {
+    // Single place to swap in affiliate links later (per provider_id)
+    const providerLink = () => regionData.link || '#';
+
     const types = [
-      { key: 'flatrate', label: 'Stream' },
-      { key: 'rent', label: 'Rent' },
-      { key: 'buy', label: 'Buy' },
+      { key: 'flatrate', label: t('movie.stream') },
+      { key: 'rent', label: t('movie.rent') },
+      { key: 'buy', label: t('movie.buy') },
     ];
 
     let html = '';
     types.forEach(({ key, label }) => {
       if (regionData[key]?.length) {
         html += `<div class="provider-group"><span class="provider-label">${label}</span><div class="provider-logos">`;
-        html += regionData[key].map(p => `<img src="https://image.tmdb.org/t/p/w45${p.logo_path}" title="${p.provider_name}" alt="${p.provider_name}" class="provider-logo-img">`).join('');
+        html += regionData[key].map(p => `<a href="${providerLink(p)}" target="_blank" rel="noopener sponsored" class="provider-link"><img src="https://image.tmdb.org/t/p/w45${p.logo_path}" title="${t('movie.provider_hint', { type: label, name: p.provider_name })}" alt="${p.provider_name}" class="provider-logo-img"></a>`).join('');
         html += `</div></div>`;
       }
     });
 
     if (html) {
-      document.getElementById('watchProviders').innerHTML = `<div class="providers-wrapper"><span class="providers-title">Where to watch (${region})</span>${html}</div>`;
+      document.getElementById('watchProviders').innerHTML = `<div class="providers-wrapper"><span class="providers-title">${t('movie.where_to_watch', { region: providerRegion })}</span>${html}<span class="providers-credit">${t('movie.justwatch')}</span></div>`;
     }
   }
 
@@ -173,7 +188,7 @@ async function loadMovie() {
         if (e.target.closest('.similar-fav-btn')) return;
         const id = card.dataset.id;
         const type = card.dataset.type;
-        window.open(`movie.html?id=${id}&type=${type}&region=${region}`, '_blank');
+        window.location.href = `movie.html?id=${id}&type=${type}&region=${region}`;
       });
     });
 
@@ -240,7 +255,7 @@ function setupFavoriteBtn(details) {
   const isFav = () => isFavoriteItem(id, normalizedType);
 
   const update = () => {
-    btn.textContent = isFav() ? 'In Favorites' : 'Add to Favorites';
+    btn.textContent = isFav() ? `❤️ ${t('movie.in_favorites')}` : `🤍 ${t('movie.add_favorite')}`;
   };
 
   update();

@@ -1,12 +1,12 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MovieMood</title>
-  <link rel="stylesheet" href="style.css?v=20260306d">
+  <link rel="stylesheet" href="style.css?v=20261014e">
 </head>
-<body class="movie-body">
+<body class="movie-body" data-page="movie">
   <nav class="movie-nav">
     <a href="index.html" class="nav-logo">MovieMood</a>
     <div class="nav-links">
@@ -49,22 +49,22 @@
       <div class="details-info">
         <h2 class="details-title" id="detailsTitle"></h2>
 
-        <div class="info-row">
+        <div class="info-row" data-row="director">
           <span class="info-label">Director</span>
           <div id="movieDirector"></div>
         </div>
 
-        <div class="info-row">
+        <div class="info-row" data-row="cast">
           <span class="info-label">Cast</span>
           <div class="cast-scroll" id="movieCast"></div>
         </div>
 
-        <div class="info-row">
+        <div class="info-row" data-row="genres">
           <span class="info-label">Genres</span>
           <div class="genre-tags" id="movieGenres"></div>
         </div>
 
-        <div class="info-row">
+        <div class="info-row" data-row="rating">
           <span class="info-label">Rating</span>
           <div class="ratings-row">
             <span class="rating-badge tmdb-badge">&#x2B50; <span id="tmdbRating"></span> TMDB</span>
@@ -108,7 +108,9 @@
     });
   </script>
 
-  <script src="movie.js?v=20260306d"></script>
+  <script src="i18n.js?v=20261014e"></script>
+
+  <script src="movie.js?v=20261014e"></script>
 </body>
 </html>
 

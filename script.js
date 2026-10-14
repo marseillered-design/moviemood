@@ -1,4 +1,4 @@
-﻿// TMDB
+// TMDB
 const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
@@ -57,7 +57,7 @@ async function detectRegion() {
       if (countrySelect) countrySelect.value = country;
       const detected = document.getElementById('regionDetected');
       if (detected) {
-        detected.textContent = 'Auto-detected';
+        detected.textContent = t('home.region_detected');
         detected.style.opacity = '1';
         setTimeout(() => { detected.style.opacity = '0'; }, 3000);
       }
@@ -70,13 +70,16 @@ async function detectRegion() {
 function initSearchPromptCarousel(inputEl) {
   if (!inputEl) return;
 
-  const prompts = [
-    "horrors of 90s",
-    "dark sci-fi like Interstellar",
-    "feel-good movies for tonight",
-    "mind-bending thriller",
-    "best comfort anime"
-  ];
+  // Example queries in the visitor's language (English is the default)
+  const promptsByLang = {
+    en: { focus: 'Type your mood...', prompts: ["horrors of 90s", "dark sci-fi like Interstellar", "feel-good movies for tonight", "mind-bending thriller", "best comfort anime"] },
+    uk: { focus: 'Опишіть свій настрій...', prompts: ["жахи 90-х", "затишний фільм на дощовий вечір", "щось смішне з друзями", "фантастика про космос", "фільм після важкого дня"] },
+    ru: { focus: 'Опишите своё настроение...', prompts: ["ужасы 90-х", "уютный фильм на дождливый вечер", "что-то смешное с друзьями", "фантастика про космос", "фильм после тяжёлого дня"] },
+    fr: { focus: 'Décrivez votre humeur...', prompts: ["film d'horreur des années 90", "film romantique pour ce soir", "comédie drôle entre amis", "science-fiction dans l'espace", "quelque chose de léger après le travail"] },
+    es: { focus: 'Describe tu estado de ánimo...', prompts: ["películas de terror de los 90", "película romántica para esta noche", "comedia divertida con amigos", "ciencia ficción en el espacio", "algo ligero después del trabajo"] }
+  };
+  const browserLang = window.MM_LANG || 'en';
+  const { focus: focusPlaceholder, prompts } = promptsByLang[browserLang] || promptsByLang.en;
 
   let promptIndex = 0;
   let charIndex = 0;
@@ -132,7 +135,7 @@ function initSearchPromptCarousel(inputEl) {
 
   inputEl.addEventListener('focus', () => {
     stop();
-    inputEl.placeholder = 'Type your mood...';
+    inputEl.placeholder = focusPlaceholder;
   });
 
   inputEl.addEventListener('input', () => {
@@ -269,8 +272,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   detectRegion();
   initSearchPromptCarousel(moodInput);
-  loadTrendingUnderSearch();
-  
+
+  // Mood pages link here as index.html?q=...
+  const initialQuery = new URLSearchParams(window.location.search).get('q');
+  if (initialQuery) {
+    moodInput.value = initialQuery.slice(0, 120);
+    handleSearch();
+  } else {
+    loadTrendingUnderSearch();
+  }
+
   searchBtn.addEventListener('click', handleSearch);
   moodInput.addEventListener('keypress', e => {
     if (e.key === 'Enter') handleSearch();
@@ -357,7 +368,7 @@ async function loadTrendingUnderSearch() {
     displayMovies(results, false);
     addLoadMoreBtn();
   } else {
-    renderEmptyState('Trending is unavailable right now.');
+    renderEmptyState(t('home.empty_trending'));
   }
 
   removeLoadMoreBtn();
@@ -375,12 +386,16 @@ async function handleSearch(resetPage = true) {
 
   currentQuery = query;
 
+  // Keep the query in the address bar: "back" from a movie page returns to these results
+  try { history.replaceState(null, '', `?q=${encodeURIComponent(query)}`); } catch (e) {}
+
   if (resetPage) {
     currentPage = 1;
     lastAiData = null;
     removeLoadMoreBtn();
   }
 
+  renderUnderstood(null);
   showSkeleton();
 
   if (currentType === 'trending') {
@@ -391,7 +406,7 @@ async function handleSearch(resetPage = true) {
       addLoadMoreBtn();
       return;
     }
-    renderEmptyState('No titles found. Try another search.');
+    renderEmptyState(t('home.empty_title'));
     return;
   }
 
@@ -401,6 +416,7 @@ async function handleSearch(resetPage = true) {
 
   if (aiResults.length > 0) {
     hideSkeleton();
+    renderUnderstood(aiData);
     displayMovies(aiResults, false);
     addLoadMoreBtn();
     return;
@@ -410,6 +426,7 @@ async function handleSearch(resetPage = true) {
     const clientMoodResults = await fetchByAiData(resolvedAiData, currentPage);
     if (clientMoodResults.length > 0) {
       hideSkeleton();
+      renderUnderstood(resolvedAiData);
       displayMovies(clientMoodResults, false);
       addLoadMoreBtn();
       return;
@@ -428,10 +445,11 @@ async function handleSearch(resetPage = true) {
   }
 
   hideSkeleton();
-  renderEmptyState('No movies found. Try a different mood!');
+  renderEmptyState(t('home.empty_search'));
 }
 
 async function handleSurprise() {
+  renderUnderstood(null);
   const randomPage = Math.floor(Math.random() * 5) + 1;
   currentPage = randomPage;
   removeLoadMoreBtn();
@@ -442,13 +460,13 @@ async function handleSurprise() {
   if (currentType === 'documentary') {
     // Documentary — always genre 99, movie endpoint
     lastAiData = { genres: [99] };
-    url = `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=99&sort_by=popularity.desc&vote_count.gte=100&page=${randomPage}`;
+    url = `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&with_genres=99&sort_by=popularity.desc&vote_count.gte=100&page=${randomPage}`;
   } else {
     const genres = [28, 12, 16, 35, 80, 18, 14, 27, 9648, 10749, 878, 53, 37];
     const randomGenre = genres[Math.floor(Math.random() * genres.length)];
     lastAiData = { genres: [randomGenre] };
     const endpoint = currentType === 'tv' ? 'tv' : 'movie';
-    url = `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${randomGenre}&sort_by=popularity.desc&vote_count.gte=100&page=${randomPage}`;
+    url = `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&with_genres=${randomGenre}&sort_by=popularity.desc&vote_count.gte=100&page=${randomPage}`;
   }
 
   try {
@@ -519,7 +537,7 @@ async function buildFavoritesGenreProfile(preferredType = 'trending') {
     favorites.map(async fav => {
       const type = normalizeMediaType(fav.media_type || 'movie');
       try {
-        const res = await fetch(`${TMDB_BASE_URL}/${type}/${fav.id}?api_key=${TMDB_API_KEY}`);
+        const res = await fetch(`${TMDB_BASE_URL}/${type}/${fav.id}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`);
         if (!res.ok) return;
         const data = await res.json();
         const genreIds = (data.genres || []).map(g => g.id).filter(Boolean);
@@ -629,8 +647,8 @@ async function personalizeItems(items, { preferredType = currentType } = {}) {
 async function fetchTrendingMixed(page = 1, preferredType = currentType) {
   try {
     const [movieRes, tvRes] = await Promise.all([
-      fetch(`${TMDB_BASE_URL}/trending/movie/week?api_key=${TMDB_API_KEY}&page=${page}`),
-      fetch(`${TMDB_BASE_URL}/trending/tv/week?api_key=${TMDB_API_KEY}&page=${page}`)
+      fetch(`${TMDB_BASE_URL}/trending/movie/week?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&page=${page}`),
+      fetch(`${TMDB_BASE_URL}/trending/tv/week?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&page=${page}`)
     ]);
 
     const movieData = movieRes.ok ? await movieRes.json() : { results: [] };
@@ -676,7 +694,7 @@ async function loadTrendingMixed(resetPage = true) {
     return;
   }
 
-  renderEmptyState('No trending titles right now.');
+  renderEmptyState(t('home.empty_trending'));
   removeLoadMoreBtn();
 }
 
@@ -707,7 +725,7 @@ async function searchTMDB(query, page = 1) {
   try {
     if (currentType === 'trending') {
       const res = await fetch(
-        `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&page=${page}`
+        `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&query=${encodeURIComponent(query)}&page=${page}`
       );
       const data = await res.json();
       const filtered = (data.results || []).filter(item => item.media_type === 'movie' || item.media_type === 'tv');
@@ -716,7 +734,7 @@ async function searchTMDB(query, page = 1) {
 
     const endpoint = currentType === 'tv' ? 'tv' : 'movie';
     const res = await fetch(
-      `${TMDB_BASE_URL}/search/${endpoint}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&page=${page}`
+      `${TMDB_BASE_URL}/search/${endpoint}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&query=${encodeURIComponent(query)}&page=${page}`
     );
     const data = await res.json();
     return data.results || [];
@@ -727,18 +745,25 @@ async function searchTMDB(query, page = 1) {
 }
 async function fetchByAiData(aiData, page = 1) {
   try {
-    const endpoint = currentType === 'tv' ? 'tv' : 'movie';
-    
+    const endpoint = (currentType === 'tv' || aiData.media_type === 'tv') ? 'tv' : 'movie';
+
+    // 0. The server only half-understood the query: it may be a title in another language
+    if (aiData.title_query) {
+      const titleResults = await searchTMDB(aiData.title_query, page);
+      // best-known titles first, not obscure spin-offs
+      if (titleResults.length > 0) return [...titleResults].sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
+    }
+
     // 1. Company-based discover (Pixar, Marvel, DC, Ghibli etc.)
     if (aiData.company_id) {
       let yearParam = '';
       if (aiData.year_from) yearParam += `&primary_release_date.gte=${aiData.year_from}-01-01`;
       if (aiData.year_to) yearParam += `&primary_release_date.lte=${aiData.year_to}-12-31`;
       const res = await fetch(
-        `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_companies=${aiData.company_id}&sort_by=popularity.desc&vote_count.gte=20&page=${page}${yearParam}`
+        `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&with_companies=${aiData.company_id}&sort_by=popularity.desc&vote_count.gte=20&page=${page}${yearParam}`
       );
       const data = await res.json();
-      return data.results || [];
+      return (data.results || []).map(item => ({ ...item, media_type: item.media_type || endpoint }));
     }
     
     // 2. Specific search query (director, actor, franchise, language)
@@ -746,40 +771,72 @@ async function fetchByAiData(aiData, page = 1) {
       return await searchTMDB(aiData.search_query, page);
     }
     
-    // 3. Genre-based discover
-    if (aiData.genres?.length) {
-      let genreParam = currentType === 'documentary' ? '99' : aiData.genres.join(',');
-      let animeParam = includeAnime ? '&with_keywords=210024' : '';
+    // 3. Discover by genre / topic / country / years
+    if (aiData.genres?.length || aiData.keywords?.length || aiData.language || aiData.year_from || aiData.year_to) {
+      const isDocumentary = currentType === 'documentary';
+      let genreIds = isDocumentary ? [99] : (aiData.genres || []);
+      if (endpoint === 'tv') genreIds = mapGenresToTv(genreIds);
+
+      const keywordIds = [...(aiData.keywords || [])];
+      if (includeAnime && !keywordIds.includes(ANIME_KEYWORD_ID)) keywordIds.push(ANIME_KEYWORD_ID);
+
       let yearParam = '';
       const hasYears = aiData.year_from || aiData.year_to;
-      
-      if (aiData.year_from) {
-        yearParam += endpoint === 'movie'
-          ? `&primary_release_date.gte=${aiData.year_from}-01-01`
-          : `&first_air_date.gte=${aiData.year_from}-01-01`;
-      }
-      if (aiData.year_to) {
-        yearParam += endpoint === 'movie'
-          ? `&primary_release_date.lte=${aiData.year_to}-12-31`
-          : `&first_air_date.lte=${aiData.year_to}-12-31`;
-      }
-      
-      // When filtering by era: sort by rating â†’ best films of that period come first
-      // Without years: sort by popularity â†’ well-known modern films first
+      const dateField = endpoint === 'movie' ? 'primary_release_date' : 'first_air_date';
+      if (aiData.year_from) yearParam += `&${dateField}.gte=${aiData.year_from}-01-01`;
+      if (aiData.year_to) yearParam += `&${dateField}.lte=${aiData.year_to}-12-31`;
+
+      // When filtering by era: sort by rating - best films of that period come first
+      // Without years: sort by popularity - well-known modern films first
       const sortBy = hasYears ? 'vote_average.desc' : 'popularity.desc';
-      const minVotes = hasYears ? 200 : 50;
-      
-      const buildDiscoverUrl = (genreValue, minimumVotes = minVotes) =>
-        `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&with_genres=${genreValue}&sort_by=${sortBy}&vote_count.gte=${minimumVotes}&page=${page}${animeParam}${yearParam}`;
+      // Popularity alone surfaces brand-new releases nobody has rated yet,
+      // so require enough votes and a decent score. Topics, countries, TV and docs
+      // are smaller pools and get a lower bar.
+      const isNarrow = keywordIds.length > 0 || Boolean(aiData.language);
+      const isMainstreamMovie = endpoint === 'movie' && !isDocumentary && !isNarrow;
+      const minVotes = hasYears ? 200 : (isMainstreamMovie ? 500 : 100);
+      const ratingParam = hasYears ? '' : `&vote_average.gte=${isNarrow ? 6 : 6.5}`;
+      const languageParam = aiData.language ? `&with_original_language=${aiData.language}` : '';
 
-      let data = await fetch(buildDiscoverUrl(genreParam)).then(res => res.json());
+      const buildDiscoverUrl = ({ genres = genreIds, joiner = ',', keywords = keywordIds, votes = minVotes }) =>
+        `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&sort_by=${sortBy}&vote_count.gte=${votes}&page=${page}` +
+        (genres.length ? `&with_genres=${genres.join(joiner)}` : '') +
+        (keywords.length ? `&with_keywords=${keywords.join(',')}` : '') +
+        excludeParam +
+        `${yearParam}${ratingParam}${languageParam}`;
 
-      if ((!data.results || data.results.length === 0) && aiData.genres.length > 1) {
-        const relaxedGenreParam = currentType === 'documentary' ? '99' : aiData.genres.join('|');
-        data = await fetch(buildDiscoverUrl(relaxedGenreParam, 20)).then(res => res.json());
+      // A bare "comedy" or "horror" means live-action films, not cartoons that share the genre
+      const isPlainGenre = endpoint === 'movie' && genreIds.length === 1 && !keywordIds.length && ![16, 10751, 99].includes(genreIds[0]);
+      const excludeParam = isPlainGenre ? '&without_genres=16' : '';
+
+      // From the exact request to looser ones; the first that gives a full row wins
+      const attempts = [{}];
+      if (keywordIds.length && genreIds.length) attempts.push({ genres: [], votes: Math.min(minVotes, 100) });
+      if (keywordIds.length > 1) attempts.push({ genres: [], keywords: [keywordIds[0]], votes: 50 });
+      if (genreIds.length > 1) attempts.push({ joiner: '|', votes: 20 });
+      if (isNarrow) attempts.push({ votes: 20 });
+
+      // Later pages must continue the list that page 1 started
+      const startAt = page > 1 && Number.isInteger(aiData._attempt) ? aiData._attempt : 0;
+      const endAt = page > 1 ? startAt + 1 : attempts.length;
+      let best = [];
+      for (let i = startAt; i < endAt; i++) {
+        const data = await fetch(buildDiscoverUrl(attempts[i])).then(res => res.json());
+        const results = data.results || [];
+        if (results.length > best.length) {
+          best = results;
+          if (page === 1) aiData._attempt = i;
+        }
+        if (results.length >= 6) break;
       }
 
-      return data.results || [];
+      // "comedy" should show films that are comedies first of all, not action films with a few jokes
+      if (genreIds.length === 1 && !keywordIds.length) {
+        const primary = best.filter(item => (item.genre_ids || []).slice(0, 2).includes(genreIds[0]));
+        if (primary.length >= 8) best = primary;
+      }
+
+      return best.map(item => ({ ...item, media_type: item.media_type || endpoint }));
     }
     
     return [];
@@ -787,6 +844,18 @@ async function fetchByAiData(aiData, page = 1) {
     console.error(e);
     return [];
   }
+}
+
+const ANIME_KEYWORD_ID = 210024;
+
+// TMDB uses different genre ids for series; movie ids would return nothing
+// (there is no horror genre for series: supernatural mystery is the closest)
+const TV_GENRE_MAP = { 28: [10759], 12: [10759], 14: [10765], 878: [10765], 10752: [10768], 27: [9648, 10765], 53: [9648], 10749: [18], 36: [18], 10402: [] };
+
+function mapGenresToTv(genreIds) {
+  const mapped = genreIds
+    .flatMap(id => (id in TV_GENRE_MAP ? TV_GENRE_MAP[id] : [id]));
+  return [...new Set(mapped)];
 }
 
 async function searchWithAI(query, page = 1) {
@@ -824,6 +893,43 @@ function renderEmptyState(message) {
   moviesGrid.innerHTML = `<p style="color:#ff6b6b; text-align:center; padding: 40px;">${message}</p>`;
 }
 
+// Shows how the query was understood: "Showing: Comedy · 1980s · #zombie"
+function renderUnderstood(aiData) {
+  const row = document.getElementById('understoodRow');
+  if (!row) return;
+
+  const chips = [];
+  if (aiData) {
+    if (aiData.media_type === 'tv' || currentType === 'tv') chips.push(t('type.series'));
+    (aiData.genres || []).forEach(id => chips.push(t(`genre.${id}`)));
+    (aiData.topics || []).forEach(topic => chips.push(`#${topic}`));
+    if (aiData.language) chips.push(mmDisplayName('language', aiData.language));
+
+    const { year_from: from, year_to: to } = aiData;
+    if (from && to && to - from === 9) chips.push(t('home.decade', { year: from }));
+    else if (from && to) chips.push(from === to ? String(from) : `${from}–${to}`);
+    else if (to) chips.push(t('home.until_year', { year: to }));
+    else if (from) chips.push(t('home.since_year', { year: from }));
+
+    if (aiData.search_query) chips.push(`${t('home.title_search')}: «${aiData.search_query}»`);
+  }
+
+  row.textContent = '';
+  row.hidden = chips.length === 0;
+  if (!chips.length) return;
+
+  const label = document.createElement('span');
+  label.className = 'understood-label';
+  label.textContent = t('home.understood');
+  row.appendChild(label);
+  chips.forEach(text => {
+    const chip = document.createElement('span');
+    chip.className = 'understood-chip';
+    chip.textContent = text;
+    row.appendChild(chip);
+  });
+}
+
 function displayMovies(movies, append = false) {
   if (!append) moviesGrid.innerHTML = '';
   movies.forEach(movie => moviesGrid.appendChild(createCard(movie)));
@@ -834,7 +940,7 @@ function addLoadMoreBtn() {
   const btn = document.createElement('button');
   btn.id = 'loadMoreBtn';
   btn.className = 'load-more-btn';
-  btn.textContent = 'Load More';
+  btn.textContent = t('home.load_more');
   btn.addEventListener('click', loadMore);
   moviesGrid.parentElement.appendChild(btn);
 }
@@ -906,44 +1012,66 @@ function isFavorite(id, mediaType = 'movie') {
   return favorites.some(f => f.id === id && normalizeMediaType(f.media_type) === normalizedType);
 }
 
+const FAV_ICONS = { on: '\u2764\uFE0F', off: '\uD83E\uDD0D' };
+// an eye for "not watched yet", a check mark for "watched"
+const WATCHED_ICONS = { on: '\u2705', off: '\uD83D\uDC41\uFE0F' };
+
+function setCardButton(button, active, icons, labels) {
+  button.textContent = active ? icons.on : icons.off;
+  button.title = t(active ? labels.on : labels.off);
+  button.setAttribute('aria-label', button.title);
+}
+
 function createCard(movie) {
-  const card = document.createElement('div');
+  // A real link: opens in the same tab, and "open in new tab" still works for those who want it
+  const card = document.createElement('a');
   const poster = movie.poster_path ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}` : '';
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '';
   const cardMediaType = normalizeMediaType(movie.media_type || currentType);
-  const favoriteActive = isFavorite(movie.id, cardMediaType);
   const watchedActive = isWatched(movie.id, cardMediaType);
-  const favIcon = favoriteActive ? '\u2764\uFE0F' : '\uD83E\uDD0D';
-  const watchedIcon = watchedActive ? '\uD83C\uDFAC' : '\uD83C\uDF7F';
+  const title = movie.title || movie.name || '';
+  const detailsUrl = () => `movie.html?id=${movie.id}&type=${cardMediaType}&region=${currentRegion}`;
+  const favLabels = { on: 'card.unfavorite', off: 'card.favorite' };
+  const watchedLabels = { on: 'card.unmark_watched', off: 'card.mark_watched' };
 
   card.className = `movie-card${watchedActive ? ' watched' : ''}`;
+  card.href = detailsUrl();
 
   card.innerHTML = `
     <div class="card-poster-wrapper">
-      <img src="${poster}" class="movie-poster" loading="lazy">
+      <img src="${poster}" class="movie-poster" loading="lazy" alt="">
       ${rating ? `<span class="tmdb-mini-score card-score">${rating}</span>` : ''}
-      ${watchedActive ? '<span class="watched-badge">Watched</span>' : ''}
+      ${watchedActive ? `<span class="watched-badge">${t('card.watched')}</span>` : ''}
       <div class="card-overlay"></div>
     </div>
     <div class="card-info">
-      <h3 class="card-title">${movie.title || movie.name}</h3>
+      <h3 class="card-title"></h3>
       <span class="card-year">${(movie.release_date || movie.first_air_date || '').slice(0,4)}</span>
     </div>
-    <button class="fav-btn">${favIcon}</button>
-    <button class="watched-btn">${watchedIcon}</button>
+    <button class="fav-btn" type="button"></button>
+    <button class="watched-btn" type="button"></button>
   `;
+  card.querySelector('.card-title').textContent = title;
+  card.querySelector('.movie-poster').alt = title;
 
-  card.querySelector('.fav-btn').addEventListener('click', e => {
+  const favBtn = card.querySelector('.fav-btn');
+  const watchedBtn = card.querySelector('.watched-btn');
+  setCardButton(favBtn, isFavorite(movie.id, cardMediaType), FAV_ICONS, favLabels);
+  setCardButton(watchedBtn, watchedActive, WATCHED_ICONS, watchedLabels);
+
+  favBtn.addEventListener('click', e => {
+    e.preventDefault();
     e.stopPropagation();
     toggleFavorite(movie);
-    e.currentTarget.textContent = isFavorite(movie.id, cardMediaType) ? '\u2764\uFE0F' : '\uD83E\uDD0D';
+    setCardButton(favBtn, isFavorite(movie.id, cardMediaType), FAV_ICONS, favLabels);
   });
 
-  card.querySelector('.watched-btn').addEventListener('click', e => {
+  watchedBtn.addEventListener('click', e => {
+    e.preventDefault();
     e.stopPropagation();
     toggleWatched(movie);
     const active = isWatched(movie.id, cardMediaType);
-    e.currentTarget.textContent = active ? '\uD83C\uDFAC' : '\uD83C\uDF7F';
+    setCardButton(watchedBtn, active, WATCHED_ICONS, watchedLabels);
     card.classList.toggle('watched', active);
 
     const posterWrap = card.querySelector('.card-poster-wrapper');
@@ -951,15 +1079,14 @@ function createCard(movie) {
     if (active && !badge) {
       badge = document.createElement('span');
       badge.className = 'watched-badge';
-      badge.textContent = 'Watched';
+      badge.textContent = t('card.watched');
       posterWrap.appendChild(badge);
     }
     if (!active && badge) badge.remove();
   });
 
-  card.addEventListener('click', () => {
-    window.open(`movie.html?id=${movie.id}&type=${cardMediaType}&region=${currentRegion}`, '_blank');
-  });
+  // The streaming region may have changed since the card was drawn
+  card.addEventListener('click', () => { card.href = detailsUrl(); });
 
   return card;
 }
