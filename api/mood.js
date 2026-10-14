@@ -1,11 +1,9 @@
 export default async function handler(req, res) {
   try {
     const { query } = req.body;
-    // { debug: true } in the request adds _ai: what happened with Gemini (no key, HTTP error, ok)
+    // { debug: true } in the request adds _ai: what happened with each AI (no key, HTTP error, ok)
     const debug = req.body.debug === true;
     const reply = (body, aiStatus) => res.status(200).json(debug ? { ...body, _ai: aiStatus } : body);
-    // a key pasted with a stray space or line break is rejected by Google
-    const geminiKey = (process.env.GEMINI_API_KEY || '').trim();
 
     if (!query) {
       return res.status(200).json({ genres: [18, 28], fallback: true });
@@ -21,7 +19,7 @@ export default async function handler(req, res) {
     // Phrase database + concept parser (genre, mood, topic, decade, country)
     const local = resolveLocally(lookupText);
 
-    // If Gemini is unavailable: best local guess, or a plain title search when nothing
+    // If no AI answers: best local guess, or a plain title search when nothing
     // was understood. title_query lets the client try a title search first
     // ("Звёздные войны" must not become a war movie list).
     const localFallback = () => {
@@ -30,17 +28,119 @@ export default async function handler(req, res) {
     };
 
     // A half-understood query goes to the AI instead of matching on a single known word
-    if (local.confident || !geminiKey) {
+    const providers = AI_PROVIDERS.filter(provider => provider.key());
+    if (local.confident || !providers.length) {
       console.log(`[LOCAL] "${query}" (${lookupText}) → ${JSON.stringify(local.result)}`);
       return reply(localFallback(), local.confident ? 'not_needed' : 'no_key');
     }
 
-    console.log(`[LOCAL MISS] "${query}" (${lookupText}) → calling Gemini`);
+    // ══════════════════════════════════════════════
+    // STEP 2: Ask the AI (Groq)
+    // ══════════════════════════════════════════════
+    // The visitor waits for all of them together, so they share one time budget
+    const deadline = Date.now() + AI_TIME_BUDGET_MS;
+    const statuses = [];
+    for (const provider of providers) {
+      const timeLeft = deadline - Date.now();
+      if (timeLeft < 500) break;
 
-    // ══════════════════════════════════════════════
-    // STEP 2: Fallback to Gemini AI
-    // ══════════════════════════════════════════════
-    const prompt = `You are an expert movie recommendation assistant. Convert ANY user request into TMDB search parameters.
+      console.log(`[LOCAL MISS] "${query}" (${lookupText}) → calling ${provider.name}`);
+      const answer = await provider.ask(buildPrompt(query), timeLeft);
+      const parsed = answer.content ? parseAiAnswer(answer.content) : null;
+
+      if (parsed) {
+        // The AI only returns genres/years; the topic, country and movie/series come from the parser
+        return reply(enrich(parsed, local.parsed), [...statuses, `${provider.name}: ok`].join(' | '));
+      }
+      const status = answer.error || `unusable answer: ${answer.content.slice(0, 200)}`;
+      console.error(`${provider.name} failed:`, status);
+      statuses.push(`${provider.name}: ${status}`);
+    }
+
+    return reply(localFallback(), statuses.join(' | ') || 'timeout');
+  } catch (error) {
+    console.error("Handler error:", error);
+    return res.status(200).json({ genres: [18, 28], fallback: true });
+  }
+}
+
+// ══════════════════════════════════════════════
+// AI PROVIDERS
+// Each one gets the same prompt and returns { content } or { error }.
+// Set GROQ_API_KEY in Vercel; the model can be overridden with GROQ_MODEL.
+// Another AI can be added to AI_PROVIDERS later: they are asked in order.
+// ══════════════════════════════════════════════
+const AI_TIME_BUDGET_MS = 5000;
+
+// a key pasted with a stray space or line break is rejected
+const envValue = name => (process.env[name] || '').trim();
+
+async function postJson(url, options, timeoutMs) {
+  try {
+    const response = await fetch(url, { ...options, method: 'POST', signal: AbortSignal.timeout(timeoutMs) });
+    if (!response.ok) {
+      const errorText = await response.text();
+      return { error: `http_${response.status}: ${errorText.slice(0, 300)}`, status: response.status, errorText };
+    }
+    return { data: await response.json() };
+  } catch (error) {
+    return { error: `request_failed: ${error?.name || error}` };
+  }
+}
+
+// Groq: fast and free to start with. Models come and go, so a retired one falls through to the next.
+const GROQ_MODELS = ['llama-3.3-70b-versatile', 'openai/gpt-oss-20b', 'llama-3.1-8b-instant'];
+
+async function askGroq(prompt, timeoutMs) {
+  const models = envValue('GROQ_MODEL') ? [envValue('GROQ_MODEL')] : GROQ_MODELS;
+  const started = Date.now();
+  let lastError = 'no model tried';
+
+  for (const model of models) {
+    const timeLeft = timeoutMs - (Date.now() - started);
+    if (timeLeft < 300) break;
+
+    const result = await postJson('https://api.groq.com/openai/v1/chat/completions', {
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${envValue('GROQ_API_KEY')}` },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.1,
+        max_completion_tokens: 1000,
+        response_format: { type: 'json_object' },
+      }),
+    }, timeLeft);
+
+    if (result.data) return { content: result.data.choices?.[0]?.message?.content || '' };
+    lastError = `${model} ${result.error}`;
+    // only an unknown or retired model is worth another try; quota or outage errors are not
+    const modelGone = (result.status === 404 || result.status === 400) && /model/i.test(result.errorText || '');
+    if (!modelGone) break;
+  }
+  return { error: lastError };
+}
+
+const AI_PROVIDERS = [
+  { name: 'groq', key: () => envValue('GROQ_API_KEY'), ask: askGroq },
+];
+
+// The AI's JSON, or null when it is missing or unusable
+function parseAiAnswer(content) {
+  try {
+    const clean = content.replace(/```json|```/g, '').trim();
+    const jsonMatch = clean.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+    const parsed = JSON.parse(jsonMatch[0]);
+    if (!parsed.genres && !parsed.search_query && !parsed.company_id) return null;
+    if (parsed.genres && !Array.isArray(parsed.genres)) parsed.genres = [18, 28];
+    return parsed;
+  } catch (e) {
+    return null;
+  }
+}
+
+function buildPrompt(query) {
+  return `You are an expert movie recommendation assistant. Convert ANY user request into TMDB search parameters.
 Return ONLY valid JSON, no extra text, no markdown. Choose ONE of these formats:
 FORMAT A — for studios/companies:
 {"company_id": number}
@@ -85,72 +185,6 @@ EXAMPLES:
 "prison escape" → {"genres": [18, 28]}
 "dark 90s thriller" → {"genres": [53, 18], "year_from": 1990, "year_to": 1999}
 User request: "${query}"`;
-
-    // gemini-1.5-flash was retired; override with GEMINI_MODEL env var if needed
-    const geminiModel = process.env.GEMINI_MODEL || 'gemini-flash-latest';
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${encodeURIComponent(geminiKey)}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.1,
-            // newer models spend output tokens on thinking, 150 cuts the JSON off
-            maxOutputTokens: 1000,
-            responseMimeType: "application/json",
-          },
-        }),
-        // a slow AI must not leave the visitor without results
-        signal: AbortSignal.timeout(6000),
-      }
-    ).catch(error => {
-      console.error("Gemini request failed:", error);
-      return { requestError: String(error?.name || error) };
-    });
-
-    if (geminiResponse.requestError) {
-      return reply(localFallback(), `request_failed: ${geminiResponse.requestError}`);
-    }
-
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      console.error("Gemini API error:", geminiResponse.status, errorText);
-      return reply(localFallback(), `http_${geminiResponse.status}: ${errorText.slice(0, 300)}`);
-    }
-
-    const data = await geminiResponse.json();
-    const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!content) {
-      return reply(localFallback(), `empty_answer: ${data.candidates?.[0]?.finishReason || 'no candidates'}`);
-    }
-
-    let parsed;
-    try {
-      const clean = content.replace(/```json|```/g, '').trim();
-      const jsonMatch = clean.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("No JSON found");
-      parsed = JSON.parse(jsonMatch[0]);
-
-      if (!parsed.genres && !parsed.search_query && !parsed.company_id) {
-        return reply(localFallback(), `unusable_answer: ${content.slice(0, 200)}`);
-      }
-      if (parsed.genres && !Array.isArray(parsed.genres)) {
-        parsed.genres = [18, 28];
-      }
-    } catch (e) {
-      console.error("JSON parse error:", e, "Raw:", content);
-      return reply(localFallback(), `bad_json: ${content.slice(0, 200)}`);
-    }
-
-    // The AI only returns genres/years; the topic, country and movie/series come from the parser
-    return reply(enrich(parsed, local.parsed), 'ok');
-  } catch (error) {
-    console.error("Handler error:", error);
-    return res.status(200).json({ genres: [18, 28], fallback: true });
-  }
 }
 
 // ══════════════════════════════════════════════
