@@ -53,7 +53,7 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
 }
 
 /* Prevent theme color from breaking emoji rendering */
-.mood-pick-btn, .surprise-btn, .filters-btn, .tab, .anime-toggle,
+.surprise-btn, .filters-btn, .tab, .anime-toggle,
 .nav-favorites, .search-icon, .region-label {
   font-family: 'Inter', "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
 }
@@ -443,88 +443,6 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
   background: #f7f3ff;
   color: #231d36;
 }
-
-/* MOOD PICKER */
-.mood-picker-btn {
-  position: absolute;
-  right: 12px;
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
-  transition: all 0.2s;
-  opacity: 0.6;
-}
-.mood-picker-btn:hover { opacity: 1; transform: scale(1.2); }
-.mood-picker-btn.active { opacity: 1; filter: drop-shadow(0 0 8px var(--neon-glow)); }
-
-.mood-picker-popup {
-  position: absolute;
-  top: calc(100% + 12px);
-  left: 0;
-  transform: none;
-  width: 100%;
-  max-width: 780px;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px;
-  z-index: 120;
-  backdrop-filter: blur(20px);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  display: none;
-}
-[data-theme="dark"] .mood-picker-popup {
-  background: rgba(18, 18, 30, 0.97);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-}
-.mood-picker-popup.open { display: block; animation: popupIn 0.2s ease forwards; }
-@keyframes popupIn {
-  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-
-}
-.mood-picker-arrow {
-  position: absolute;
-  top: -7px; right: 100px;
-  width: 14px; height: 14px;
-  background: var(--bg2);
-  border-left: 1px solid var(--border);
-  border-top: 1px solid var(--border);
-  transform: rotate(45deg);
-}
-.mood-picker-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 6px;
-}
-.mood-pick-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 10px 6px;
-  background: var(--input-bg);
-  border: 1px solid transparent;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.mood-pick-btn:hover {
-  background: rgba(124, 58, 237, 0.15);
-  border-color: rgba(124, 58, 237, 0.3);
-  transform: translateY(-2px);
-}
-.mood-emoji {
-  font-size: 1.6rem;
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
-  color: initial; /* prevent theme color from overriding emoji rendering */
-  -webkit-text-fill-color: initial;
-  line-height: 1;
-}
-.mood-label { font-size: 0.68rem; color: var(--text-dim); }
 
 /* RESULTS */
 .results-section { margin-top: 40px; }
@@ -954,16 +872,6 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
   width: 100%;
   border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-}
-.details-title {
-  font-family: 'Bebas Neue', 'Oswald', sans-serif;
-  font-size: 2.5rem;
-  letter-spacing: 2px;
-  margin-bottom: 24px;
-  background: linear-gradient(135deg, var(--text), var(--neon));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 .info-row {
   display: flex;
@@ -1463,13 +1371,11 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
   .details-grid { grid-template-columns: 1fr; }
   .details-poster { max-width: 140px; margin: 0 auto; }
   .similar-grid { grid-template-columns: repeat(3, 1fr); }
-  .mood-picker-grid { grid-template-columns: repeat(4, 1fr); }
 }
 @media (max-width: 480px) {
   .movies-grid { grid-template-columns: repeat(2, 1fr); }
   .similar-grid { grid-template-columns: repeat(2, 1fr); }
   .home-title { font-size: clamp(2.8rem, 17vw, 4rem); }
-  .mood-picker-grid { grid-template-columns: repeat(3, 1fr); }
 }
 @media (hover: none) {
   .fav-btn { opacity: 1 !important; }
@@ -2051,10 +1957,6 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 .movie-card:hover .fav-btn, .movie-card:hover .watched-btn { opacity: 1; }
 
 @media (max-width: 768px) {
-  /* One swipeable row of nav links instead of three stacked rows */
-  .home-nav > div { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; scrollbar-width: none; padding-bottom: 2px; }
-  .home-nav > div::-webkit-scrollbar { display: none; }
-  .home-nav > div > * { flex: 0 0 auto; }
   .home-hero { padding: 12px 16px 16px; }
   .home-title { font-size: clamp(1.9rem, 9vw, 2.8rem); margin-bottom: 8px; }
   .home-subtitle { font-size: 0.9rem; }
@@ -2064,4 +1966,155 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 }
 @media (max-width: 480px) {
   .home-title { font-size: clamp(1.8rem, 9vw, 2.4rem); }
+}
+/* ==================== NAV: two links, favorites, menu (nav.js) ==================== */
+.nav-main { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
+.home-nav .nav-main, .movie-nav .nav-main { justify-content: flex-end; }
+.nav-text-link {
+  padding: 8px 12px;
+  border-radius: 10px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+.nav-text-link:hover, .nav-text-link.active { color: var(--text); }
+.nav-icon-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 1.05rem;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.nav-icon-btn:hover, .nav-icon-btn.active { border-color: var(--purple-light); }
+.nav-favorites-btn { color: var(--pink); font-size: 1.15rem; }
+.nav-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.66rem;
+  font-weight: 600;
+}
+.nav-menu { position: relative; }
+.nav-menu-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  min-width: 240px;
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  font-family: 'Inter', sans-serif;
+}
+.nav-menu-panel[hidden] { display: none; }
+.nav-menu-item, .nav-menu-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+a.nav-menu-item:hover, button.nav-menu-item:hover { background: var(--input-bg); }
+.nav-menu-count { color: var(--text-dim); font-size: 0.8rem; }
+.nav-menu-sep { height: 1px; margin: 6px 4px; background: var(--border); }
+.nav-menu-row .lang-select { padding: 6px 8px; }
+/* The theme button keeps its sun / moon icon and becomes a menu row */
+.nav-menu-panel .theme-toggle.nav-menu-item {
+  justify-content: flex-start;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transform: none;
+}
+.nav-menu-panel .theme-toggle.nav-menu-item:hover { background: var(--input-bg); }
+.nav-theme-label { margin-left: 2px; }
+.home-nav .nav-main { flex-wrap: nowrap; }
+.nav-menu-mobile { display: none; }
+@media (max-width: 560px) {
+  .home-nav { flex-wrap: nowrap; }
+  .nav-text-link { display: none; }
+  .nav-menu-mobile { display: block; }
+}
+
+/* ==================== MOVIE PAGE PASS ==================== */
+/* The hero grows with its content: on short screens the text no longer slides under the nav */
+.movie-hero-section { height: auto; min-height: 100vh; min-height: 100svh; }
+.hero-content {
+  position: relative;
+  inset: auto;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 110px 48px 60px;
+  box-sizing: border-box;
+}
+/* A grid item is as wide as its content by default: the cast row stretched the page on phones */
+.details-grid > * { min-width: 0; }
+
+/* Mood chips under the title: "Cozy · Nostalgic · Romantic" */
+.hero-moods { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 16px; }
+.hero-moods[hidden] { display: none; }
+.mood-tag {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+.mood-tag:hover { border-color: var(--purple-light); background: rgba(124, 58, 237, 0.3); }
+
+/* Streaming services: logo and name */
+.provider-link {
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  text-decoration: none;
+}
+.provider-link .provider-logo-img { width: 30px; height: 30px; border: 0; }
+.provider-name { font-size: 0.78rem; white-space: nowrap; }
+
+@media (max-width: 768px) {
+  .hero-content { padding: 96px 16px 32px; }
+  /* out of the way of the streaming services at the bottom */
+  .mute-btn { top: 76px; bottom: auto; right: 16px; }
 }

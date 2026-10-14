@@ -14,6 +14,8 @@
     'nav.seen': { en: 'Watched', uk: 'Переглянуте', ru: 'Просмотрено', fr: 'Déjà vus', es: 'Vistos' },
     'nav.theme': { en: 'Switch light / dark theme', uk: 'Світла / темна тема', ru: 'Светлая / тёмная тема', fr: 'Thème clair / sombre', es: 'Tema claro / oscuro' },
     'nav.language': { en: 'Language', uk: 'Мова', ru: 'Язык', fr: 'Langue', es: 'Idioma' },
+    'nav.theme_short': { en: 'Theme', uk: 'Тема', ru: 'Тема', fr: 'Thème', es: 'Tema' },
+    'nav.menu': { en: 'Menu', uk: 'Меню', ru: 'Меню', fr: 'Menu', es: 'Menú' },
 
     // home
     'home.page_title': { en: 'MovieMood - Discover Movies by Mood', uk: 'MovieMood — фільми під настрій', ru: 'MovieMood — фильмы под настроение', fr: 'MovieMood — des films selon votre humeur', es: 'MovieMood — películas según tu ánimo' },
@@ -24,7 +26,6 @@
     'home.random': { en: 'Random', uk: 'Навмання', ru: 'Наугад', fr: 'Au hasard', es: 'Al azar' },
     'home.random_hint': { en: 'Show random films', uk: 'Показати випадкові фільми', ru: 'Показать случайные фильмы', fr: 'Afficher des films au hasard', es: 'Mostrar películas al azar' },
     'home.filters': { en: 'Filters', uk: 'Фільтри', ru: 'Фильтры', fr: 'Filtres', es: 'Filtros' },
-    'home.mood_picker': { en: 'Pick a mood', uk: 'Обрати настрій', ru: 'Выбрать настроение', fr: 'Choisir une humeur', es: 'Elegir un ánimo' },
     'home.region': { en: 'Streaming region:', uk: 'Регіон стримінгу:', ru: 'Регион стриминга:', fr: 'Région de streaming :', es: 'Región de streaming:' },
     'home.region_detected': { en: 'Auto-detected', uk: 'Визначено автоматично', ru: 'Определено автоматически', fr: 'Détectée automatiquement', es: 'Detectada automáticamente' },
     'home.content_type': { en: 'Content type', uk: 'Тип', ru: 'Тип', fr: 'Type de contenu', es: 'Tipo de contenido' },
@@ -42,19 +43,6 @@
     'home.since_year': { en: 'since {year}', uk: 'з {year}', ru: 'с {year}', fr: 'depuis {year}', es: 'desde {year}' },
     'home.decade': { en: '{year}s', uk: '{year}-ті', ru: '{year}-е', fr: 'années {year}', es: 'años {year}' },
 
-    // mood picker
-    'mood.funny': { en: 'Funny', uk: 'Смішне', ru: 'Смешное', fr: 'Drôle', es: 'Divertida' },
-    'mood.sad': { en: 'Sad', uk: 'Сумне', ru: 'Грустное', fr: 'Triste', es: 'Triste' },
-    'mood.scary': { en: 'Scary', uk: 'Страшне', ru: 'Страшное', fr: 'Effrayant', es: 'De miedo' },
-    'mood.action': { en: 'Action', uk: 'Екшн', ru: 'Экшен', fr: 'Action', es: 'Acción' },
-    'mood.romance': { en: 'Romance', uk: 'Романтика', ru: 'Романтика', fr: 'Romance', es: 'Romance' },
-    'mood.mind': { en: 'Mind-blowing', uk: 'Вибух мозку', ru: 'Взрыв мозга', fr: 'Renversant', es: 'Alucinante' },
-    'mood.family': { en: 'Family', uk: 'Сімейне', ru: 'Семейное', fr: 'En famille', es: 'Familiar' },
-    'mood.mystery': { en: 'Mystery', uk: 'Детектив', ru: 'Детектив', fr: 'Mystère', es: 'Misterio' },
-    'mood.inspiring': { en: 'Inspiring', uk: 'Надихає', ru: 'Вдохновляет', fr: 'Inspirant', es: 'Inspiradora' },
-    'mood.animated': { en: 'Animated', uk: 'Анімація', ru: 'Анимация', fr: 'Animation', es: 'Animación' },
-    'mood.historical': { en: 'Historical', uk: 'Історичне', ru: 'Историческое', fr: 'Historique', es: 'Histórica' },
-    'mood.musical': { en: 'Musical', uk: 'Мюзикл', ru: 'Мюзикл', fr: 'Comédie musicale', es: 'Musical' },
 
     // shared
     'type.movie': { en: 'Movie', uk: 'Фільм', ru: 'Фильм', fr: 'Film', es: 'Película' },
@@ -70,6 +58,15 @@
     'card.remove': { en: 'Remove', uk: 'Прибрати', ru: 'Убрать', fr: 'Retirer', es: 'Quitar' },
     'footer.tmdb': { en: 'This product uses the TMDB API but is not endorsed or certified by TMDB.', uk: 'Сайт використовує TMDB API, але не схвалений і не сертифікований TMDB.', ru: 'Сайт использует TMDB API, но не одобрен и не сертифицирован TMDB.', fr: "Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB.", es: 'Este producto usa la API de TMDB, pero no está avalado ni certificado por TMDB.' },
     'discover': { en: 'Discover Movies', uk: 'Шукати фільми', ru: 'Искать фильмы', fr: 'Découvrir des films', es: 'Descubrir películas' },
+
+    // mood recipes (api/mood.js MOOD_PROFILES)
+    'moodname.cozy': { en: 'Cozy', uk: 'Затишне', ru: 'Уютное', fr: 'Cocooning', es: 'Acogedor' },
+    'moodname.rainy': { en: 'Rainy day', uk: 'Дощовий день', ru: 'Дождливый день', fr: 'Jour de pluie', es: 'Día de lluvia' },
+    'moodname.feelgood': { en: 'Feel-good', uk: 'Для настрою', ru: 'Для настроения', fr: 'Feel-good', es: 'Para animarse' },
+    'moodname.sad': { en: 'Sad', uk: 'Сумне', ru: 'Грустное', fr: 'Triste', es: 'Triste' },
+    'moodname.date': { en: 'Date night', uk: 'Для побачення', ru: 'Для свидания', fr: 'Soirée en amoureux', es: 'Cita' },
+    'moodname.inspiring': { en: 'Inspiring', uk: 'Надихає', ru: 'Вдохновляет', fr: 'Inspirant', es: 'Inspirador' },
+    'moodname.mind': { en: 'Mind-bending', uk: 'Вибух мозку', ru: 'Взрыв мозга', fr: 'Renversant', es: 'Alucinante' },
 
     // genres (TMDB ids)
     'genre.28': { en: 'Action', uk: 'Бойовик', ru: 'Боевик', fr: 'Action', es: 'Acción' },
@@ -108,6 +105,29 @@
     'movie.justwatch': { en: 'Streaming data by JustWatch', uk: 'Дані про стримінг: JustWatch', ru: 'Данные о стриминге: JustWatch', fr: 'Données de streaming : JustWatch', es: 'Datos de streaming: JustWatch' },
     'movie.minutes': { en: '{n} min', uk: '{n} хв', ru: '{n} мин', fr: '{n} min', es: '{n} min' },
     'movie.minutes_episode': { en: '{n} min/ep', uk: '{n} хв/серія', ru: '{n} мин/серия', fr: '{n} min/ép.', es: '{n} min/ep.' },
+
+    // mood tags on the movie page (movie.js MOOD_TAGS)
+    'tag.comforting': { en: 'Cozy', uk: 'Затишний', ru: 'Уютный', fr: 'Réconfortant', es: 'Acogedor' },
+    'tag.lighthearted': { en: 'Light', uk: 'Легкий', ru: 'Лёгкий', fr: 'Léger', es: 'Ligero' },
+    'tag.whimsical': { en: 'Whimsical', uk: 'Чарівний', ru: 'Волшебный', fr: 'Fantaisiste', es: 'Mágico' },
+    'tag.joyful': { en: 'Joyful', uk: 'Радісний', ru: 'Радостный', fr: 'Joyeux', es: 'Alegre' },
+    'tag.cheerful': { en: 'Cheerful', uk: 'Життєрадісний', ru: 'Жизнерадостный', fr: 'Enjoué', es: 'Animado' },
+    'tag.hopeful': { en: 'Hopeful', uk: 'Надихає надією', ru: 'Дарит надежду', fr: "Plein d'espoir", es: 'Esperanzador' },
+    'tag.nostalgic': { en: 'Nostalgic', uk: 'Ностальгійний', ru: 'Ностальгический', fr: 'Nostalgique', es: 'Nostálgico' },
+    'tag.sentimental': { en: 'Touching', uk: 'Зворушливий', ru: 'Трогательный', fr: 'Touchant', es: 'Conmovedor' },
+    'tag.melancholy': { en: 'Melancholic', uk: 'Меланхолійний', ru: 'Меланхоличный', fr: 'Mélancolique', es: 'Melancólico' },
+    'tag.bittersweet': { en: 'Bittersweet', uk: 'Гірко-солодкий', ru: 'Горько-сладкий', fr: 'Doux-amer', es: 'Agridulce' },
+    'tag.romantic': { en: 'Romantic', uk: 'Романтичний', ru: 'Романтичный', fr: 'Romantique', es: 'Romántico' },
+    'tag.hilarious': { en: 'Hilarious', uk: 'Дуже смішний', ru: 'Очень смешной', fr: 'Hilarant', es: 'Divertidísimo' },
+    'tag.witty': { en: 'Witty', uk: 'Дотепний', ru: 'Остроумный', fr: 'Plein d’esprit', es: 'Ingenioso' },
+    'tag.absurd': { en: 'Absurd', uk: 'Абсурдний', ru: 'Абсурдный', fr: 'Absurde', es: 'Absurdo' },
+    'tag.intense': { en: 'Intense', uk: 'Напружений', ru: 'Напряжённый', fr: 'Intense', es: 'Intenso' },
+    'tag.suspenseful': { en: 'Suspenseful', uk: 'Тримає в напрузі', ru: 'Держит в напряжении', fr: 'Haletant', es: 'De suspense' },
+    'tag.tense': { en: 'Tense', uk: 'Тривожний', ru: 'Тревожный', fr: 'Tendu', es: 'Tenso' },
+    'tag.philosophical': { en: 'Thought-provoking', uk: 'Змушує думати', ru: 'Заставляет думать', fr: 'Qui fait réfléchir', es: 'Hace pensar' },
+    'tag.mysterious': { en: 'Mysterious', uk: 'Загадковий', ru: 'Загадочный', fr: 'Mystérieux', es: 'Misterioso' },
+    'tag.awestruck': { en: 'Awe-inspiring', uk: 'Вражаючий', ru: 'Впечатляющий', fr: 'Grandiose', es: 'Impresionante' },
+    'tag.inspirational': { en: 'Inspiring', uk: 'Надихаючий', ru: 'Вдохновляющий', fr: 'Inspirant', es: 'Inspirador' },
 
     // trailer feed
     'feed.page_title': { en: 'Trailer Feed - MovieMood', uk: 'Трейлери — MovieMood', ru: 'Трейлеры — MovieMood', fr: 'Bandes-annonces — MovieMood', es: 'Tráilers — MovieMood' },
@@ -161,7 +181,6 @@
     ['#surpriseBtn', 'home.random_hint', 'title'],
     ['#surpriseBtn .btn-label', 'home.random'],
     ['#filtersBtn .btn-label', 'home.filters'],
-    ['#moodPickerBtn', 'home.mood_picker', 'title'],
     ['.region-label', 'home.region', 'text', '🌍'],
     ['.filter-group:nth-child(1) .filter-group-label', 'home.content_type'],
     ['.filter-group:nth-child(2) .filter-group-label', 'home.options'],
@@ -172,7 +191,6 @@
     ['.example-text', 'home.examples'],
     ['.home-footer .footer-moods', 'home.browse_moods'],
     ['.home-footer .footer-tmdb', 'footer.tmdb'],
-    ['#theme-toggle', 'nav.theme', 'title'],
     ['#btnPlayTrailer', 'movie.play_trailer', 'text', '▶'],
     ['.info-row[data-row="director"] .info-label', 'movie.director'],
     ['.info-row[data-row="cast"] .info-label', 'movie.cast'],
@@ -188,14 +206,6 @@
     ['body[data-page="seen"] .fav-empty h2', 'seen.empty_title'],
     ['body[data-page="seen"] .fav-empty p', 'seen.empty_text'],
     ['#clearSeenBtn', 'seen.clear', 'text', '🗑️']
-  ];
-
-  // Nav links are recognised by where they lead, so every page gets the same labels
-  const NAV_LINKS = [
-    ['/moods', 'nav.moods', '🎭'],
-    ['feed.html', 'nav.feed', '🎬'],
-    ['favorites.html', 'nav.favorites', '❤️'],
-    ['seen.html', 'nav.seen', '✅']
   ];
 
   const PAGE_TITLES = { home: 'home.page_title', feed: 'feed.page_title', favorites: 'fav.page_title', seen: 'seen.page_title' };
@@ -258,11 +268,6 @@
       title.appendChild(accent);
     }
 
-    document.querySelectorAll('.mood-pick-btn').forEach(btn => {
-      const label = btn.querySelector('.mood-label');
-      if (label && STRINGS[`mood.${btn.dataset.mood}`]) label.textContent = t(`mood.${btn.dataset.mood}`);
-    });
-
     document.querySelectorAll('#countrySelect option').forEach(option => {
       option.textContent = `${flagEmoji(option.value)} ${displayName('region', option.value)}`;
     });
@@ -272,41 +277,14 @@
       if (!p.children.length) p.textContent = t('footer.tmdb');
     });
 
-    document.querySelectorAll('a.nav-favorites, a.nav-link').forEach(link => {
-      const href = link.getAttribute('href') || '';
-      const match = NAV_LINKS.find(([target]) => href.endsWith(target));
-      if (match) link.textContent = `${match[2]} ${t(match[1])}`;
-    });
-  }
-
-  function addLanguageSwitcher() {
-    const toggle = document.getElementById('theme-toggle');
-    if (!toggle || document.getElementById('langSelect')) return;
-
-    const select = document.createElement('select');
-    select.id = 'langSelect';
-    select.className = 'lang-select';
-    select.title = t('nav.language');
-    select.setAttribute('aria-label', t('nav.language'));
-    for (const code of SUPPORTED) {
-      const option = document.createElement('option');
-      option.value = code;
-      option.textContent = LANGUAGE_NAMES[code];
-      option.selected = code === lang;
-      select.appendChild(option);
-    }
-    select.addEventListener('change', () => {
-      try { localStorage.setItem('lang', select.value); } catch (e) {}
-      window.location.reload();
-    });
-    toggle.parentNode.insertBefore(select, toggle);
   }
 
   window.MM_LANG = lang;
+  // for the language picker in nav.js
+  window.MM_LANGUAGES = LANGUAGE_NAMES;
   window.TMDB_LANG = TMDB_LOCALES[lang];
   window.t = t;
   window.mmDisplayName = displayName;
 
   applyTranslations();
-  addLanguageSwitcher();
 })();

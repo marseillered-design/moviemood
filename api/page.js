@@ -7,7 +7,7 @@
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
-const ASSET_VERSION = '20261014e';
+const ASSET_VERSION = '20261015f';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -20,33 +20,33 @@ const DEFAULT_DISCOVER = 'sort_by=popularity.desc&vote_count.gte=1500&vote_avera
 const MOODS = [
   {
     slug: 'rainy-day-movies', emoji: '🌧️', title: 'Movies for a Rainy Day', query: 'rainy day',
-    discover: 'with_genres=35,18&without_genres=27,53,10752',
+    discover: 'with_genres=35|18|10749&with_keywords=325784|164246|319319|278730|225219|288816&without_genres=28,27,53,80,10752,878,12&sort_by=vote_count.desc&vote_count.gte=300',
     intro: 'Grey sky, a blanket and nowhere to be. These are warm, funny, slightly bittersweet films that suit the sound of rain on the window — easy to sink into and hard to turn off.'
   },
   {
     slug: 'feel-good-movies', emoji: '😊', title: 'Feel-Good Movies', query: 'feel good',
-    discover: 'with_genres=35&with_keywords=6054&without_genres=16,27,53',
-    intro: 'Films about friendship that leave you lighter than they found you. No heavy twists, no bleak endings — just good company for ninety minutes.'
+    discover: 'with_keywords=325824|325782|325832|281585|288816&without_genres=28,27,53,80,10752,878,12,16&sort_by=vote_count.desc&vote_count.gte=300',
+    intro: 'Hopeful, warm-hearted films that leave you lighter than they found you. No heavy twists, no bleak endings — just good company for a couple of hours.'
   },
   {
     slug: 'movies-to-cry-to', emoji: '😢', title: 'Movies to Cry To', query: 'want to cry',
-    discover: 'with_genres=18,10749&vote_average.gte=7.2',
+    discover: 'with_genres=18&with_keywords=319319|4232|156924|9872|278730&without_genres=27,28,53,9648,878&sort_by=vote_count.desc&vote_count.gte=300',
     intro: 'Sometimes you need a proper cry. These love stories and dramas earn their tears honestly — keep the tissues within reach.'
   },
   {
     slug: 'date-night-movies', emoji: '💕', title: 'Date Night Movies', query: 'date night',
-    discover: 'with_genres=10749,35',
-    intro: 'Romantic comedies both of you can agree on: charming leads, real chemistry and enough jokes to keep the evening light.'
+    discover: 'with_genres=10749&with_keywords=324429|9673|288816&without_genres=27,53&sort_by=vote_count.desc&vote_count.gte=300',
+    intro: 'Love stories both of you can agree on: real chemistry, a few laughs and a few sighs. Well-loved picks, not random new releases.'
   },
   {
     slug: 'cozy-movies', emoji: '🕯️', title: 'Cozy Movies', query: 'cozy',
-    discover: 'with_genres=10751,14&without_genres=16',
-    intro: 'Magical, gentle and familiar — family fantasy films that feel like a warm room in winter. Perfect with tea and something sweet.'
+    discover: 'with_genres=35|10749|10751&with_keywords=325784|288816|324713|325832&without_genres=28,27,53,80,10752,878,12,16&sort_by=vote_count.desc&vote_count.gte=300',
+    intro: 'Gentle, funny and familiar films that feel like a warm room in winter. No violence, no jump scares — perfect with tea and something sweet.'
   },
   {
     slug: 'mind-bending-movies', emoji: '🌀', title: 'Mind-Bending Movies', query: 'mind bending',
-    discover: 'with_genres=878,9648&vote_average.gte=7',
-    intro: 'Science fiction mysteries that play with time, memory and reality. You will want to talk about the ending — or watch it again straight away.'
+    discover: 'with_genres=878|9648&with_keywords=212737|197582|325775&without_genres=16,10751,28,12&sort_by=vote_count.desc&vote_count.gte=300',
+    intro: 'Puzzles that play with time, memory and reality. You will want to talk about the ending — or watch it again straight away.'
   },
   {
     slug: 'plot-twist-movies', emoji: '🎭', title: 'Movies with a Plot Twist', query: 'thriller with crazy ending',
@@ -65,7 +65,7 @@ const MOODS = [
   },
   {
     slug: 'motivational-movies', emoji: '💪', title: 'Motivational Movies', query: 'inspiring',
-    discover: 'with_genres=18&with_keywords=281585|6075&without_genres=53,27,9648&vote_count.gte=800',
+    discover: 'with_genres=18&with_keywords=281585|325824|240&without_genres=53,80,27,9648&sort_by=vote_count.desc&vote_count.gte=300',
     intro: 'Underdogs, comebacks and people who refused to quit. Put one on when you need a push to start something hard.'
   },
   {
@@ -222,9 +222,15 @@ function layout({ title, description, canonical, image, head = '', hero, main })
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   ${head}
-  <script>try { if (localStorage.getItem('theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch (e) {}</script>
+  <script>
+    try {
+      const saved = localStorage.getItem('theme');
+      const light = saved === 'light' || (!saved && !window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark');
+    } catch (e) {}
+  </script>
 </head>
-<body class="home-body">
+<body class="home-body" data-page="moods">
   <div class="bg-orbs">
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
@@ -232,12 +238,17 @@ function layout({ title, description, canonical, image, head = '', hero, main })
   </div>
   <div class="noise-overlay"></div>
 
+  <!-- Same nav as the rest of the site: nav.js turns this into links, favorites and a menu -->
   <nav class="home-nav">
     <a href="/" class="nav-logo">MOVIEMOOD</a>
     <div>
-      <a href="/moods" class="nav-favorites">&#x1F3AD; Moods</a>
-      <a href="/feed.html" class="nav-favorites">&#x1F3AC; Feed</a>
-      <a href="/favorites.html" class="nav-favorites">&#x2764;&#xFE0F; Favorites</a>
+      <a href="/moods" class="nav-text-link">Moods</a>
+      <a href="/feed.html" class="nav-text-link">Trailers</a>
+      <a href="/favorites.html" class="nav-text-link">Favorites</a>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle theme">
+        <span class="icon-sun">&#x2600;&#xFE0F;</span>
+        <span class="icon-moon">&#x1F319;</span>
+      </button>
     </div>
   </nav>
 
@@ -252,6 +263,17 @@ function layout({ title, description, canonical, image, head = '', hero, main })
   <footer class="home-footer">
     <p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
   </footer>
+
+  <script>
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+    });
+  </script>
+  <script src="/i18n.js?v=${ASSET_VERSION}"></script>
+  <script src="/nav.js?v=${ASSET_VERSION}"></script>
 </body>
 </html>`;
 }
@@ -406,7 +428,6 @@ async function renderTitlePage(type, id, origin) {
     .replace(/<title>[^<]*<\/title>/, () => head)
     .replace('id="movieTitle"></h1>', () => `id="movieTitle">${escapeHtml(name)}</h1>`)
     .replace('id="movieOverview"></p>', () => `id="movieOverview">${escapeHtml(details.overview)}</p>`)
-    .replace('id="detailsTitle"></h2>', () => `id="detailsTitle">${escapeHtml(name)}</h2>`)
     .replace('id="moviePoster" src="" alt="Movie Poster"', () => `id="moviePoster" src="${escapeHtml(poster)}" alt="${escapeHtml(name)} poster"`)
     .replace('<div class="trailer-modal"', () => `${moodsSection}<div class="trailer-modal"`)
     .replace('<script src="movie.js', () => `<script>window.__MM_PAGE = ${JSON.stringify({ id: String(id), type }).replace(/</g, '\\u003c')};</script>\n  <script src="movie.js`);

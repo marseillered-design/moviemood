@@ -2328,6 +2328,57 @@ const MOOD_WORDS = [
   [[16, 10751], 'with kids|for kids|toddlers']
 ];
 
+// Mood recipes. A genre alone is too blunt: "cozy" as plain comedy + romance brings
+// American Pie. A recipe adds TMDB's own mood tags (any of them), drops genres that
+// break the mood and sorts by how many people rated the film - the well-loved ones first.
+const HEAVY_GENRES = [28, 27, 53, 80, 10752, 878, 12];
+const MOOD_PROFILES = {
+  cozy: {
+    genres_any: [35, 10749, 10751],
+    keywords_any: [325784, 288816, 324713, 325832], // comforting, lighthearted, whimsical, joyful
+    exclude_genres: [...HEAVY_GENRES, 16]
+  },
+  rainy: {
+    genres_any: [35, 18, 10749],
+    keywords_any: [325784, 164246, 319319, 278730, 225219, 288816], // comforting, nostalgic, sentimental, bittersweet, reflective, lighthearted
+    exclude_genres: HEAVY_GENRES
+  },
+  feelgood: {
+    keywords_any: [325824, 325782, 325832, 281585, 288816], // hopeful, cheerful, joyful, inspirational, lighthearted
+    exclude_genres: [...HEAVY_GENRES, 16]
+  },
+  sad: {
+    genres_any: [18],
+    keywords_any: [319319, 4232, 156924, 9872, 278730], // sentimental, melancholy, tearjerker, grief, bittersweet
+    exclude_genres: [27, 28, 53, 9648, 878]
+  },
+  date: {
+    genres_any: [10749],
+    keywords_any: [324429, 9673, 288816], // romantic, love, lighthearted
+    exclude_genres: [27, 53]
+  },
+  inspiring: {
+    genres_any: [18],
+    keywords_any: [281585, 325824, 240], // inspirational, hopeful, underdog
+    exclude_genres: [53, 80, 27, 9648]
+  },
+  mind: {
+    genres_any: [878, 9648],
+    keywords_any: [212737, 197582, 325775], // philosophical, mysterious, awestruck
+    exclude_genres: [16, 10751, 28, 12]
+  }
+};
+
+const MOOD_PROFILE_WORDS = [
+  ['rainy', 'rainy|rain|rainy day|rainy evening|autumn evening'],
+  ['cozy', 'cozy|cosy|comfort|comforting|warm|chill|relax|relaxing|calm|quiet|peaceful|light|something light|lighthearted|light hearted|lazy|winter evening'],
+  ['feelgood', 'feel good|feelgood|uplifting|heartwarming|wholesome|positive|happy|cheerful|optimistic|after hard day'],
+  ['sad', 'sad|cry|crying|want to cry|tearjerker|tear jerker|emotional|heartbreaking|melancholy|melancholic|moving|touching|breakup|break up|heartbroken|broken heart'],
+  ['date', 'date|date night|girlfriend|boyfriend|wife|husband|couple|valentine|valentines|romantic|romantic evening|romantic night|rom com|romcom'],
+  ['inspiring', 'inspiring|inspirational|motivational|motivating|motivation'],
+  ['mind', 'mind bending|mindbending|mind blowing|mindblowing|trippy|mindfuck|thought provoking']
+];
+
 // TMDB keyword id → trigger phrases
 const TOPIC_WORDS = [
   [12377, 'zombie|zombies|undead'], [3133, 'vampire|vampires'], [12564, 'werewolf|werewolves'],
@@ -2398,6 +2449,7 @@ function compileConcepts(rows) {
 
 const GENRE_CONCEPTS = compileConcepts(GENRE_WORDS);
 const MOOD_CONCEPTS = compileConcepts(MOOD_WORDS);
+const MOOD_PROFILE_CONCEPTS = compileConcepts(MOOD_PROFILE_WORDS);
 const TOPIC_CONCEPTS = compileConcepts(TOPIC_WORDS);
 const TOPIC_LABELS = Object.fromEntries(TOPIC_WORDS.map(([id, phrases]) => [id, phrases.split('|')[0]]));
 const LANGUAGE_CONCEPTS = compileConcepts(LANGUAGE_WORDS);
@@ -2446,7 +2498,11 @@ function parseConcepts(text) {
     if (code.endsWith('-tv')) parsed.media_type = 'tv';
   });
   matchConcepts(tokens, used, TV_CONCEPTS, payload => { if (payload === 'tv') parsed.media_type = 'tv'; });
+  // Mood recipe: matched on its own, the first (longest) phrase wins
+  const profileUsed = tokens.map(() => false);
+  matchConcepts(tokens, profileUsed, MOOD_PROFILE_CONCEPTS, name => { parsed.moodProfile = parsed.moodProfile || name; });
   matchConcepts(tokens, used, MOOD_CONCEPTS, genres => genres.forEach(g => add(parsed.moodGenres, g)));
+  profileUsed.forEach((wasUsed, i) => { if (wasUsed) used[i] = true; });
   // Genres are matched on their own: "k drama" is still a drama, a "dark comedy" still a comedy
   for (const { payload, words } of GENRE_CONCEPTS) {
     for (let i = 0; i + words.length <= tokens.length; i++) {
@@ -2510,7 +2566,28 @@ function enrich(result, parsed) {
   }
   if (parsed.language) enriched.language = parsed.language;
   if (parsed.media_type) enriched.media_type = parsed.media_type;
+  applyMoodProfile(enriched, parsed);
   return enriched;
+}
+
+// Turns a mood ("cozy", "rainy evening") into its recipe, see MOOD_PROFILES.
+// A topic ("zombie") is more specific than a mood and keeps its own keyword search.
+function applyMoodProfile(result, parsed) {
+  const profile = MOOD_PROFILES[parsed.moodProfile];
+  if (!profile || result.company_id || result.keywords) return;
+
+  result.mood = parsed.moodProfile;
+  result.keywords_any = profile.keywords_any;
+  result.sort = 'votes';
+
+  if (parsed.genres.length) {
+    // "cozy mystery": the asked genre stays, the mood only filters
+    result.genres = parsed.genres.slice(0, 3);
+  } else if (profile.genres_any) {
+    result.genres_any = profile.genres_any;
+  }
+  const kept = new Set([...(result.genres || []), ...(result.genres_any || [])]);
+  result.exclude_genres = profile.exclude_genres.filter(g => !kept.has(g));
 }
 
 // Best answer without the AI. confident = false means the AI should have a say first.

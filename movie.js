@@ -47,12 +47,15 @@ async function loadMovie() {
   if (!movieId) return;
 
   const endpoint = normalizeMediaType(mediaType);
-  const [details, credits, videos, providers, similar] = await Promise.all([
-    fetch(`${TMDB_BASE_URL}/${endpoint}/${movieId}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`).then(r => r.json()),
-    fetch(`${TMDB_BASE_URL}/${endpoint}/${movieId}/credits?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`).then(r => r.json()),
-    fetch(`${TMDB_BASE_URL}/${endpoint}/${movieId}/videos?api_key=${TMDB_API_KEY}&language=en-US`).then(r => r.json()),
-    fetch(`${TMDB_BASE_URL}/${endpoint}/${movieId}/watch/providers?api_key=${TMDB_API_KEY}`).then(r => r.json()),
-    fetch(`${TMDB_BASE_URL}/${endpoint}/${movieId}/similar?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`).then(r => r.json()),
+  const tmdb = path => fetch(`${TMDB_BASE_URL}/${endpoint}/${movieId}${path}`).then(r => r.json()).catch(() => ({}));
+  const [details, credits, videos, providers, recommendations, similar, keywords] = await Promise.all([
+    tmdb(`?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`),
+    tmdb(`/credits?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`),
+    tmdb(`/videos?api_key=${TMDB_API_KEY}&language=en-US`),
+    tmdb(`/watch/providers?api_key=${TMDB_API_KEY}`),
+    tmdb(`/recommendations?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`),
+    tmdb(`/similar?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`),
+    tmdb(`/keywords?api_key=${TMDB_API_KEY}`),
   ]);
 
   // Many titles have no description in Ukrainian, Russian etc. — fall back to the English one
@@ -76,8 +79,8 @@ async function loadMovie() {
   }
 
   document.getElementById('movieTitle').textContent = title;
-  document.getElementById('detailsTitle').textContent = title;
   document.getElementById('movieOverview').textContent = details.overview || englishOverview;
+  renderMoodTags(keywords.keywords || keywords.results || []);
   document.getElementById('tmdbRating').textContent = rating;
 
   const metaParts = [year, runtime, rating ? `${t('movie.rating')} ${rating}` : ''].filter(Boolean);
@@ -117,6 +120,7 @@ async function loadMovie() {
   document.getElementById('muteBtn').addEventListener('click', toggleMute);
 
   setupFavoriteBtn(details);
+  setupWatchedBtn(details);
 
   const director = credits.crew?.find(p => p.job === 'Director') || credits.crew?.find(p => p.department === 'Directing');
   if (director) {
@@ -152,7 +156,8 @@ async function loadMovie() {
     types.forEach(({ key, label }) => {
       if (regionData[key]?.length) {
         html += `<div class="provider-group"><span class="provider-label">${label}</span><div class="provider-logos">`;
-        html += regionData[key].map(p => `<a href="${providerLink(p)}" target="_blank" rel="noopener sponsored" class="provider-link"><img src="https://image.tmdb.org/t/p/w45${p.logo_path}" title="${t('movie.provider_hint', { type: label, name: p.provider_name })}" alt="${p.provider_name}" class="provider-logo-img"></a>`).join('');
+        // logo and name: not everyone recognises a service by its icon
+        html += regionData[key].map(p => `<a href="${providerLink(p)}" target="_blank" rel="noopener sponsored" class="provider-link" title="${t('movie.provider_hint', { type: label, name: p.provider_name })}"><img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="" class="provider-logo-img"><span class="provider-name">${p.provider_name}</span></a>`).join('');
         html += `</div></div>`;
       }
     });
@@ -162,12 +167,12 @@ async function loadMovie() {
     }
   }
 
-  if (similar.results?.length) {
+  const similarItems = pickSimilar(recommendations.results, similar.results);
+  if (similarItems.length) {
     const similarSection = document.getElementById('similarSection');
     const similarGrid = document.getElementById('similarGrid');
     similarSection.style.display = 'block';
 
-    const similarItems = similar.results.slice(0, 12);
     similarGrid.innerHTML = similarItems.map(m => {
       const simRating = m.vote_average ? m.vote_average.toFixed(1) : '';
       const fav = isFavoriteItem(m.id, mediaType) ? '\u2764\uFE0F' : '\uD83E\uDD0D';
@@ -210,6 +215,95 @@ async function loadMovie() {
   document.getElementById('modalClose').addEventListener('click', closeTrailerModal);
   document.getElementById('trailerModal').addEventListener('click', e => {
     if (e.target === document.getElementById('trailerModal')) closeTrailerModal();
+  });
+}
+
+// "Recommendations" are based on what people who liked this title also liked;
+// TMDB's "similar" only matches genres and keywords and is often random. Use it to fill gaps.
+function pickSimilar(recommended = [], similar = []) {
+  const seen = new Set([String(movieId)]);
+  const usable = item => {
+    const key = String(item.id);
+    if (!item.poster_path || item.vote_count < 50 || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  };
+  const picked = recommended.filter(usable);
+  if (picked.length < 8) picked.push(...similar.filter(usable));
+  return picked.slice(0, 12);
+}
+
+// TMDB mood tags → [label key, query for the search page]
+const MOOD_TAGS = {
+  325784: ['tag.comforting', 'cozy'],
+  288816: ['tag.lighthearted', 'lighthearted'],
+  324713: ['tag.whimsical', 'magical'],
+  325832: ['tag.joyful', 'feel good'],
+  325782: ['tag.cheerful', 'feel good'],
+  325824: ['tag.hopeful', 'uplifting'],
+  164246: ['tag.nostalgic', 'nostalgic'],
+  319319: ['tag.sentimental', 'touching'],
+  4232: ['tag.melancholy', 'sad'],
+  278730: ['tag.bittersweet', 'sad'],
+  324429: ['tag.romantic', 'romantic'],
+  320420: ['tag.hilarious', 'funny'],
+  319397: ['tag.witty', 'funny'],
+  309974: ['tag.absurd', 'funny'],
+  321464: ['tag.intense', 'intense'],
+  314730: ['tag.suspenseful', 'suspense'],
+  316832: ['tag.tense', 'tense'],
+  212737: ['tag.philosophical', 'mind bending'],
+  197582: ['tag.mysterious', 'mystery'],
+  325775: ['tag.awestruck', 'epic'],
+  281585: ['tag.inspirational', 'inspiring'],
+};
+
+// "Cozy · Nostalgic · Romantic": each chip searches for more films with that mood
+function renderMoodTags(keywords) {
+  const row = document.getElementById('heroMoods');
+  if (!row) return;
+  const tags = keywords.map(k => MOOD_TAGS[k.id]).filter(Boolean).slice(0, 4);
+  row.replaceChildren(...tags.map(([labelKey, query]) => {
+    const chip = document.createElement('a');
+    chip.className = 'mood-tag';
+    chip.href = `index.html?q=${encodeURIComponent(query)}`;
+    chip.textContent = t(labelKey);
+    return chip;
+  }));
+  row.hidden = tags.length === 0;
+}
+
+function getWatched() {
+  try {
+    const list = JSON.parse(localStorage.getItem('watched') || '[]');
+    return Array.isArray(list) ? list : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+// Same list as the eye / check button on the search cards and the "Watched" page
+function setupWatchedBtn(details) {
+  const btn = document.getElementById('btnWatched');
+  if (!btn) return;
+  const id = parseInt(movieId, 10);
+  const type = normalizeMediaType(mediaType);
+  const isWatched = () => getWatched().some(w => w.id === id && normalizeMediaType(w.media_type) === type);
+
+  const update = () => {
+    btn.textContent = isWatched() ? `✅ ${t('card.watched')}` : `👁️ ${t('card.mark_watched')}`;
+  };
+
+  update();
+  btn.addEventListener('click', () => {
+    let list = getWatched();
+    if (isWatched()) {
+      list = list.filter(w => !(w.id === id && normalizeMediaType(w.media_type) === type));
+    } else {
+      list.push({ id, title: details.title || details.name, poster_path: details.poster_path, media_type: type, watched_at: Date.now() });
+    }
+    localStorage.setItem('watched', JSON.stringify(list));
+    update();
   });
 }
 

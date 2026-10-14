@@ -313,31 +313,6 @@ document.addEventListener('DOMContentLoaded', () => {
   
   document.getElementById('surpriseBtn').addEventListener('click', handleSurprise);
   
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // MOOD PICKER POPUP
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  const moodPickerBtn = document.getElementById('moodPickerBtn');
-  const moodPickerPopup = document.getElementById('moodPickerPopup');
-  
-  moodPickerBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    moodPickerPopup.classList.toggle('open');
-    moodPickerBtn.classList.toggle('active');
-  });
-  
-  document.querySelectorAll('.mood-pick-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      moodInput.value = btn.dataset.mood;
-      moodPickerPopup.classList.remove('open');
-      moodPickerBtn.classList.remove('active');
-      
-      // Keep emoji moods stable; random deep pages can return empty results.
-      currentPage = 1;
-      
-      handleSearch(false); // false = don't reset page
-    });
-  });
-  
   // FILTERS PANEL
   const filtersBtn = document.getElementById('filtersBtn');
   const filtersPanel = document.getElementById('filtersPanel');
@@ -345,14 +320,6 @@ document.addEventListener('DOMContentLoaded', () => {
     e.stopPropagation();
     filtersPanel.classList.toggle('open');
     filtersBtn.classList.toggle('active');
-  });
-  
-  // Close popup on outside click
-  document.addEventListener('click', (e) => {
-    if (!moodPickerPopup.contains(e.target) && e.target !== moodPickerBtn) {
-      moodPickerPopup.classList.remove('open');
-      moodPickerBtn.classList.remove('active');
-    }
   });
 });
 
@@ -772,13 +739,19 @@ async function fetchByAiData(aiData, page = 1) {
     }
     
     // 3. Discover by genre / topic / country / years
-    if (aiData.genres?.length || aiData.keywords?.length || aiData.language || aiData.year_from || aiData.year_to) {
+    if (aiData.genres?.length || aiData.genres_any?.length || aiData.keywords?.length || aiData.language || aiData.year_from || aiData.year_to) {
       const isDocumentary = currentType === 'documentary';
-      let genreIds = isDocumentary ? [99] : (aiData.genres || []);
+      // A mood recipe asks for any of several genres ("cozy" = comedy, romance or family)
+      const useAnyGenre = !isDocumentary && aiData.genres_any?.length > 0;
+      let genreIds = isDocumentary ? [99] : (useAnyGenre ? aiData.genres_any : (aiData.genres || []));
       if (endpoint === 'tv') genreIds = mapGenresToTv(genreIds);
+      const genreJoiner = useAnyGenre ? '|' : ',';
 
       const keywordIds = [...(aiData.keywords || [])];
       if (includeAnime && !keywordIds.includes(ANIME_KEYWORD_ID)) keywordIds.push(ANIME_KEYWORD_ID);
+      // Mood tags: any of them is enough. A topic ("zombie") always wins over a mood.
+      const moodKeywordIds = keywordIds.length ? [] : (aiData.keywords_any || []);
+      const isMood = moodKeywordIds.length > 0;
 
       let yearParam = '';
       const hasYears = aiData.year_from || aiData.year_to;
@@ -786,34 +759,39 @@ async function fetchByAiData(aiData, page = 1) {
       if (aiData.year_from) yearParam += `&${dateField}.gte=${aiData.year_from}-01-01`;
       if (aiData.year_to) yearParam += `&${dateField}.lte=${aiData.year_to}-12-31`;
 
-      // When filtering by era: sort by rating - best films of that period come first
-      // Without years: sort by popularity - well-known modern films first
-      const sortBy = hasYears ? 'vote_average.desc' : 'popularity.desc';
+      // When filtering by era: sort by rating - best films of that period come first.
+      // Moods: the most rated (best-loved) films first. Otherwise: well-known modern films first.
+      const sortBy = hasYears ? 'vote_average.desc' : (aiData.sort === 'votes' ? 'vote_count.desc' : 'popularity.desc');
       // Popularity alone surfaces brand-new releases nobody has rated yet,
       // so require enough votes and a decent score. Topics, countries, TV and docs
       // are smaller pools and get a lower bar.
       const isNarrow = keywordIds.length > 0 || Boolean(aiData.language);
-      const isMainstreamMovie = endpoint === 'movie' && !isDocumentary && !isNarrow;
-      const minVotes = hasYears ? 200 : (isMainstreamMovie ? 500 : 100);
+      const isMainstreamMovie = endpoint === 'movie' && !isDocumentary && !isNarrow && !isMood;
+      const minVotes = hasYears ? 200 : (isMainstreamMovie ? 500 : (isMood ? 300 : 100));
       const ratingParam = hasYears ? '' : `&vote_average.gte=${isNarrow ? 6 : 6.5}`;
       const languageParam = aiData.language ? `&with_original_language=${aiData.language}` : '';
 
-      const buildDiscoverUrl = ({ genres = genreIds, joiner = ',', keywords = keywordIds, votes = minVotes }) =>
+      // A bare "comedy" or "horror" means live-action films, not cartoons that share the genre
+      const isPlainGenre = endpoint === 'movie' && genreIds.length === 1 && !keywordIds.length && !isMood && ![16, 10751, 99].includes(genreIds[0]);
+      // series use their own genre ids; never exclude a genre that was asked for
+      const moodExcluded = endpoint === 'tv' ? mapGenresToTv(aiData.exclude_genres || []) : (aiData.exclude_genres || []);
+      const excludedGenres = [...moodExcluded.filter(g => !genreIds.includes(g)), ...(isPlainGenre ? [16] : [])];
+      const excludeParam = excludedGenres.length ? `&without_genres=${[...new Set(excludedGenres)].join(',')}` : '';
+
+      const buildDiscoverUrl = ({ genres = genreIds, joiner = genreJoiner, keywords = keywordIds, moodKeywords = moodKeywordIds, votes = minVotes }) =>
         `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&sort_by=${sortBy}&vote_count.gte=${votes}&page=${page}` +
         (genres.length ? `&with_genres=${genres.join(joiner)}` : '') +
         (keywords.length ? `&with_keywords=${keywords.join(',')}` : '') +
+        (moodKeywords.length ? `&with_keywords=${moodKeywords.join('|')}` : '') +
         excludeParam +
         `${yearParam}${ratingParam}${languageParam}`;
 
-      // A bare "comedy" or "horror" means live-action films, not cartoons that share the genre
-      const isPlainGenre = endpoint === 'movie' && genreIds.length === 1 && !keywordIds.length && ![16, 10751, 99].includes(genreIds[0]);
-      const excludeParam = isPlainGenre ? '&without_genres=16' : '';
-
       // From the exact request to looser ones; the first that gives a full row wins
       const attempts = [{}];
+      if (isMood) attempts.push({ moodKeywords: [], votes: 200 });
       if (keywordIds.length && genreIds.length) attempts.push({ genres: [], votes: Math.min(minVotes, 100) });
       if (keywordIds.length > 1) attempts.push({ genres: [], keywords: [keywordIds[0]], votes: 50 });
-      if (genreIds.length > 1) attempts.push({ joiner: '|', votes: 20 });
+      if (genreIds.length > 1 && !useAnyGenre) attempts.push({ joiner: '|', votes: 20 });
       if (isNarrow) attempts.push({ votes: 20 });
 
       // Later pages must continue the list that page 1 started
@@ -831,11 +809,10 @@ async function fetchByAiData(aiData, page = 1) {
       }
 
       // "comedy" should show films that are comedies first of all, not action films with a few jokes
-      if (genreIds.length === 1 && !keywordIds.length) {
+      if (isPlainGenre) {
         const primary = best.filter(item => (item.genre_ids || []).slice(0, 2).includes(genreIds[0]));
         if (primary.length >= 8) best = primary;
       }
-
       return best.map(item => ({ ...item, media_type: item.media_type || endpoint }));
     }
     
@@ -901,7 +878,9 @@ function renderUnderstood(aiData) {
   const chips = [];
   if (aiData) {
     if (aiData.media_type === 'tv' || currentType === 'tv') chips.push(t('type.series'));
-    (aiData.genres || []).forEach(id => chips.push(t(`genre.${id}`)));
+    if (aiData.mood) chips.push(t(`moodname.${aiData.mood}`));
+    // with a mood recipe the genres are only "any of", the mood name says more
+    if (!aiData.genres_any) (aiData.genres || []).forEach(id => chips.push(t(`genre.${id}`)));
     (aiData.topics || []).forEach(topic => chips.push(`#${topic}`));
     if (aiData.language) chips.push(mmDisplayName('language', aiData.language));
 
