@@ -3,8 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MovieMood - Discover Movies by Mood</title>
-  <link rel="stylesheet" href="style.css?v=20261015j">
+  <title>MovieMood: Find a Movie for Your Mood</title>
+  <meta name="description" content="Describe how you feel in any words and get well-loved movies and series to match: trailers, where to watch them and mood collections for every evening.">
+  <link rel="canonical" href="https://www.themoviemood.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="MovieMood">
+  <meta property="og:title" content="MovieMood: Find a Movie for Your Mood">
+  <meta property="og:description" content="Describe how you feel in any words and get well-loved movies and series to match, with trailers and where to watch them.">
+  <meta property="og:url" content="https://www.themoviemood.com/">
+  <meta property="og:image" content="https://www.themoviemood.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"MovieMood","url":"https://www.themoviemood.com/","inLanguage":["en","uk","ru","fr","es"]},{"@type":"Organization","name":"MovieMood","url":"https://www.themoviemood.com/","logo":"https://www.themoviemood.com/icon-512.png"}]}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://api.themoviedb.org">
+  <link rel="preconnect" href="https://image.tmdb.org">
+  <link rel="stylesheet" href="style.css?v=20261015k">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -13,7 +30,6 @@
   <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
   <script defer src="/_vercel/insights/script.js"></script>
   <meta name="theme-color" content="#0d0d14">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body class="home-body" data-page="home">
   <div class="bg-orbs">
@@ -24,7 +40,7 @@
   <div class="noise-overlay"></div>
 
   <nav class="home-nav">
-    <a href="index.html" class="nav-logo">MOVIEMOOD</a>
+    <a href="/" class="nav-logo">MOVIEMOOD</a>
     <div>
       <a href="/moods" class="nav-favorites">&#x1F3AD; Moods</a>
       <a href="feed.html" class="nav-favorites">&#x1F3AC; Feed</a>
@@ -99,6 +115,21 @@
       </div>
       <button class="load-more-btn" id="loadMoreBtn" style="display: none;">Load More</button>
     </section>
+    <section class="home-seo">
+      <h2 class="mood-section-title home-seo-title">Movies for every mood</h2>
+      <p class="home-seo-text">MovieMood finds films by how you feel. Describe your mood in any words â€” a cozy rainy evening, something to cry to, a mind-bending thriller â€” and get well-loved movies and series with trailers and where to watch them.</p>
+      <div class="mood-chips">
+        <a class="mood-chip" href="/moods/rainy-day-movies">ðŸŒ§ï¸ Movies for a Rainy Day</a>
+        <a class="mood-chip" href="/moods/cozy-movies">ðŸ•¯ï¸ Cozy Movies</a>
+        <a class="mood-chip" href="/moods/feel-good-movies">ðŸ˜Š Feel-Good Movies</a>
+        <a class="mood-chip" href="/moods/movies-to-cry-to">ðŸ˜¢ Movies to Cry To</a>
+        <a class="mood-chip" href="/moods/date-night-movies">ðŸ’• Date Night Movies</a>
+        <a class="mood-chip" href="/moods/mind-bending-movies">ðŸŒ€ Mind-Bending Movies</a>
+        <a class="mood-chip" href="/moods/family-movie-night">ðŸ‘¨â€ðŸ‘©â€ðŸ‘§ Family Movie Night</a>
+        <a class="mood-chip" href="/moods/best-90s-movies">ðŸ“¼ Best Movies of the 90s</a>
+        <a class="mood-chip" href="/moods">ðŸŽ­ All mood collections</a>
+      </div>
+    </section>
   </main>
 
   <footer class="home-footer">
@@ -136,10 +167,10 @@
     themeToggle?.addEventListener('click', window.__mmToggleTheme);
   })();
   </script>
-  <script src="i18n.js?v=20261015j"></script>
-  <script src="/urls.js?v=20261015j"></script>
-  <script src="nav.js?v=20261015j"></script>
-  <script src="script.js?v=20261015j"></script>
+  <script src="i18n.js?v=20261015k"></script>
+  <script src="/urls.js?v=20261015k"></script>
+  <script src="nav.js?v=20261015k"></script>
+  <script src="script.js?v=20261015k"></script>
 </body>
 </html>
 

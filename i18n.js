@@ -18,7 +18,8 @@
     'nav.menu': { en: 'Menu', uk: 'Меню', ru: 'Меню', fr: 'Menu', es: 'Menú' },
 
     // home
-    'home.page_title': { en: 'MovieMood - Discover Movies by Mood', uk: 'MovieMood — фільми під настрій', ru: 'MovieMood — фильмы под настроение', fr: 'MovieMood — des films selon votre humeur', es: 'MovieMood — películas según tu ánimo' },
+    // en must match the <title> in index.html: search engines read the page with the English interface
+    'home.page_title': { en: 'MovieMood: Find a Movie for Your Mood', uk: 'MovieMood: фільм під ваш настрій', ru: 'MovieMood: фильм под ваше настроение', fr: 'MovieMood : un film selon votre humeur', es: 'MovieMood: una película para tu estado de ánimo' },
     'home.title': { en: "WHAT'S YOUR", uk: 'ЯКИЙ У ВАС', ru: 'КАКОЕ У ВАС', fr: 'QUELLE EST VOTRE', es: '¿CÓMO TE' },
     'home.title_accent': { en: 'MOOD?', uk: 'НАСТРІЙ?', ru: 'НАСТРОЕНИЕ?', fr: 'HUMEUR ?', es: 'SIENTES?' },
     'home.subtitle': { en: "Tell us how you feel - we'll find the perfect film.", uk: 'Розкажіть, що на душі, — ми підберемо фільм.', ru: 'Расскажите, что на душе, — мы подберём фильм.', fr: 'Dites-nous comment vous vous sentez, nous trouvons le film.', es: 'Cuéntanos cómo te sientes y encontramos la película.' },
@@ -39,6 +40,8 @@
     'home.empty_trending': { en: 'Trending is unavailable right now.', uk: 'Популярне зараз недоступне.', ru: 'Популярное сейчас недоступно.', fr: 'Les tendances sont indisponibles pour le moment.', es: 'Las tendencias no están disponibles ahora.' },
     'home.load_error': { en: "Films didn't load. A browser extension or your network may be blocking them — try again or turn off the blocker for this site.", uk: 'Фільми не завантажилися. Можливо, їх блокує розширення браузера або мережа — спробуйте ще раз або вимкніть блокувальник для цього сайту.', ru: 'Фильмы не загрузились. Возможно, их блокирует расширение браузера или сеть — попробуйте ещё раз или отключите блокировщик для этого сайта.', fr: "Les films ne se sont pas chargés. Une extension du navigateur ou votre réseau les bloque peut-être — réessayez ou désactivez le bloqueur pour ce site.", es: 'Las películas no se cargaron. Puede que una extensión del navegador o tu red las bloquee: inténtalo de nuevo o desactiva el bloqueador en este sitio.' },
     'home.retry': { en: 'Try again', uk: 'Спробувати ще раз', ru: 'Попробовать ещё раз', fr: 'Réessayer', es: 'Reintentar' },
+    'home.seo_title': { en: 'Movies for every mood', uk: 'Фільми під будь-який настрій', ru: 'Фильмы под любое настроение', fr: 'Des films pour chaque humeur', es: 'Películas para cada estado de ánimo' },
+    'home.seo_text': { en: 'MovieMood finds films by how you feel. Describe your mood in any words — a cozy rainy evening, something to cry to, a mind-bending thriller — and get well-loved movies and series with trailers and where to watch them.', uk: 'MovieMood підбирає фільми за настроєм. Опишіть його будь-якими словами — затишний дощовий вечір, щось поплакати, трилер, що вибухає мозок, — і отримайте улюблені глядачами фільми й серіали з трейлерами та тим, де їх дивитися.', ru: 'MovieMood подбирает фильмы по настроению. Опишите его любыми словами — уютный дождливый вечер, что-то поплакать, триллер со взрывом мозга — и получите любимые зрителями фильмы и сериалы с трейлерами и тем, где их смотреть.', fr: "MovieMood trouve des films selon votre humeur. Décrivez-la avec vos propres mots — une soirée pluvieuse cocooning, de quoi pleurer, un thriller renversant — et obtenez des films et séries appréciés, avec bandes-annonces et où les regarder.", es: 'MovieMood encuentra películas según cómo te sientes. Describe tu ánimo con tus palabras —una tarde lluviosa y acogedora, algo para llorar, un thriller alucinante— y recibe películas y series muy queridas, con tráilers y dónde verlas.' },
     'home.understood': { en: 'Showing:', uk: 'Показую:', ru: 'Показываю:', fr: 'Résultats pour :', es: 'Mostrando:' },
     'home.title_search': { en: 'title search', uk: 'пошук за назвою', ru: 'поиск по названию', fr: 'recherche par titre', es: 'búsqueda por título' },
     'home.until_year': { en: 'before {year}', uk: 'до {year}', ru: 'до {year}', fr: 'avant {year}', es: 'antes de {year}' },
@@ -191,6 +194,8 @@
     ['.tab[data-type="documentary"]', 'type.documentary', 'text', '🎥'],
     ['.anime-toggle .toggle-label', 'home.include_anime'],
     ['.example-text', 'home.examples'],
+    ['.home-seo-title', 'home.seo_title'],
+    ['.home-seo-text', 'home.seo_text'],
     ['.home-footer .footer-moods', 'home.browse_moods'],
     ['.home-footer .footer-tmdb', 'footer.tmdb'],
     ['#btnPlayTrailer', 'movie.play_trailer', 'text', '▶'],

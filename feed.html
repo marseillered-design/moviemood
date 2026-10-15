@@ -2,10 +2,16 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
+  <meta name="robots" content="noindex, follow">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#000000">
   <title>Trailer Feed - MovieMood</title>
-  <link rel="stylesheet" href="style.css?v=20261015j">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://api.themoviedb.org">
+  <link rel="preconnect" href="https://image.tmdb.org">
+  <link rel="stylesheet" href="style.css?v=20261015k">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -16,8 +22,8 @@
 </head>
 <body class="reels-body" data-page="feed">
   <header class="reels-top">
-    <a href="index.html" class="nav-logo reels-logo">MOVIEMOOD</a>
-    <a href="index.html" class="reels-close" id="reelsClose" aria-label="Close">&#x2715;</a>
+    <a href="/" class="nav-logo reels-logo">MOVIEMOOD</a>
+    <a href="/" class="reels-close" id="reelsClose" aria-label="Close">&#x2715;</a>
   </header>
 
   <!-- One full-screen trailer per swipe; feed.js fills this -->
@@ -31,9 +37,9 @@
     <button class="reels-arrow" id="reelNext" type="button">&#x25BC;</button>
   </div>
 
-  <script src="i18n.js?v=20261015j"></script>
+  <script src="i18n.js?v=20261015k"></script>
 
-  <script src="/urls.js?v=20261015j"></script>
-  <script src="feed.js?v=20261015j"></script>
+  <script src="/urls.js?v=20261015k"></script>
+  <script src="feed.js?v=20261015k"></script>
 </body>
 </html>

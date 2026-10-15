@@ -115,11 +115,13 @@ async function loadMovie() {
   trailerCandidates = orderTrailers(videos.results || []);
   if (trailerCandidates.length) {
     trailerKey = trailerCandidates[0];
-    startHeroVideo(trailerKey);
-    setTimeout(() => {
-      const heroIframe = document.getElementById('heroIframe');
-      if (!heroIframe && trailerKey && !heroTrailerFailed) startHeroVideo(trailerKey);
-    }, 600);
+    // The YouTube player is heavy: start it once the page itself has loaded,
+    // so the title, description and poster show up first (page speed counts for search)
+    const startTrailer = () => {
+      if (!document.getElementById('heroIframe') && !heroTrailerFailed) startHeroVideo(trailerKey);
+    };
+    if (document.readyState === 'complete') startTrailer();
+    else window.addEventListener('load', startTrailer, { once: true });
   }
 
   document.getElementById('btnPlayTrailer').addEventListener('click', () => {

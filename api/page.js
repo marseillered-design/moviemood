@@ -8,7 +8,7 @@
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
-const ASSET_VERSION = '20261015j';
+const ASSET_VERSION = '20261015k';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -150,6 +150,18 @@ const escapeHtml = value => String(value ?? '')
 // JSON-LD sits inside <script>, so "<" must not be able to close the tag
 const jsonLd = data => `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`;
 
+// "Home › Moods › Rainy day" trail that Google can show instead of the bare address
+const breadcrumbs = (origin, trail) => ({
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [['MovieMood', '/'], ...trail].map(([name, path], i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name,
+    item: `${origin}${path}`
+  }))
+});
+
 const slugify = text => String(text || '')
   .toLowerCase()
   .normalize('NFD').replace(/\p{M}/gu, '')
@@ -218,9 +230,9 @@ function layout({ title, description, canonical, image, head = '', hero, main })
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${escapeHtml(canonical)}">
-  ${image ? `<meta property="og:image" content="${escapeHtml(image)}">\n  <meta name="twitter:card" content="summary_large_image">` : ''}
+  <meta property="og:image" content="${escapeHtml(image || `${new URL(canonical).origin}/og-image.png`)}">
   <link rel="stylesheet" href="/style.css?v=${ASSET_VERSION}">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -327,7 +339,7 @@ function renderMoodPage(mood, movies, origin) {
     description: truncate(mood.intro, 155),
     canonical,
     image: movies[0]?.backdrop_path ? `https://image.tmdb.org/t/p/w1280${movies[0].backdrop_path}` : '',
-    head: jsonLd(itemList),
+    head: jsonLd(itemList) + jsonLd(breadcrumbs(origin, [['Moods', '/moods'], [mood.title, `/moods/${mood.slug}`]])),
     hero: `<h1 class="home-title mood-title">${escapeHtml(mood.title)}</h1>
     <p class="home-subtitle mood-intro">${escapeHtml(mood.intro)}</p>`,
     main: `<section class="results-section">
@@ -354,6 +366,7 @@ function renderMoodIndex(origin) {
     title: 'Movies by Mood: Find What to Watch Tonight | MovieMood',
     description: 'Pick a mood — cozy, sad, mind-bending, date night — and get a hand-tuned list of films that fit it.',
     canonical: `${origin}/moods`,
+    head: jsonLd(breadcrumbs(origin, [['Moods', '/moods']])),
     hero: `<h1 class="home-title mood-title">Movies by <span class="title-accent">Mood</span></h1>
     <p class="home-subtitle mood-intro">Pick how you feel and get a list of films that fit. Or describe your own mood on the <a href="/">home page</a>.</p>`,
     main: `<section class="mood-list">
@@ -396,7 +409,7 @@ async function renderTitlePage(type, id, origin, requestedPath) {
   const name = details.title || details.name;
   const year = (details.release_date || details.first_air_date || '').slice(0, 4);
   const canonical = `${origin}${titlePath(details, type)}`;
-  const pageTitle = `${name}${year ? ` (${year})` : ''}: Where to Watch, Trailer & Similar ${type === 'tv' ? 'Shows' : 'Movies'} | MovieMood`;
+  const pageTitle = `${name}${year ? ` (${year})` : ''}: Where to Watch | MovieMood`;
   const description = truncate(details.overview || `Where to watch ${name}, trailer, cast and similar titles.`, 155);
   const poster = details.poster_path ? `${TMDB_IMAGE_BASE_URL}${details.poster_path}` : '';
 
@@ -426,7 +439,8 @@ async function renderTitlePage(type, id, origin, requestedPath) {
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${escapeHtml(canonical)}">
   ${details.backdrop_path ? `<meta property="og:image" content="https://image.tmdb.org/t/p/w1280${details.backdrop_path}">\n  <meta name="twitter:card" content="summary_large_image">` : ''}
-  ${jsonLd(schema)}`;
+  ${jsonLd(schema)}
+  ${jsonLd(breadcrumbs(origin, [[name, titlePath(details, type)]]))}`;
 
   const moodsSection = `<section class="mood-more movie-moods">
     <h2 class="mood-section-title">Browse by mood</h2>
@@ -438,6 +452,8 @@ async function renderTitlePage(type, id, origin, requestedPath) {
   // Function replacements: titles and overviews may contain "$", which String.replace would interpret
   return template
     .replace('<head>', () => '<head>\n  <base href="/">')
+    // the template is kept out of the index; this address is the indexable one
+    .replace('<meta name="robots" content="noindex, follow">', '')
     .replace(/<title>[^<]*<\/title>/, () => head)
     .replace('id="movieTitle"></h1>', () => `id="movieTitle">${escapeHtml(name)}</h1>`)
     .replace('id="movieOverview"></p>', () => `id="movieOverview">${escapeHtml(details.overview)}</p>`)
@@ -506,11 +522,14 @@ async function renderPersonPage(id, origin, requestedPath) {
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${escapeHtml(canonical)}">
   ${photo ? `<meta property="og:image" content="${escapeHtml(photo)}">` : ''}
-  ${jsonLd(schema)}`;
+  ${jsonLd(schema)}
+  ${jsonLd(breadcrumbs(origin, [[name, ownPath]]))}`;
 
   // Function replacements: names and biographies may contain "$", which String.replace would interpret
   return template
     .replace('<head>', () => '<head>\n  <base href="/">')
+    // the template is kept out of the index; this address is the indexable one
+    .replace('<meta name="robots" content="noindex, follow">', '')
     .replace(/<title>[^<]*<\/title>/, () => head)
     .replace('id="personName"></h1>', () => `id="personName">${escapeHtml(name)}</h1>`)
     .replace('id="personBio"></p>', () => `id="personBio">${escapeHtml(person.biography || '')}</p>`)

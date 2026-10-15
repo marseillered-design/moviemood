@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@600&family=Inter:wght@300;400;500;600&display=swap');
 
 /* ==================== RESET ==================== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1915,7 +1914,7 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 
 
 /* ==================== 2026-10 USABILITY PASS ==================== */
-/* Bebas Neue has no Cyrillic letters: Oswald (see @import) covers Ukrainian and Russian headings */
+/* Bebas Neue has no Cyrillic letters: Oswald (loaded by the font <link> in each page) covers Ukrainian and Russian headings */
 
 /* Smaller hero: the first films are visible without scrolling */
 .home-hero { padding: 28px 20px 24px; }
@@ -2146,3 +2145,7 @@ a.nav-menu-item:hover, button.nav-menu-item:hover { background: var(--input-bg);
 /* Similar titles are real links (movie.js) */
 a.similar-card { display: block; text-decoration: none; color: inherit; }
 a.person-chip, a.actor-card { color: inherit; text-decoration: none; }
+
+/* Crawlable intro with links to the collections at the bottom of the home page */
+.home-seo { margin-top: 56px; text-align: center; }
+.home-seo-text { max-width: 720px; margin: 0 auto 20px; color: var(--text-dim); line-height: 1.7; font-size: 0.95rem; }
