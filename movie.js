@@ -10,7 +10,12 @@ const movieId = serverPage?.id || params.get('id');
 const mediaType = serverPage?.type || params.get('type') || 'movie';
 const region = params.get('region') || 'US';
 
+// Trailers on YouTube, best first. Some owners forbid playback on other sites:
+// the player then reports an error and the next video is tried.
+let trailerCandidates = [];
+let trailerIndex = 0;
 let trailerKey = null;
+let heroTrailerFailed = false;
 let isMuted = true;
 
 function normalizeMediaType(type) {
@@ -101,20 +106,21 @@ async function loadMovie() {
     imdbLink.style.display = 'inline-flex';
   }
 
-  const trailer = videos.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube')
-    || videos.results?.find(v => v.site === 'YouTube');
-
-  if (trailer) {
-    trailerKey = trailer.key;
-    startHeroVideo(trailer.key);
+  trailerCandidates = orderTrailers(videos.results || []);
+  if (trailerCandidates.length) {
+    trailerKey = trailerCandidates[0];
+    startHeroVideo(trailerKey);
     setTimeout(() => {
       const heroIframe = document.getElementById('heroIframe');
-      if (!heroIframe && trailerKey) startHeroVideo(trailerKey);
+      if (!heroIframe && trailerKey && !heroTrailerFailed) startHeroVideo(trailerKey);
     }, 600);
   }
 
   document.getElementById('btnPlayTrailer').addEventListener('click', () => {
-    if (trailerKey) openTrailerModal(trailerKey);
+    if (!trailerKey) return;
+    // no video may be played here: YouTube itself can still show it
+    if (heroTrailerFailed) window.open(`https://www.youtube.com/watch?v=${trailerKey}`, '_blank', 'noopener');
+    else openTrailerModal(trailerKey);
   });
 
   document.getElementById('muteBtn').addEventListener('click', toggleMute);
@@ -307,24 +313,68 @@ function setupWatchedBtn(details) {
   });
 }
 
-function startHeroVideo(key) {
-  const wrapper = document.getElementById('heroVideoWrapper');
-  wrapper.innerHTML = `<iframe id="heroIframe" src="https://www.youtube.com/embed/${key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${key}&rel=0&modestbranding=1&enablejsapi=1&playsinline=1" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
-  document.getElementById('muteBtn').style.display = 'flex';
-  const muteBtn = document.getElementById('muteBtn');
-  if (muteBtn) muteBtn.textContent = '\uD83D\uDD07';
+// Official trailers first, then teasers, then the rest (clips, featurettes)
+function orderTrailers(videos) {
+  const typeRank = { Trailer: 0, Teaser: 1 };
+  const rank = v => (typeRank[v.type] ?? 2) * 2 + (v.official ? 0 : 1);
+  return videos
+    .filter(v => v.site === 'YouTube')
+    .sort((a, b) => rank(a) - rank(b))
+    .slice(0, 6)
+    .map(v => v.key);
 }
+
+const heroEmbedUrl = (key, mute) =>
+  `https://www.youtube.com/embed/${key}?autoplay=1&mute=${mute ? 1 : 0}&controls=0&loop=1&playlist=${key}&rel=0&modestbranding=1&enablejsapi=1&playsinline=1`;
+
+function startHeroVideo(key) {
+  const iframe = document.createElement('iframe');
+  iframe.id = 'heroIframe';
+  iframe.src = heroEmbedUrl(key, isMuted);
+  iframe.setAttribute('frameborder', '0');
+  iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+  iframe.allowFullscreen = true;
+  iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+  // ask the player to report its events, errors included (see the "message" listener)
+  iframe.addEventListener('load', () => {
+    iframe.contentWindow?.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*');
+  });
+  document.getElementById('heroVideoWrapper').replaceChildren(iframe);
+
+  const muteBtn = document.getElementById('muteBtn');
+  muteBtn.style.display = 'flex';
+  muteBtn.textContent = isMuted ? '\uD83D\uDD07' : '\uD83D\uDD0A';
+}
+
+function tryNextTrailer() {
+  trailerIndex += 1;
+  if (trailerIndex < trailerCandidates.length) {
+    trailerKey = trailerCandidates[trailerIndex];
+    startHeroVideo(trailerKey);
+    return;
+  }
+  // Nothing may be played here: keep the backdrop image instead of YouTube's error screen
+  heroTrailerFailed = true;
+  trailerKey = trailerCandidates[0];
+  document.getElementById('heroVideoWrapper').replaceChildren();
+  document.getElementById('muteBtn').style.display = 'none';
+}
+
+window.addEventListener('message', event => {
+  if (event.origin !== 'https://www.youtube.com') return;
+  const heroIframe = document.getElementById('heroIframe');
+  if (!heroIframe || event.source !== heroIframe.contentWindow) return;
+  let data;
+  try { data = JSON.parse(event.data); } catch (e) { return; }
+  // 101 / 150: the owner does not allow playback on other sites; 100: the video was removed
+  if (data?.event === 'onError') tryNextTrailer();
+});
 
 function toggleMute() {
   isMuted = !isMuted;
   const iframe = document.getElementById('heroIframe');
-  const btn = document.getElementById('muteBtn');
-  if (iframe) {
-    const key = trailerKey;
-    const muteParam = isMuted ? 1 : 0;
-    iframe.src = `https://www.youtube.com/embed/${key}?autoplay=1&mute=${muteParam}&controls=0&loop=1&playlist=${key}&rel=0&modestbranding=1&playsinline=1`;
-  }
-  btn.textContent = isMuted ? '\uD83D\uDD07' : '\uD83D\uDD0A';
+  if (iframe) iframe.src = heroEmbedUrl(trailerKey, isMuted);
+  document.getElementById('muteBtn').textContent = isMuted ? '\uD83D\uDD07' : '\uD83D\uDD0A';
 }
 
 function openTrailerModal(key) {

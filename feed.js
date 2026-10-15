@@ -275,6 +275,15 @@ window.addEventListener('message', event => {
   if (event.origin !== 'https://www.youtube.com') return;
   let data;
   try { data = JSON.parse(event.data); } catch (e) { return; }
+
+  // The owner forbids playback on other sites (101 / 150) or the video is gone (100): skip it
+  const activeIframe = activeReel()?.querySelector('iframe');
+  if (data?.event === 'onError' && activeIframe && event.source === activeIframe.contentWindow) {
+    activeReel().classList.add('unavailable');
+    scrollToReel(feedState.activeIndex + 1);
+    return;
+  }
+
   const state = data?.info?.playerState;
   if (typeof state !== 'number') return;
 

@@ -1395,6 +1395,8 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
   z-index: 1;
   overflow: hidden;
   pointer-events: none;
+  /* lets the iframe size itself against this box (cqw / cqh below) */
+  container-type: size;
 }
 .hero-video-wrapper iframe {
   width: 100%;
@@ -1402,6 +1404,17 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
   border: 0;
   transform: scale(1.08);
   filter: saturate(1.05);
+}
+/* Cover the whole hero like a background video instead of YouTube's black letterbox bars */
+@supports (width: 1cqw) {
+  .hero-video-wrapper iframe {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100cqw, 177.78cqh);
+    height: max(100cqh, 56.25cqw);
+    transform: translate(-50%, -50%) scale(1.02);
+  }
 }
 
 /* Keep hero text readable in light theme over backdrop */
