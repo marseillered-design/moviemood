@@ -4,7 +4,15 @@ const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 const TMDB_PROFILE_URL = 'https://image.tmdb.org/t/p/h632';
 
 const params = new URLSearchParams(window.location.search);
-const personId = params.get('id');
+// Readable addresses (/person/6384-keanu-reeves) are rendered by api/page.js, which passes the id here
+const serverPage = window.__MM_PAGE || null;
+const personId = serverPage?.id || params.get('id');
+
+// Old links (person.html?id=...) move to the page's own address, which search engines can read.
+// ssr=0 marks the server's fallback to this plain page: no redirect back then.
+if (!serverPage && personId && params.get('ssr') !== '0') {
+  window.location.replace(`/person/${parseInt(personId, 10)}`);
+}
 
 function normalizeMediaType(type) {
   return type === 'tv' ? 'tv' : 'movie';
@@ -44,7 +52,7 @@ async function loadPerson() {
     fetch(`${TMDB_BASE_URL}/person/${personId}/combined_credits?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`).then(r => r.json()),
   ]);
 
-  document.title = `${details.name} - MovieMood`;
+  if (!serverPage) document.title = `${details.name} - MovieMood`;
 
   if (details.profile_path) {
     const photoEl = document.getElementById('personPhoto');
@@ -92,11 +100,17 @@ async function loadPerson() {
     bioEl.textContent = bio;
   }
 
+  // Talk shows, news and reality TV where the person was only a guest are not their filmography
+  const GUEST_SHOW_GENRES = [10767, 10763, 10764];
+  const isGuestAppearance = m =>
+    (m.genre_ids || []).some(g => GUEST_SHOW_GENRES.includes(g)) || /^(self|himself|herself)\b/i.test(m.character || '');
+
   const movies = [...(credits.cast || []), ...(credits.crew || [])]
     .filter((m, index, self) =>
-      m.poster_path && self.findIndex(x => x.id === m.id) === index
+      m.poster_path && !isGuestAppearance(m) && self.findIndex(x => x.id === m.id) === index
     )
-    .sort((a, b) => b.popularity - a.popularity)
+    // best-known first: number of ratings is steadier than TMDB's day-to-day popularity
+    .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))
     .slice(0, 24);
 
   document.getElementById('personMoviesTitle').textContent =
@@ -106,19 +120,21 @@ async function loadPerson() {
   grid.innerHTML = '';
 
   movies.forEach(movie => {
-    const card = document.createElement('div');
-    card.className = 'movie-card';
-
     const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '';
     const role = movie.character || movie.job || '';
     const cardType = normalizeMediaType(movie.media_type || (movie.first_air_date ? 'tv' : 'movie'));
     const favIcon = isFavoriteItem(movie.id, cardType) ? '\u2764\uFE0F' : '\uD83E\uDD0D';
 
+    // A real link: search engines follow it from the person to the films
+    const card = document.createElement('a');
+    card.className = 'movie-card';
+    card.href = mmTitleUrl(movie, cardType);
+
     card.innerHTML = `
       <div class="card-poster-wrapper">
         <img src="${TMDB_IMAGE_BASE_URL}${movie.poster_path}" class="movie-poster" loading="lazy">
         ${rating ? `<span class="tmdb-mini-score card-score">${rating}</span>` : ''}
-        <button class="fav-btn">${favIcon}</button>
+        <button class="fav-btn" type="button">${favIcon}</button>
         <div class="card-overlay"></div>
       </div>
       <div class="card-info">
@@ -129,6 +145,8 @@ async function loadPerson() {
 
     const favBtn = card.querySelector('.fav-btn');
     favBtn.addEventListener('click', e => {
+      // the button sits inside the card's link
+      e.preventDefault();
       e.stopPropagation();
       const nowFavorite = toggleFavoriteItem({
         id: movie.id,
@@ -137,10 +155,6 @@ async function loadPerson() {
         media_type: cardType
       });
       favBtn.textContent = nowFavorite ? '\u2764\uFE0F' : '\uD83E\uDD0D';
-    });
-
-    card.addEventListener('click', () => {
-      window.location.href = mmTitleUrl(movie, cardType);
     });
 
     grid.appendChild(card);

@@ -1,4 +1,5 @@
-// Addresses of movie and series pages: /movie/218-the-terminator, /tv/1399-game-of-thrones.
+// Addresses of movie, series and people pages: /movie/218-the-terminator, /tv/1399-game-of-thrones,
+// /person/6384-keanu-reeves.
 // They are rendered on the server (api/page.js) with a real title and description for search
 // engines; the server also redirects any other spelling of the address to this one.
 (function () {
@@ -17,6 +18,12 @@
     const english = item.original_language === 'en' ? (item.original_title || item.original_name) : '';
     const slug = slugify(english);
     return `/${kind}/${item.id}${slug ? `-${slug}` : ''}`;
+  };
+
+  // Names in Cyrillic and other scripts give no slug: the server adds the Latin one with a redirect
+  window.mmPersonUrl = person => {
+    const slug = slugify(person.name);
+    return `/person/${person.id}${slug ? `-${slug}` : ''}`;
   };
 
   // The streaming region travels between pages through the browser, not through the address

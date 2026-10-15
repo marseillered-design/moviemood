@@ -2,12 +2,13 @@
 //   /moods              → list of mood collections
 //   /moods/:slug        → one collection ("Movies for a Rainy Day")
 //   /movie/:id, /tv/:id → movie.html with real <title>, description and content filled in
+//   /person/:id         → person.html, the same way
 //   /sitemap.xml, /robots.txt
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
-const ASSET_VERSION = '20261015i';
+const ASSET_VERSION = '20261015j';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -445,6 +446,88 @@ async function renderTitlePage(type, id, origin, requestedPath) {
     .replace('<script src="movie.js', () => `<script>window.__MM_PAGE = ${JSON.stringify({ id: String(id), type }).replace(/</g, '\\u003c')};</script>\n  <script src="movie.js`);
 }
 
+const personPath = person => {
+  const slug = slugify(person.name);
+  return `/person/${person.id}${slug ? `-${slug}` : ''}`;
+};
+
+// Same idea as renderTitlePage, with person.html as the template.
+// Returns the HTML, or { redirect } when the address is not the person's own one.
+async function renderPersonPage(id, origin, requestedPath) {
+  const [templateRes, person, credits] = await Promise.all([
+    fetch(`${origin}/person.html`),
+    fetchJson(`${TMDB_BASE_URL}/person/${id}?api_key=${TMDB_API_KEY}&language=en-US`),
+    fetchJson(`${TMDB_BASE_URL}/person/${id}/combined_credits?api_key=${TMDB_API_KEY}&language=en-US`).catch(() => ({}))
+  ]);
+  const ownPath = personPath(person);
+  if (requestedPath !== ownPath) return { redirect: ownPath };
+
+  if (!templateRes.ok) throw new Error(`template ${templateRes.status}`);
+  const template = await templateRes.text();
+
+  const name = person.name;
+  const canonical = `${origin}${ownPath}`;
+  // Best-known work first: it goes into the description, which shows up in search results
+  // (talk shows and other guest appearances left out, as in person.js)
+  const known = [...(credits.cast || []), ...(credits.crew || [])]
+    .filter(item => !(item.genre_ids || []).some(g => [10767, 10763, 10764].includes(g)) && !/^(self|himself|herself)\b/i.test(item.character || ''))
+    .filter((item, i, all) => (item.title || item.name) && all.findIndex(x => x.id === item.id) === i)
+    .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))
+    .slice(0, 3)
+    .map(item => item.title || item.name);
+  const pageTitle = `${name}: Movies and TV Shows to Watch | MovieMood`;
+  const description = truncate(
+    known.length
+      ? `${name} movies and TV shows: ${known.join(', ')} and more. Where to watch, trailers and similar films.`
+      : person.biography || `${name}: movies and TV shows, where to watch them and similar films.`,
+    155
+  );
+  const photo = person.profile_path ? `https://image.tmdb.org/t/p/h632${person.profile_path}` : '';
+
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name,
+    url: canonical,
+    image: photo || undefined,
+    birthDate: person.birthday || undefined,
+    deathDate: person.deathday || undefined,
+    birthPlace: person.place_of_birth || undefined,
+    jobTitle: person.known_for_department || undefined,
+    description: person.biography ? truncate(person.biography, 300) : undefined
+  };
+
+  const head = `<title>${escapeHtml(pageTitle)}</title>
+  <meta name="description" content="${escapeHtml(description)}">
+  <link rel="canonical" href="${escapeHtml(canonical)}">
+  <meta property="og:type" content="profile">
+  <meta property="og:site_name" content="MovieMood">
+  <meta property="og:title" content="${escapeHtml(pageTitle)}">
+  <meta property="og:description" content="${escapeHtml(description)}">
+  <meta property="og:url" content="${escapeHtml(canonical)}">
+  ${photo ? `<meta property="og:image" content="${escapeHtml(photo)}">` : ''}
+  ${jsonLd(schema)}`;
+
+  // Function replacements: names and biographies may contain "$", which String.replace would interpret
+  return template
+    .replace('<head>', () => '<head>\n  <base href="/">')
+    .replace(/<title>[^<]*<\/title>/, () => head)
+    .replace('id="personName"></h1>', () => `id="personName">${escapeHtml(name)}</h1>`)
+    .replace('id="personBio"></p>', () => `id="personBio">${escapeHtml(person.biography || '')}</p>`)
+    .replace('id="personPhoto" src="" alt=""', () => `id="personPhoto" src="${escapeHtml(photo)}" alt="${escapeHtml(name)}"`)
+    .replace('<script src="person.js', () => `<script>window.__MM_PAGE = ${JSON.stringify({ id: String(id) }).replace(/</g, '\\u003c')};</script>\n  <script src="person.js`);
+}
+
+// Shared by movie and person pages: redirect to the page's own address, or send the HTML
+function sendPage(res, page) {
+  if (page.redirect) {
+    res.setHeader('Location', page.redirect);
+    res.setHeader('Cache-Control', `public, s-maxage=${DAY}`);
+    return res.status(308).end();
+  }
+  return send(res, 200, page);
+}
+
 async function renderSitemap(origin) {
   const moodMovies = await Promise.all(MOODS.map(mood => fetchMoodMovies(mood).catch(() => [])));
   const moviePaths = [...new Set(moodMovies.flat().map(m => titlePath(m)))];
@@ -490,19 +573,28 @@ export default async function handler(req, res) {
       const id = parseInt(segment, 10);
       if (!id) return send(res, 404, renderNotFound(origin));
       try {
-        const page = await renderTitlePage(type, id, origin, `/${type}/${segment}`);
-        if (page.redirect) {
-          res.setHeader('Location', page.redirect);
-          res.setHeader('Cache-Control', `public, s-maxage=${DAY}`);
-          return res.status(308).end();
-        }
-        return send(res, 200, page);
+        return sendPage(res, await renderTitlePage(type, id, origin, `/${type}/${segment}`));
       } catch (error) {
         if (error.message === 'TMDB 404') return send(res, 404, renderNotFound(origin));
         // The plain client-side page still works without the server-rendered extras
         // (ssr=0 stops movie.js from sending the visitor straight back here)
         console.error('Title page error:', error);
         res.setHeader('Location', `/movie.html?id=${id}&type=${type}&ssr=0`);
+        return res.status(302).end();
+      }
+    }
+
+    if (kind === 'person') {
+      // ":id" is the whole last part of the address: "6384-keanu-reeves"
+      const segment = String(query.id || '');
+      const id = parseInt(segment, 10);
+      if (!id) return send(res, 404, renderNotFound(origin));
+      try {
+        return sendPage(res, await renderPersonPage(id, origin, `/person/${segment}`));
+      } catch (error) {
+        if (error.message === 'TMDB 404') return send(res, 404, renderNotFound(origin));
+        console.error('Person page error:', error);
+        res.setHeader('Location', `/person.html?id=${id}&ssr=0`);
         return res.status(302).end();
       }
     }

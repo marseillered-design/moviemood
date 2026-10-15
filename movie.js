@@ -137,18 +137,19 @@ async function loadMovie() {
   const director = credits.crew?.find(p => p.job === 'Director') || credits.crew?.find(p => p.department === 'Directing');
   if (director) {
     document.getElementById('movieDirector').innerHTML =
-      `<span class="person-chip" onclick="window.location.href='person.html?id=${director.id}'">
+      `<a class="person-chip" href="${mmPersonUrl(director)}">
         <img src="${director.profile_path ? 'https://image.tmdb.org/t/p/w185' + director.profile_path : 'https://via.placeholder.com/32x32?text=?'}" alt="${director.name}">
         ${director.name}
-      </span>`;
+      </a>`;
   }
 
+  // Real links, so search engines find the people pages too
   const castHTML = credits.cast?.slice(0, 8).map(a =>
-    `<div class="actor-card" onclick="window.location.href='person.html?id=${a.id}'">
+    `<a class="actor-card" href="${mmPersonUrl(a)}">
       <img src="${a.profile_path ? 'https://image.tmdb.org/t/p/w185' + a.profile_path : 'https://via.placeholder.com/70x100?text=?'}" alt="${a.name}">
       <span class="actor-name">${a.name}</span>
       <span class="actor-char">${a.character}</span>
-    </div>`
+    </a>`
   ).join('') || '';
   document.getElementById('movieCast').innerHTML = castHTML;
 
