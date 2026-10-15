@@ -8,7 +8,13 @@ const params = new URLSearchParams(window.location.search);
 const serverPage = window.__MM_PAGE || null;
 const movieId = serverPage?.id || params.get('id');
 const mediaType = serverPage?.type || params.get('type') || 'movie';
-const region = params.get('region') || 'US';
+const region = params.get('region') || mmRegion.get() || 'US';
+
+// Old links (movie.html?id=...) move to the page's own address, which search engines can read.
+// ssr=0 marks the server's fallback to this plain page: no redirect back then.
+if (!serverPage && movieId && params.get('ssr') !== '0') {
+  window.location.replace(`/${mediaType === 'tv' ? 'tv' : 'movie'}/${parseInt(movieId, 10)}`);
+}
 
 // Trailers on YouTube, best first. Some owners forbid playback on other sites:
 // the player then reports an error and the next video is tried.
@@ -183,28 +189,21 @@ async function loadMovie() {
       const simRating = m.vote_average ? m.vote_average.toFixed(1) : '';
       const fav = isFavoriteItem(m.id, mediaType) ? '\u2764\uFE0F' : '\uD83E\uDD0D';
       return `
-        <div class="similar-card" data-id="${m.id}" data-type="${normalizeMediaType(mediaType)}" data-title="${(m.title || m.name || '').replace(/"/g, '&quot;')}" data-poster="${m.poster_path || ''}">
+        <a class="similar-card" href="${mmTitleUrl(m, mediaType)}" data-id="${m.id}" data-type="${normalizeMediaType(mediaType)}" data-title="${(m.title || m.name || '').replace(/"/g, '&quot;')}" data-poster="${m.poster_path || ''}">
           <div class="similar-poster-wrap">
             <img src="${m.poster_path ? TMDB_IMAGE_BASE_URL + m.poster_path : ''}" alt="${m.title || m.name}">
             ${simRating ? `<span class="tmdb-mini-score card-score">${simRating}</span>` : ''}
-            <button class="similar-fav-btn">${fav}</button>
+            <button class="similar-fav-btn" type="button">${fav}</button>
           </div>
           <span>${m.title || m.name}</span>
-        </div>
+        </a>
       `;
     }).join('');
 
-    similarGrid.querySelectorAll('.similar-card').forEach(card => {
-      card.addEventListener('click', e => {
-        if (e.target.closest('.similar-fav-btn')) return;
-        const id = card.dataset.id;
-        const type = card.dataset.type;
-        window.location.href = `movie.html?id=${id}&type=${type}&region=${region}`;
-      });
-    });
-
     similarGrid.querySelectorAll('.similar-fav-btn').forEach(btn => {
       btn.addEventListener('click', e => {
+        // the button sits inside the card's link
+        e.preventDefault();
         e.stopPropagation();
         const card = btn.closest('.similar-card');
         const id = Number(card.dataset.id);

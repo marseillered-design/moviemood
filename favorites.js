@@ -90,7 +90,7 @@ function createCard(movie) {
   });
 
   card.addEventListener('click', () => {
-    window.location.href = `movie.html?id=${movie.id}&type=${mediaType}`;
+    window.location.href = mmTitleUrl(movie, mediaType);
   });
 
   return card;

@@ -140,7 +140,7 @@ async function loadPerson() {
     });
 
     card.addEventListener('click', () => {
-      window.location.href = `movie.html?id=${movie.id}&type=${cardType}`;
+      window.location.href = mmTitleUrl(movie, cardType);
     });
 
     grid.appendChild(card);

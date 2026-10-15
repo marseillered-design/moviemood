@@ -2143,3 +2143,5 @@ a.nav-menu-item:hover, button.nav-menu-item:hover { background: var(--input-bg);
   color: var(--text-dim);
 }
 .load-error p { max-width: 520px; line-height: 1.6; margin: 0; }
+/* Similar titles are real links (movie.js) */
+a.similar-card { display: block; text-decoration: none; color: inherit; }

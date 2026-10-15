@@ -35,6 +35,14 @@ async function fetchJsonWithTimeout(url, timeoutMs = 2500) {
 }
 
 async function detectRegion() {
+  // A region the visitor picked (or that was detected before) wins over a new guess
+  const saved = mmRegion.get();
+  if (SUPPORTED_REGIONS.includes(saved)) {
+    currentRegion = saved;
+    if (countrySelect) countrySelect.value = saved;
+    return;
+  }
+
   const providers = [
     async () => {
       const data = await fetchJsonWithTimeout('https://ipapi.co/json/');
@@ -54,6 +62,7 @@ async function detectRegion() {
     const country = String(await getCountry() || '').toUpperCase();
     if (country && SUPPORTED_REGIONS.includes(country)) {
       currentRegion = country;
+      mmRegion.set(country);
       if (countrySelect) countrySelect.value = country;
       const detected = document.getElementById('regionDetected');
       if (detected) {
@@ -289,6 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   countrySelect.addEventListener('change', e => {
     currentRegion = e.target.value;
+    mmRegion.set(currentRegion);
   });
   
   document.querySelectorAll('.tab').forEach(tab => {
@@ -1034,7 +1044,7 @@ function createCard(movie) {
   const cardMediaType = normalizeMediaType(movie.media_type || currentType);
   const watchedActive = isWatched(movie.id, cardMediaType);
   const title = movie.title || movie.name || '';
-  const detailsUrl = () => `movie.html?id=${movie.id}&type=${cardMediaType}&region=${currentRegion}`;
+  const detailsUrl = () => mmTitleUrl(movie, cardMediaType);
   const favLabels = { on: 'card.unfavorite', off: 'card.favorite' };
   const watchedLabels = { on: 'card.unmark_watched', off: 'card.mark_watched' };
 

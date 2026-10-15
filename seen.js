@@ -102,7 +102,7 @@ function createSeenCard(item) {
   });
 
   card.addEventListener('click', () => {
-    window.location.href = `movie.html?id=${item.id}&type=${mediaType}`;
+    window.location.href = mmTitleUrl(item, mediaType);
   });
 
   return card;

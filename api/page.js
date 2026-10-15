@@ -7,7 +7,7 @@
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
-const ASSET_VERSION = '20261015h';
+const ASSET_VERSION = '20261015i';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -379,11 +379,16 @@ function renderNotFound(origin) {
 
 // movie.html stays the single source of the movie page markup: it is fetched as a static
 // file and the parts search engines need are filled in before movie.js takes over.
-async function renderTitlePage(type, id, origin) {
+// Returns the page's HTML, or { redirect } when the address is not the page's own one
+// ("/movie/218" or an old title → "/movie/218-the-terminator"): one address per film for search engines
+async function renderTitlePage(type, id, origin, requestedPath) {
   const [templateRes, details] = await Promise.all([
     fetch(`${origin}/movie.html`),
     fetchJson(`${TMDB_BASE_URL}/${type}/${id}?api_key=${TMDB_API_KEY}&language=en-US`)
   ]);
+  const ownPath = titlePath(details, type);
+  if (requestedPath !== ownPath) return { redirect: ownPath };
+
   if (!templateRes.ok) throw new Error(`template ${templateRes.status}`);
   const template = await templateRes.text();
 
@@ -480,15 +485,24 @@ export default async function handler(req, res) {
 
     if (kind === 'title') {
       const type = query.type === 'tv' ? 'tv' : 'movie';
-      const id = parseInt(query.id, 10);
+      // ":id" from vercel.json is the whole last part of the address: "218-the-terminator"
+      const segment = String(query.id || '');
+      const id = parseInt(segment, 10);
       if (!id) return send(res, 404, renderNotFound(origin));
       try {
-        return send(res, 200, await renderTitlePage(type, id, origin));
+        const page = await renderTitlePage(type, id, origin, `/${type}/${segment}`);
+        if (page.redirect) {
+          res.setHeader('Location', page.redirect);
+          res.setHeader('Cache-Control', `public, s-maxage=${DAY}`);
+          return res.status(308).end();
+        }
+        return send(res, 200, page);
       } catch (error) {
         if (error.message === 'TMDB 404') return send(res, 404, renderNotFound(origin));
         // The plain client-side page still works without the server-rendered extras
+        // (ssr=0 stops movie.js from sending the visitor straight back here)
         console.error('Title page error:', error);
-        res.setHeader('Location', `/movie.html?id=${id}&type=${type}`);
+        res.setHeader('Location', `/movie.html?id=${id}&type=${type}&ssr=0`);
         return res.status(302).end();
       }
     }

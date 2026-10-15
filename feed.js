@@ -212,7 +212,7 @@ function createReel(item, index) {
 }
 
 function detailsUrl(item) {
-  return `movie.html?id=${item.id}&type=${normalizeMediaType(item.media_type)}`;
+  return mmTitleUrl(item, normalizeMediaType(item.media_type));
 }
 
 function updateLike(button, item) {
