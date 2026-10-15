@@ -7,7 +7,7 @@
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
-const ASSET_VERSION = '20261015f';
+const ASSET_VERSION = '20261015g';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
