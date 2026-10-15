@@ -11,7 +11,7 @@ const personId = serverPage?.id || params.get('id');
 // Old links (person.html?id=...) move to the page's own address, which search engines can read.
 // ssr=0 marks the server's fallback to this plain page: no redirect back then.
 if (!serverPage && personId && params.get('ssr') !== '0') {
-  window.location.replace(`/person/${parseInt(personId, 10)}`);
+  window.location.replace(mmLangPath(`/person/${parseInt(personId, 10)}`));
 }
 
 function normalizeMediaType(type) {

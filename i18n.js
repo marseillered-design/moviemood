@@ -217,9 +217,20 @@
 
   const PAGE_TITLES = { home: 'home.page_title', feed: 'feed.page_title', favorites: 'fav.page_title', seen: 'seen.page_title' };
 
+  // /uk/moods/cozy-movies, /ru/movie/218-the-terminator: the server rendered the page in that
+  // language. ?lang= is the server's fallback to a plain page (movie.html?id=218&ssr=0&lang=uk)
+  const LANG_PREFIX = /^\/(uk|ru|fr|es)(?=[/?#]|$)/;
+  const pathLanguage = (window.location.pathname.match(LANG_PREFIX) || [])[1]
+    || [new URLSearchParams(window.location.search).get('lang')].find(code => SUPPORTED.includes(code));
+  let saved = null;
+  try { saved = localStorage.getItem('lang'); } catch (e) {}
+
   function detectLanguage() {
-    let saved = null;
-    try { saved = localStorage.getItem('lang'); } catch (e) {}
+    if (pathLanguage) {
+      // a visitor who arrives on a Ukrainian page keeps Ukrainian on the next ones
+      try { localStorage.setItem('lang', pathLanguage); } catch (e) {}
+      return pathLanguage;
+    }
     if (SUPPORTED.includes(saved)) return saved;
     const candidates = navigator.languages?.length ? navigator.languages : [navigator.language || 'en'];
     for (const candidate of candidates) {
@@ -230,6 +241,23 @@
   }
 
   const lang = detectLanguage();
+
+  // Someone who picked a language earlier and opens an English page that also exists in theirs
+  // (from a search result, say) goes to their version. Only for a choice saved in this browser:
+  // search engines keep nothing between visits, so they always see the address they asked for.
+  if (!pathLanguage && lang !== 'en' && saved === lang) {
+    const own = document.querySelector(`link[rel="alternate"][hreflang="${lang}"]`);
+    if (own && own.href !== window.location.href.split(/[?#]/)[0]) {
+      window.location.replace(own.href + window.location.search + window.location.hash);
+    }
+  }
+
+  // "/moods" → "/uk/moods", "/?q=cozy" → "/uk?q=cozy" for the current language (or the one given)
+  function langPath(path, code = lang) {
+    const plain = path.replace(LANG_PREFIX, '') || '/';
+    if (code === 'en') return plain.startsWith('/') ? plain : `/${plain}`;
+    return `/${code}${plain.replace(/^\/(?=[?#]|$)/, '')}`;
+  }
 
   function t(key, vars) {
     const entry = STRINGS[key];
@@ -284,9 +312,16 @@
       if (!p.children.length) p.textContent = t('footer.tmdb');
     });
 
+    // Links to the home page and the collections stay in the visitor's language
+    if (lang !== 'en') {
+      document.querySelectorAll('a[href="/"], a[href^="/moods"], a[href^="/?"]').forEach(link => {
+        link.setAttribute('href', langPath(link.getAttribute('href')));
+      });
+    }
   }
 
   window.MM_LANG = lang;
+  window.mmLangPath = langPath;
   // for the language picker in nav.js
   window.MM_LANGUAGES = LANGUAGE_NAMES;
   window.TMDB_LANG = TMDB_LOCALES[lang];

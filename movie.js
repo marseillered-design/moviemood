@@ -13,7 +13,7 @@ const region = params.get('region') || mmRegion.get() || 'US';
 // Old links (movie.html?id=...) move to the page's own address, which search engines can read.
 // ssr=0 marks the server's fallback to this plain page: no redirect back then.
 if (!serverPage && movieId && params.get('ssr') !== '0') {
-  window.location.replace(`/${mediaType === 'tv' ? 'tv' : 'movie'}/${parseInt(movieId, 10)}`);
+  window.location.replace(mmLangPath(`/${mediaType === 'tv' ? 'tv' : 'movie'}/${parseInt(movieId, 10)}`));
 }
 
 // Trailers on YouTube, best first. Some owners forbid playback on other sites:

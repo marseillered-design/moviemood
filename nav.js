@@ -70,7 +70,7 @@
   panel.append(
     mobileLinks,
     // mood collections also open from the 😊 button next to the search on the home page
-    menuLink('/moods', '🎭', t('nav.moods')),
+    menuLink(window.mmLangPath('/moods'), '🎭', t('nav.moods')),
     el('div', 'nav-menu-sep'),
     menuLink('/favorites.html', '❤️', t('nav.favorites'), favoritesCount),
     menuLink('/seen.html', '✅', t('nav.seen'), watchedCount),
@@ -86,9 +86,21 @@
     option.selected = code === window.MM_LANG;
     languageSelect.append(option);
   }
+  // Pages that exist in every language list their versions in <head>: go to the chosen one.
+  // Others (favorites, trailers) just reload in the new language.
   languageSelect.addEventListener('change', () => {
-    try { localStorage.setItem('lang', languageSelect.value); } catch (e) {}
-    window.location.reload();
+    const code = languageSelect.value;
+    try { localStorage.setItem('lang', code); } catch (e) {}
+    const version = document.querySelector(`link[rel="alternate"][hreflang="${code}"]`);
+    const prefixed = /^\/(uk|ru|fr|es)(\/|$)/.test(window.location.pathname);
+    if (version) window.location.href = version.href + window.location.search;
+    else if (prefixed) window.location.href = window.mmLangPath(window.location.pathname, code) + window.location.search;
+    else {
+      // ?lang= would otherwise win over the new choice (i18n.js)
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('lang')) url.searchParams.set('lang', code);
+      window.location.href = url.href;
+    }
   });
   languageRow.append(languageSelect);
   panel.append(languageRow);

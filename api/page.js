@@ -3,12 +3,14 @@
 //   /moods/:slug        → one collection ("Movies for a Rainy Day")
 //   /movie/:id, /tv/:id → movie.html with real <title>, description and content filled in
 //   /person/:id         → person.html, the same way
+//   /uk, /ru, /fr, /es  → the home page in that language; the pages above also exist under
+//                         these prefixes (/uk/moods/cozy-movies, /fr/movie/218-the-terminator)
 //   /sitemap.xml, /robots.txt
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
-const ASSET_VERSION = '20261015k';
+const ASSET_VERSION = '20261015l';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -142,6 +144,332 @@ const MOODS = [
 ];
 
 // ══════════════════════════════════════════════
+// LANGUAGES
+// English pages live at the plain addresses, the others under a prefix: /uk/moods/cozy-movies,
+// /ru/movie/218-the-terminator. The slug stays English in every language, so one film has the
+// same address apart from the prefix.
+// ══════════════════════════════════════════════
+const LANGS = ['en', 'uk', 'ru', 'fr', 'es'];
+const TMDB_LOCALES = { en: 'en-US', uk: 'uk-UA', ru: 'ru-RU', fr: 'fr-FR', es: 'es-ES' };
+const OG_LOCALES = { en: 'en_US', uk: 'uk_UA', ru: 'ru_RU', fr: 'fr_FR', es: 'es_ES' };
+
+// [title, intro] of each collection in the other languages
+const MOOD_TEXT = {
+  'rainy-day-movies': {
+    uk: ['Фільми для дощового дня', 'Сіре небо, плед і жодних справ. Теплі, смішні й трохи сумні фільми, що пасують до шуму дощу за вікном: у них легко пірнути і важко вимкнути.'],
+    ru: ['Фильмы для дождливого дня', 'Серое небо, плед и никаких дел. Тёплые, смешные и немного грустные фильмы под шум дождя за окном: в них легко погрузиться и трудно выключить.'],
+    fr: ['Films pour un jour de pluie', 'Ciel gris, plaid et nulle part où aller. Des films chaleureux, drôles et un brin doux-amers qui vont bien avec la pluie contre la vitre : on s’y plonge facilement et on a du mal à arrêter.'],
+    es: ['Películas para un día de lluvia', 'Cielo gris, una manta y ningún plan. Películas cálidas, divertidas y un poco agridulces que combinan con la lluvia en la ventana: fáciles de disfrutar y difíciles de apagar.']
+  },
+  'feel-good-movies': {
+    uk: ['Фільми для гарного настрою', 'Добрі, світлі фільми, після яких стає легше на душі. Без важких поворотів і похмурих фіналів — просто приємна компанія на пару годин.'],
+    ru: ['Фильмы для хорошего настроения', 'Добрые, светлые фильмы, после которых становится легче на душе. Без тяжёлых поворотов и мрачных финалов — просто приятная компания на пару часов.'],
+    fr: ['Films feel-good', 'Des films pleins d’espoir et de chaleur qui vous laissent plus léger qu’avant. Pas de rebondissements pesants ni de fins sombres : juste une bonne compagnie pour quelques heures.'],
+    es: ['Películas para levantar el ánimo', 'Películas optimistas y entrañables que te dejan más ligero de lo que estabas. Sin giros pesados ni finales tristes: solo buena compañía para un par de horas.']
+  },
+  'movies-to-cry-to': {
+    uk: ['Фільми, щоб поплакати', 'Іноді треба як слід виплакатися. Ці історії кохання та драми чесно заслуговують на кожну сльозу — тримайте серветки поруч.'],
+    ru: ['Фильмы, чтобы поплакать', 'Иногда нужно как следует выплакаться. Эти истории любви и драмы честно заслуживают каждой слезы — держите салфетки под рукой.'],
+    fr: ['Films pour pleurer', 'Parfois, on a besoin d’une bonne crise de larmes. Ces histoires d’amour et ces drames les méritent honnêtement : gardez les mouchoirs à portée de main.'],
+    es: ['Películas para llorar', 'A veces hace falta llorar a gusto. Estas historias de amor y dramas se ganan cada lágrima con honestidad: ten los pañuelos a mano.']
+  },
+  'date-night-movies': {
+    uk: ['Фільми для побачення', 'Історії кохання, які сподобаються вам обом: справжня хімія, трохи сміху й кілька зітхань. Перевірені улюблені фільми, а не випадкові новинки.'],
+    ru: ['Фильмы для свидания', 'Истории любви, которые понравятся вам обоим: настоящая химия, немного смеха и пара вздохов. Проверенные любимые фильмы, а не случайные новинки.'],
+    fr: ['Films pour une soirée en amoureux', 'Des histoires d’amour qui plairont à tous les deux : une vraie alchimie, quelques rires et quelques soupirs. Des valeurs sûres, pas des nouveautés au hasard.'],
+    es: ['Películas para una cita', 'Historias de amor que os gustarán a los dos: química de verdad, algunas risas y algún suspiro. Favoritas de siempre, no estrenos al azar.']
+  },
+  'cozy-movies': {
+    uk: ['Затишні фільми', 'Ніжні, смішні й рідні фільми, наче тепла кімната взимку. Без насильства й різких лякалок — ідеально з чаєм і чимось солодким.'],
+    ru: ['Уютные фильмы', 'Нежные, смешные и родные фильмы, как тёплая комната зимой. Без насилия и внезапных пугалок — идеально с чаем и чем-нибудь сладким.'],
+    fr: ['Films cocooning', 'Des films doux, drôles et familiers, comme une pièce bien chaude en hiver. Pas de violence ni de sursauts : parfaits avec un thé et une douceur.'],
+    es: ['Películas acogedoras', 'Películas tiernas, divertidas y familiares, como una habitación caldeada en invierno. Sin violencia ni sustos: perfectas con un té y algo dulce.']
+  },
+  'mind-bending-movies': {
+    uk: ['Фільми, що ламають мозок', 'Головоломки, які грають із часом, пам’яттю та реальністю. Про фінал захочеться поговорити — або одразу переглянути.'],
+    ru: ['Фильмы, которые взрывают мозг', 'Головоломки, которые играют со временем, памятью и реальностью. О финале захочется поговорить — или сразу пересмотреть.'],
+    fr: ['Films qui retournent le cerveau', 'Des casse-tête qui jouent avec le temps, la mémoire et la réalité. Vous voudrez parler de la fin, ou revoir le film tout de suite.'],
+    es: ['Películas que te vuelan la cabeza', 'Rompecabezas que juegan con el tiempo, la memoria y la realidad. Querrás hablar del final, o volver a verla enseguida.']
+  },
+  'plot-twist-movies': {
+    uk: ['Фільми з несподіваним фіналом', 'Трилери, де ніщо не є тим, чим здається. Дивіться, знаючи якомога менше, і не дозволяйте нікому зіпсувати фінал спойлером.'],
+    ru: ['Фильмы с неожиданной концовкой', 'Триллеры, где ничто не то, чем кажется. Смотрите, зная как можно меньше, и не позволяйте никому проспойлерить финал.'],
+    fr: ['Films avec un twist final', 'Des thrillers où rien n’est vraiment ce qu’il paraît. Lancez-vous en en sachant le moins possible et ne laissez personne vous gâcher le dernier acte.'],
+    es: ['Películas con giro final', 'Thrillers donde nada es lo que parece. Entra sabiendo lo menos posible y no dejes que nadie te destripe el último acto.']
+  },
+  'halloween-movies': {
+    uk: ['Фільми на Хелловін', 'Будинки з привидами, незнайомці в масках і та єдина ніч на рік, коли все це доречно. Жахи для темного жовтневого вечора.'],
+    ru: ['Фильмы на Хэллоуин', 'Дома с привидениями, незнакомцы в масках и та единственная ночь в году, когда всё это к месту. Ужасы для тёмного октябрьского вечера.'],
+    fr: ['Films d’Halloween', 'Maisons hantées, inconnus masqués et la seule nuit de l’année où tout cela a du sens. Des films d’horreur pour une sombre soirée d’octobre.'],
+    es: ['Películas de Halloween', 'Casas encantadas, desconocidos con máscara y la única noche del año en que todo encaja. Terror para una oscura noche de octubre.']
+  },
+  'family-movie-night': {
+    uk: ['Фільми для сімейного вечора', 'Анімаційні фільми для будь-якого віку на дивані: яскраві для дітей і достатньо розумні, щоб дорослі не заснули.'],
+    ru: ['Фильмы для семейного вечера', 'Анимационные фильмы для любого возраста на диване: яркие для детей и достаточно умные, чтобы взрослые не заснули.'],
+    fr: ['Films pour une soirée en famille', 'Des films d’animation pour tous les âges sur le canapé : assez colorés pour les enfants, assez malins pour que les adultes restent éveillés.'],
+    es: ['Películas para ver en familia', 'Películas de animación para todas las edades del sofá: vistosas para los niños y lo bastante listas para que los adultos no se duerman.']
+  },
+  'motivational-movies': {
+    uk: ['Мотивуючі фільми', 'Аутсайдери, повернення і люди, які відмовилися здаватися. Увімкніть, коли потрібен поштовх, щоб почати щось складне.'],
+    ru: ['Мотивирующие фильмы', 'Аутсайдеры, возвращения и люди, которые отказались сдаваться. Включите, когда нужен толчок, чтобы начать что-то трудное.'],
+    fr: ['Films motivants', 'Des outsiders, des retours en force et des gens qui ont refusé d’abandonner. À regarder quand il vous faut un coup de pouce pour vous lancer.'],
+    es: ['Películas motivadoras', 'Desvalidos, remontadas y gente que se negó a rendirse. Pon una cuando necesites un empujón para empezar algo difícil.']
+  },
+  'christmas-movies': {
+    uk: ['Різдвяні фільми', 'Сніг, вогники й другий шанс. Улюблені святкові фільми, старі й нові, для тижнів, коли вдома стоїть ялинка.'],
+    ru: ['Рождественские фильмы', 'Снег, огоньки и второй шанс. Любимые праздничные фильмы, старые и новые, для недель, когда дома стоит ёлка.'],
+    fr: ['Films de Noël', 'De la neige, des guirlandes et des secondes chances. Les classiques des fêtes, anciens et récents, pour les semaines où le sapin est installé.'],
+    es: ['Películas de Navidad', 'Nieve, luces y segundas oportunidades. Clásicos navideños antiguos y recientes para las semanas en que el árbol está puesto.']
+  },
+  'movies-to-watch-with-friends': {
+    uk: ['Фільми для перегляду з друзями', 'Гучні, динамічні й смішні бойовики-комедії, які не зіпсуєш розмовами під час перегляду. Створені для піци та повного дивана.'],
+    ru: ['Фильмы для просмотра с друзьями', 'Громкие, динамичные и смешные боевики-комедии, которые не испортишь разговорами во время просмотра. Созданы для пиццы и полного дивана.'],
+    fr: ['Films à regarder entre amis', 'Des comédies d’action bruyantes, rapides et drôles qui résistent aux bavardages. Faites pour une pizza et un canapé plein.'],
+    es: ['Películas para ver con amigos', 'Comedias de acción ruidosas, rápidas y divertidas que aguantan que todo el mundo hable encima. Hechas para pizza y un sofá lleno.']
+  },
+  'late-night-thrillers': {
+    uk: ['Трилери на ніч', 'Кримінальні трилери для тих годин, коли вдома тихо, а спати ще не хочеться. Напружені, темні й найкращі з вимкненим світлом.'],
+    ru: ['Триллеры на ночь', 'Криминальные триллеры для часов, когда дома тихо, а спать ещё не хочется. Напряжённые, мрачные и лучше всего с выключенным светом.'],
+    fr: ['Thrillers pour la nuit', 'Des thrillers policiers pour quand la maison est silencieuse et que vous n’avez pas encore sommeil. Tendus, sombres, à regarder lumières éteintes.'],
+    es: ['Thrillers para la noche', 'Thrillers criminales para cuando la casa está en silencio y aún no tienes sueño. Tensos, oscuros y mejor con la luz apagada.']
+  },
+  'true-story-movies': {
+    uk: ['Фільми, засновані на реальних подіях', 'Справжні люди, справжні події і дивне відчуття, коли потім шукаєш усе в інтернеті. Драми, взяті з життя.'],
+    ru: ['Фильмы, основанные на реальных событиях', 'Настоящие люди, настоящие события и странное чувство, когда потом ищешь всё в интернете. Драмы, взятые из жизни.'],
+    fr: ['Films tirés d’une histoire vraie', 'De vraies personnes, de vrais événements et cette drôle d’envie de tout vérifier après coup. Des drames inspirés de la vie.'],
+    es: ['Películas basadas en hechos reales', 'Personas reales, hechos reales y esa extraña sensación de buscarlo todo después. Dramas sacados de la vida.']
+  },
+  'heist-movies': {
+    uk: ['Фільми про пограбування', 'Команда, план і мить, коли все йде не так. Хитромудрі афери й пограбування банків, де половина задоволення — дивитися, як усе складається докупи.'],
+    ru: ['Фильмы про ограбления', 'Команда, план и момент, когда всё идёт не так. Хитроумные аферы и ограбления банков, где половина удовольствия — смотреть, как всё складывается.'],
+    fr: ['Films de braquage', 'Une équipe, un plan et le moment où tout dérape. Des casses ingénieux où le plaisir est de voir chaque pièce s’emboîter.'],
+    es: ['Películas de atracos', 'Una banda, un plan y el momento en que todo se tuerce. Golpes ingeniosos donde la mitad de la gracia es ver cómo encajan las piezas.']
+  },
+  'time-travel-movies': {
+    uk: ['Фільми про подорожі в часі', 'Петлі, парадокси й друга спроба змінити минуле. Від легких пригод до історій, що зав’язують мозок у вузол.'],
+    ru: ['Фильмы про путешествия во времени', 'Петли, парадоксы и вторая попытка изменить прошлое. От лёгких приключений до историй, которые завязывают мозг в узел.'],
+    fr: ['Films de voyage dans le temps', 'Boucles, paradoxes et secondes chances dans le passé. Des aventures légères aux histoires qui vous font des nœuds au cerveau.'],
+    es: ['Películas de viajes en el tiempo', 'Bucles, paradojas y segundas oportunidades en el pasado. Desde aventuras ligeras hasta historias que te hacen un nudo en la cabeza.']
+  },
+  'coming-of-age-movies': {
+    uk: ['Фільми про дорослішання', 'Перше кохання, останнє літо і рік, коли все змінилося. Фільми про дорослішання, які зачіпають навіть тих, хто вже давно дорослий.'],
+    ru: ['Фильмы о взрослении', 'Первая любовь, последнее лето и год, когда всё изменилось. Фильмы о взрослении, которые трогают даже тех, кто давно вырос.'],
+    fr: ['Films sur le passage à l’âge adulte', 'Premiers amours, derniers étés et l’année où tout a changé. Des films sur le fait de grandir qui touchent même quand on a déjà grandi.'],
+    es: ['Películas sobre crecer', 'Primeros amores, últimos veranos y el año en que todo cambió. Películas sobre hacerse mayor que siguen llegando aunque ya lo seas.']
+  },
+  'road-trip-movies': {
+    uk: ['Роуд-муві: фільми про подорожі', 'Відкрита дорога, погані мотелі й попутники, які поступово стають друзями. Для тих вечорів, коли хочеться втекти, не встаючи з дивана.'],
+    ru: ['Роуд-муви: фильмы о путешествиях', 'Открытая дорога, плохие мотели и попутчики, которые постепенно становятся друзьями. Для вечеров, когда хочется сбежать, не вставая с дивана.'],
+    fr: ['Road movies', 'Des routes à perte de vue, des motels douteux et des compagnons de voyage qui deviennent peu à peu des amis. Pour partir sans quitter le canapé.'],
+    es: ['Road movies: películas de carretera', 'Carreteras abiertas, moteles de mala muerte y compañeros de viaje que poco a poco se vuelven amigos. Para escaparte sin salir del sofá.']
+  },
+  'space-movies': {
+    uk: ['Фільми про космос', 'Тиша, відстані й зовсім маленькі люди. Наукова фантастика серед зірок: від напружених історій виживання до масштабних видовищ.'],
+    ru: ['Фильмы про космос', 'Тишина, расстояния и совсем маленькие люди. Научная фантастика среди звёзд: от напряжённых историй выживания до масштабных зрелищ.'],
+    fr: ['Films sur l’espace', 'Le silence, la distance et des humains minuscules. De la science-fiction parmi les étoiles, des récits de survie haletants aux grands spectacles.'],
+    es: ['Películas del espacio', 'Silencio, distancia y humanos muy pequeños. Ciencia ficción entre las estrellas, desde tensas historias de supervivencia hasta grandes espectáculos.']
+  },
+  'dystopian-movies': {
+    uk: ['Антиутопії: найкращі фільми', 'Майбутнє, яке пішло не так, і люди, що чинять опір. Похмурі й стильні світи, які говорять більше про сьогодення, ніж про завтра.'],
+    ru: ['Антиутопии: лучшие фильмы', 'Будущее, которое пошло не так, и люди, которые сопротивляются. Мрачные и стильные миры, которые говорят больше о сегодняшнем дне, чем о завтрашнем.'],
+    fr: ['Films dystopiques', 'Des futurs qui ont mal tourné et ceux qui résistent. Des mondes sombres et stylés qui en disent plus sur aujourd’hui que sur demain.'],
+    es: ['Películas distópicas', 'Futuros que salieron mal y la gente que se rebela. Mundos oscuros y con estilo que hablan más del presente que del mañana.']
+  },
+  'high-school-movies': {
+    uk: ['Фільми про школу', 'Шафки, шкільні компанії й катастрофи на випускному. Підліткові комедії, які легко цитувати й ще легше переглядати.'],
+    ru: ['Фильмы про школу', 'Шкафчики, школьные компании и катастрофы на выпускном. Подростковые комедии, которые легко цитировать и ещё легче пересматривать.'],
+    fr: ['Films de lycée', 'Casiers, bandes rivales et bals de promo catastrophiques. Des comédies ados faciles à citer et encore plus à revoir.'],
+    es: ['Películas de instituto', 'Taquillas, grupitos y bailes de graduación desastrosos. Comedias adolescentes fáciles de citar y aún más fáciles de volver a ver.']
+  },
+  'serial-killer-thrillers': {
+    uk: ['Трилери про маніяків', 'Детективи, одержимість і розслідування, що поволі затягує петлю. Похмурі психологічні трилери для глядачів із міцними нервами.'],
+    ru: ['Триллеры про маньяков', 'Детективы, одержимость и расследование, которое медленно затягивает петлю. Мрачные психологические триллеры для зрителей с крепкими нервами.'],
+    fr: ['Thrillers de tueurs en série', 'Des enquêteurs, l’obsession et une enquête qui se resserre lentement. Des thrillers psychologiques sombres pour les spectateurs aux nerfs solides.'],
+    es: ['Thrillers de asesinos en serie', 'Detectives, obsesión y un caso que se cierra poco a poco. Thrillers psicológicos oscuros para espectadores con nervios de acero.']
+  },
+  'best-90s-movies': {
+    uk: ['Найкращі фільми 90-х', 'Десятиліття відеопрокатів і аншлагів у п’ятницю ввечері. Найвище оцінені фільми 1990-х, які й досі не застаріли.'],
+    ru: ['Лучшие фильмы 90-х', 'Десятилетие видеопрокатов и аншлагов в пятницу вечером. Самые высоко оценённые фильмы 1990-х, которые до сих пор не устарели.'],
+    fr: ['Meilleurs films des années 90', 'La décennie des vidéoclubs et des vendredis soir à guichets fermés. Les films les mieux notés des années 1990, qui n’ont pas pris une ride.'],
+    es: ['Mejores películas de los 90', 'La década de los videoclubes y los viernes con las salas llenas. Las películas mejor valoradas de los años 90, que siguen aguantando.']
+  },
+  'best-80s-movies': {
+    uk: ['Найкращі фільми 80-х', 'Синтезатори, практичні ефекти й герої з крилатими фразами. Найулюбленіші фільми 1980-х для по-справжньому ностальгійного вечора.'],
+    ru: ['Лучшие фильмы 80-х', 'Синтезаторы, практические эффекты и герои с крылатыми фразами. Самые любимые фильмы 1980-х для по-настоящему ностальгического вечера.'],
+    fr: ['Meilleurs films des années 80', 'Des synthés, des effets spéciaux à l’ancienne et des héros aux répliques cultes. Les films préférés des années 1980 pour une vraie soirée nostalgie.'],
+    es: ['Mejores películas de los 80', 'Sintetizadores, efectos artesanales y héroes con frases míticas. Las películas más queridas de los años 80 para una noche de pura nostalgia.']
+  }
+};
+
+const TEXT = {
+  moods: { en: 'Moods', uk: 'Настрої', ru: 'Настроения', fr: 'Humeurs', es: 'Ánimos' },
+  trailers: { en: 'Trailers', uk: 'Трейлери', ru: 'Трейлеры', fr: 'Bandes-annonces', es: 'Tráilers' },
+  favorites: { en: 'Favorites', uk: 'Обране', ru: 'Избранное', fr: 'Favoris', es: 'Favoritos' },
+  footer: {
+    en: 'This product uses the TMDB API but is not endorsed or certified by TMDB.',
+    uk: 'Цей продукт використовує TMDB API, але не схвалений і не сертифікований TMDB.',
+    ru: 'Этот продукт использует TMDB API, но не одобрен и не сертифицирован TMDB.',
+    fr: 'Ce produit utilise l’API TMDB mais n’est ni approuvé ni certifié par TMDB.',
+    es: 'Este producto utiliza la API de TMDB, pero no está respaldado ni certificado por TMDB.'
+  },
+  poster: { en: 'poster', uk: 'постер', ru: 'постер', fr: 'affiche', es: 'póster' },
+
+  mood_page_title: {
+    en: '{title}: {n} Picks to Watch Tonight',
+    uk: '{title}: {n} фільмів на вечір',
+    ru: '{title}: {n} фильмов на вечер',
+    fr: '{title} : {n} films à voir ce soir',
+    es: '{title}: {n} películas para esta noche'
+  },
+  not_your_mood: { en: 'Not quite your mood?', uk: 'Не зовсім ваш настрій?', ru: 'Не совсем ваше настроение?', fr: 'Pas tout à fait votre humeur ?', es: '¿No es justo tu estado de ánimo?' },
+  find_more: { en: 'Find more like this', uk: 'Знайти ще схожі', ru: 'Найти ещё похожие', fr: 'Trouver d’autres films de ce genre', es: 'Encontrar más como estas' },
+  own_mood: { en: 'Describe your own mood', uk: 'Опишіть свій настрій', ru: 'Опишите своё настроение', fr: 'Décrivez votre humeur', es: 'Describe tu estado de ánimo' },
+  more_moods: { en: 'More moods', uk: 'Інші настрої', ru: 'Другие настроения', fr: 'Autres humeurs', es: 'Más estados de ánimo' },
+  browse_by_mood: { en: 'Browse by mood', uk: 'Фільми за настроєм', ru: 'Фильмы по настроению', fr: 'Films par humeur', es: 'Películas por estado de ánimo' },
+
+  index_title: {
+    en: 'Movies by Mood: Find What to Watch Tonight',
+    uk: 'Фільми за настроєм: що подивитися сьогодні',
+    ru: 'Фильмы по настроению: что посмотреть сегодня',
+    fr: 'Films selon votre humeur : que regarder ce soir',
+    es: 'Películas según tu estado de ánimo: qué ver esta noche'
+  },
+  index_desc: {
+    en: 'Pick a mood — cozy, sad, mind-bending, date night — and get a hand-tuned list of films that fit it.',
+    uk: 'Оберіть настрій — затишний, сумний, із закрученим сюжетом, для побачення — і отримайте добірку фільмів, що йому пасують.',
+    ru: 'Выберите настроение — уютное, грустное, с закрученным сюжетом, для свидания — и получите подборку фильмов под него.',
+    fr: 'Choisissez une humeur — cocooning, triste, à retourner le cerveau, en amoureux — et obtenez une sélection de films qui lui correspond.',
+    es: 'Elige un estado de ánimo — acogedor, triste, para volarte la cabeza, para una cita — y obtén una selección de películas que encaje.'
+  },
+  index_h1: { en: 'Movies by', uk: 'Фільми за', ru: 'Фильмы по', fr: 'Films selon votre', es: 'Películas según tu' },
+  index_h1_accent: { en: 'Mood', uk: 'настроєм', ru: 'настроению', fr: 'humeur', es: 'ánimo' },
+  index_intro: {
+    en: 'Pick how you feel and get a list of films that fit. Or describe your own mood on the {link}.',
+    uk: 'Оберіть, що відчуваєте, і отримайте список фільмів під настрій. Або опишіть свій настрій на {link}.',
+    ru: 'Выберите, что чувствуете, и получите список фильмов под настроение. Или опишите своё настроение на {link}.',
+    fr: 'Choisissez ce que vous ressentez et obtenez une liste de films adaptés. Ou décrivez votre propre humeur sur la {link}.',
+    es: 'Elige cómo te sientes y obtén una lista de películas a juego. O describe tu propio estado de ánimo en la {link}.'
+  },
+  home_link: { en: 'home page', uk: 'головній сторінці', ru: 'главной странице', fr: 'page d’accueil', es: 'página principal' },
+
+  not_found_title: { en: 'Page not found', uk: 'Сторінку не знайдено', ru: 'Страница не найдена', fr: 'Page introuvable', es: 'Página no encontrada' },
+  not_found_desc: {
+    en: 'This page does not exist. Browse movies by mood instead.',
+    uk: 'Такої сторінки немає. Перегляньте фільми за настроєм.',
+    ru: 'Такой страницы нет. Посмотрите фильмы по настроению.',
+    fr: 'Cette page n’existe pas. Découvrez plutôt des films selon votre humeur.',
+    es: 'Esta página no existe. Explora películas según tu estado de ánimo.'
+  },
+  not_found_h1: { en: 'Nothing', uk: 'Тут', ru: 'Здесь', fr: 'Rien', es: 'Aquí no hay' },
+  not_found_h1_accent: { en: 'here', uk: 'порожньо', ru: 'пусто', fr: 'ici', es: 'nada' },
+  not_found_intro: {
+    en: 'That page does not exist. Try one of these moods instead.',
+    uk: 'Такої сторінки не існує. Спробуйте один із цих настроїв.',
+    ru: 'Такой страницы не существует. Попробуйте одно из этих настроений.',
+    fr: 'Cette page n’existe pas. Essayez plutôt l’une de ces humeurs.',
+    es: 'Esa página no existe. Prueba uno de estos estados de ánimo.'
+  },
+
+  // {name} already carries the year: "The Terminator (1984)"
+  title_page_title: {
+    en: '{name}: Where to Watch',
+    uk: '{name}: де дивитися онлайн',
+    ru: '{name}: где смотреть онлайн',
+    fr: '{name} : où regarder en streaming',
+    es: '{name}: dónde ver online'
+  },
+  title_page_desc: {
+    en: 'Where to watch {name}, trailer, cast and similar titles.',
+    uk: 'Де дивитися {name} онлайн: трейлер, актори та схожі фільми.',
+    ru: 'Где смотреть {name} онлайн: трейлер, актёры и похожие фильмы.',
+    fr: 'Où regarder {name} en streaming : bande-annonce, casting et titres similaires.',
+    es: 'Dónde ver {name} online: tráiler, reparto y títulos similares.'
+  },
+  person_page_title: {
+    en: '{name}: Movies and TV Shows to Watch',
+    uk: '{name}: фільми та серіали',
+    ru: '{name}: фильмы и сериалы',
+    fr: '{name} : films et séries',
+    es: '{name}: películas y series'
+  },
+  person_page_desc: {
+    en: '{name} movies and TV shows: {known} and more. Where to watch, trailers and similar films.',
+    uk: '{name}: фільми та серіали — {known} та інші. Де дивитися, трейлери й схожі фільми.',
+    ru: '{name}: фильмы и сериалы — {known} и другие. Где смотреть, трейлеры и похожие фильмы.',
+    fr: 'Films et séries avec {name} : {known} et plus encore. Où les regarder, bandes-annonces et films similaires.',
+    es: 'Películas y series de {name}: {known} y más. Dónde verlas, tráilers y películas similares.'
+  },
+  person_page_desc_short: {
+    en: '{name}: movies and TV shows, where to watch them and similar films.',
+    uk: '{name}: фільми та серіали, де їх дивитися і схожі фільми.',
+    ru: '{name}: фильмы и сериалы, где их смотреть и похожие фильмы.',
+    fr: '{name} : films et séries, où les regarder et films similaires.',
+    es: '{name}: películas y series, dónde verlas y películas similares.'
+  },
+
+  // Same as home.page_title in i18n.js, which sets the title again in the browser
+  home_title: {
+    en: 'MovieMood: Find a Movie for Your Mood',
+    uk: 'MovieMood: фільм під ваш настрій',
+    ru: 'MovieMood: фильм под ваше настроение',
+    fr: 'MovieMood : un film selon votre humeur',
+    es: 'MovieMood: una película para tu estado de ánimo'
+  },
+  home_desc: {
+    en: 'Describe how you feel in any words and get well-loved movies and series to match: trailers, where to watch them and mood collections for every evening.',
+    uk: 'Опишіть настрій будь-якими словами й отримайте улюблені глядачами фільми та серіали: трейлери, де дивитися і добірки на кожен вечір.',
+    ru: 'Опишите настроение любыми словами и получите любимые зрителями фильмы и сериалы: трейлеры, где смотреть и подборки на каждый вечер.',
+    fr: 'Décrivez votre humeur avec vos propres mots et obtenez des films et séries appréciés : bandes-annonces, où les regarder et sélections pour chaque soirée.',
+    es: 'Describe cómo te sientes con tus palabras y obtén películas y series muy valoradas: tráilers, dónde verlas y selecciones para cada noche.'
+  },
+  // home.title, home.title_accent and home.subtitle in i18n.js
+  home_h1: { en: 'WHAT’S YOUR', uk: 'ЯКИЙ У ВАС', ru: 'КАКОЕ У ВАС', fr: 'QUELLE EST VOTRE', es: '¿CÓMO TE' },
+  home_h1_accent: { en: 'MOOD?', uk: 'НАСТРІЙ?', ru: 'НАСТРОЕНИЕ?', fr: 'HUMEUR ?', es: 'SIENTES?' },
+  home_subtitle: {
+    en: 'Tell us how you feel - we’ll find the perfect film.',
+    uk: 'Розкажіть, що на душі, — ми підберемо фільм.',
+    ru: 'Расскажите, что на душе, — мы подберём фильм.',
+    fr: 'Dites-nous comment vous vous sentez, nous trouvons le film.',
+    es: 'Cuéntanos cómo te sientes y encontramos la película.'
+  },
+  home_seo_title: { en: 'Movies for every mood', uk: 'Фільми на будь-який настрій', ru: 'Фильмы на любое настроение', fr: 'Des films pour chaque humeur', es: 'Películas para cada estado de ánimo' },
+  home_seo_text: {
+    en: 'MovieMood finds films by how you feel. Describe your mood in any words — a cozy rainy evening, something to cry to, a mind-bending thriller — and get well-loved movies and series with trailers and where to watch them.',
+    uk: 'MovieMood підбирає фільми за настроєм. Опишіть його будь-якими словами — затишний дощовий вечір, щось, щоб поплакати, трилер, що ламає мозок, — і отримайте улюблені глядачами фільми й серіали з трейлерами та інформацією, де їх дивитися.',
+    ru: 'MovieMood подбирает фильмы по настроению. Опишите его любыми словами — уютный дождливый вечер, что-нибудь, чтобы поплакать, триллер, который взрывает мозг, — и получите любимые зрителями фильмы и сериалы с трейлерами и информацией, где их смотреть.',
+    fr: 'MovieMood trouve des films selon ce que vous ressentez. Décrivez votre humeur avec vos mots — une soirée pluvieuse au chaud, de quoi pleurer, un thriller à retourner le cerveau — et obtenez des films et séries appréciés, avec bandes-annonces et où les regarder.',
+    es: 'MovieMood encuentra películas según cómo te sientes. Describe tu estado de ánimo con tus palabras — una tarde de lluvia acogedora, algo para llorar, un thriller que te vuele la cabeza — y obtén películas y series muy valoradas, con tráilers y dónde verlas.'
+  },
+  all_moods: { en: 'All mood collections', uk: 'Усі добірки за настроєм', ru: 'Все подборки по настроению', fr: 'Toutes les sélections par humeur', es: 'Todas las selecciones por estado de ánimo' }
+};
+
+// Collections shown on the home page, in this order
+const HOME_MOODS = ['rainy-day-movies', 'cozy-movies', 'feel-good-movies', 'movies-to-cry-to', 'date-night-movies', 'mind-bending-movies', 'family-movie-night', 'best-90s-movies'];
+
+const tr = (lang, key, vars) => {
+  let text = TEXT[key][lang] ?? TEXT[key].en;
+  for (const [name, value] of Object.entries(vars || {})) text = text.replace(`{${name}}`, value);
+  return text;
+};
+
+const moodTitle = (mood, lang) => MOOD_TEXT[mood.slug]?.[lang]?.[0] || mood.title;
+const moodIntro = (mood, lang) => MOOD_TEXT[mood.slug]?.[lang]?.[1] || mood.intro;
+
+// "/moods" → "/uk/moods", "/" → "/uk"
+const langPath = (lang, path) => lang === 'en' ? path : `/${lang}${path === '/' ? '' : path}`;
+
+// The same page in every language, for search engines (hreflang)
+const alternates = (origin, path) => [
+  ...LANGS.map(code => `<link rel="alternate" hreflang="${code}" href="${escapeHtml(origin + langPath(code, path))}">`),
+  `<link rel="alternate" hreflang="x-default" href="${escapeHtml(origin + path)}">`
+].join('\n  ');
+
+const ogLocales = lang => [
+  `<meta property="og:locale" content="${OG_LOCALES[lang]}">`,
+  ...LANGS.filter(code => code !== lang).map(code => `<meta property="og:locale:alternate" content="${OG_LOCALES[code]}">`)
+].join('\n  ');
+
+// ══════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════
 const escapeHtml = value => String(value ?? '')
@@ -151,10 +479,11 @@ const escapeHtml = value => String(value ?? '')
 const jsonLd = data => `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`;
 
 // "Home › Moods › Rainy day" trail that Google can show instead of the bare address
-const breadcrumbs = (origin, trail) => ({
+// (paths in the trail already carry the language prefix)
+const breadcrumbs = (origin, trail, lang = 'en') => ({
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
-  itemListElement: [['MovieMood', '/'], ...trail].map(([name, path], i) => ({
+  itemListElement: [['MovieMood', langPath(lang, '/')], ...trail].map(([name, path], i) => ({
     '@type': 'ListItem',
     position: i + 1,
     name,
@@ -169,8 +498,10 @@ const slugify = text => String(text || '')
   .replace(/^-+|-+$/g, '')
   .slice(0, 60);
 
+// Without the language prefix. The slug comes from the English title: lists fetched in another
+// language carry it as slug_title (see fetchMoodMovies)
 const titlePath = (item, type = 'movie') => {
-  const slug = slugify(item.title || item.name);
+  const slug = slugify(item.slug_title ?? (item.title || item.name));
   return `/${type}/${item.id}${slug ? `-${slug}` : ''}`;
 };
 
@@ -179,12 +510,12 @@ const truncate = (text, max) => {
   return clean.length <= max ? clean : `${clean.slice(0, max - 1).replace(/\s+\S*$/, '')}…`;
 };
 
-function buildDiscoverUrl(mood) {
+function buildDiscoverUrl(mood, locale = 'en-US') {
   const params = new URLSearchParams(DEFAULT_DISCOVER);
   // The mood's own parameters override the defaults
   for (const [key, value] of new URLSearchParams(mood.discover)) params.set(key, value);
   params.set('api_key', TMDB_API_KEY);
-  params.set('language', 'en-US');
+  params.set('language', locale);
   return `${TMDB_BASE_URL}/discover/movie?${params}`;
 }
 
@@ -194,9 +525,20 @@ async function fetchJson(url) {
   return res.json();
 }
 
-async function fetchMoodMovies(mood) {
-  const data = await fetchJson(buildDiscoverUrl(mood));
-  return (data.results || []).filter(m => m.poster_path);
+// Titles in the page's language; addresses still need the English ones, fetched alongside
+async function fetchMoodMovies(mood, lang = 'en') {
+  const [local, english] = await Promise.all([
+    fetchJson(buildDiscoverUrl(mood, TMDB_LOCALES[lang])),
+    lang === 'en' ? null : fetchJson(buildDiscoverUrl(mood)).catch(() => null)
+  ]);
+  const englishTitles = new Map((english?.results || []).map(m => [m.id, m.title]));
+  return (local.results || [])
+    .filter(m => m.poster_path)
+    .map(m => lang === 'en' ? m : {
+      ...m,
+      // unknown → no slug, and the movie page adds it with a redirect
+      slug_title: englishTitles.get(m.id) || (m.original_language === 'en' ? m.original_title : '')
+    });
 }
 
 function getOrigin(req) {
@@ -216,21 +558,25 @@ function send(res, status, body, { type = 'text/html; charset=utf-8', maxAge = D
 // ══════════════════════════════════════════════
 // PAGE TEMPLATES
 // ══════════════════════════════════════════════
-function layout({ title, description, canonical, image, head = '', hero, main }) {
+// path — the page's address without the language prefix; noindex pages get no language alternates
+function layout({ lang = 'en', origin, path, title, description, image, head = '', hero, main, noindex = false }) {
+  const canonical = `${origin}${langPath(lang, path)}`;
   return `<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="${lang}" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
-  <link rel="canonical" href="${escapeHtml(canonical)}">
+  ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${escapeHtml(canonical)}">
+  ${alternates(origin, path)}`}
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="MovieMood">
+  ${ogLocales(lang)}
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${escapeHtml(canonical)}">
-  <meta property="og:image" content="${escapeHtml(image || `${new URL(canonical).origin}/og-image.png`)}">
+  <meta property="og:image" content="${escapeHtml(image || `${origin}/og-image.png`)}">
   <link rel="stylesheet" href="/style.css?v=${ASSET_VERSION}">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" href="/favicon.ico" sizes="32x32">
@@ -260,11 +606,11 @@ function layout({ title, description, canonical, image, head = '', hero, main })
 
   <!-- Same nav as the rest of the site: nav.js turns this into links, favorites and a menu -->
   <nav class="home-nav">
-    <a href="/" class="nav-logo">MOVIEMOOD</a>
+    <a href="${langPath(lang, '/')}" class="nav-logo">MOVIEMOOD</a>
     <div>
-      <a href="/moods" class="nav-text-link">Moods</a>
-      <a href="/feed.html" class="nav-text-link">Trailers</a>
-      <a href="/favorites.html" class="nav-text-link">Favorites</a>
+      <a href="${langPath(lang, '/moods')}" class="nav-text-link">${tr(lang, 'moods')}</a>
+      <a href="/feed.html" class="nav-text-link">${tr(lang, 'trailers')}</a>
+      <a href="/favorites.html" class="nav-text-link">${tr(lang, 'favorites')}</a>
       <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle theme">
         <span class="icon-sun">&#x2600;&#xFE0F;</span>
         <span class="icon-moon">&#x1F319;</span>
@@ -281,7 +627,7 @@ function layout({ title, description, canonical, image, head = '', hero, main })
   </main>
 
   <footer class="home-footer">
-    <p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+    <p>${escapeHtml(tr(lang, 'footer'))}</p>
   </footer>
 
   <script>
@@ -298,17 +644,17 @@ function layout({ title, description, canonical, image, head = '', hero, main })
 </html>`;
 }
 
-const moodChips = (exceptSlug = '') => `<div class="mood-chips">
-      ${MOODS.filter(m => m.slug !== exceptSlug).map(m => `<a class="mood-chip" href="/moods/${m.slug}">${m.emoji} ${escapeHtml(m.title)}</a>`).join('\n      ')}
+const moodChips = (lang, exceptSlug = '') => `<div class="mood-chips">
+      ${MOODS.filter(m => m.slug !== exceptSlug).map(m => `<a class="mood-chip" href="${langPath(lang, `/moods/${m.slug}`)}">${m.emoji} ${escapeHtml(moodTitle(m, lang))}</a>`).join('\n      ')}
     </div>`;
 
-function movieCard(movie) {
+function movieCard(movie, lang) {
   const title = movie.title || movie.name;
   const year = (movie.release_date || movie.first_air_date || '').slice(0, 4);
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '';
-  return `<a class="movie-card" href="${titlePath(movie)}">
+  return `<a class="movie-card" href="${langPath(lang, titlePath(movie))}">
         <div class="card-poster-wrapper">
-          <img src="${TMDB_IMAGE_BASE_URL}${movie.poster_path}" class="movie-poster" loading="lazy" alt="${escapeHtml(title)}${year ? ` (${year})` : ''} poster">
+          <img src="${TMDB_IMAGE_BASE_URL}${movie.poster_path}" class="movie-poster" loading="lazy" alt="${escapeHtml(title)}${year ? ` (${year})` : ''} ${tr(lang, 'poster')}">
           ${rating ? `<span class="tmdb-mini-score card-score">${rating}</span>` : ''}
         </div>
         <div class="card-info">
@@ -318,89 +664,144 @@ function movieCard(movie) {
       </a>`;
 }
 
-function renderMoodPage(mood, movies, origin) {
-  const canonical = `${origin}/moods/${mood.slug}`;
-  const title = `${mood.title}: ${movies.length} Picks to Watch Tonight | MovieMood`;
+function renderMoodPage(mood, movies, origin, lang) {
+  const name = moodTitle(mood, lang);
+  const intro = moodIntro(mood, lang);
+  const path = `/moods/${mood.slug}`;
   const itemList = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: mood.title,
-    description: mood.intro,
+    name,
+    description: intro,
+    inLanguage: lang,
     itemListElement: movies.map((m, i) => ({
       '@type': 'ListItem',
       position: i + 1,
       name: m.title,
-      url: `${origin}${titlePath(m)}`
+      url: `${origin}${langPath(lang, titlePath(m))}`
     }))
   };
 
   return layout({
-    title,
-    description: truncate(mood.intro, 155),
-    canonical,
+    lang,
+    origin,
+    path,
+    title: `${tr(lang, 'mood_page_title', { title: name, n: movies.length })} | MovieMood`,
+    description: truncate(intro, 155),
     image: movies[0]?.backdrop_path ? `https://image.tmdb.org/t/p/w1280${movies[0].backdrop_path}` : '',
-    head: jsonLd(itemList) + jsonLd(breadcrumbs(origin, [['Moods', '/moods'], [mood.title, `/moods/${mood.slug}`]])),
-    hero: `<h1 class="home-title mood-title">${escapeHtml(mood.title)}</h1>
-    <p class="home-subtitle mood-intro">${escapeHtml(mood.intro)}</p>`,
+    head: jsonLd(itemList) + jsonLd(breadcrumbs(origin, [[tr(lang, 'moods'), langPath(lang, '/moods')], [name, langPath(lang, path)]], lang)),
+    hero: `<h1 class="home-title mood-title">${escapeHtml(name)}</h1>
+    <p class="home-subtitle mood-intro">${escapeHtml(intro)}</p>`,
     main: `<section class="results-section">
       <div class="movies-grid">
-      ${movies.map(movieCard).join('\n      ')}
+      ${movies.map(m => movieCard(m, lang)).join('\n      ')}
       </div>
     </section>
 
     <section class="mood-cta">
-      <p>Not quite your mood?</p>
-      <a class="search-btn mood-cta-btn" href="/index.html?q=${encodeURIComponent(mood.query)}">Find more like this</a>
-      <a class="mood-chip" href="/">Describe your own mood</a>
+      <p>${escapeHtml(tr(lang, 'not_your_mood'))}</p>
+      <a class="search-btn mood-cta-btn" href="${langPath(lang, '/')}?q=${encodeURIComponent(mood.query)}">${escapeHtml(tr(lang, 'find_more'))}</a>
+      <a class="mood-chip" href="${langPath(lang, '/')}">${escapeHtml(tr(lang, 'own_mood'))}</a>
     </section>
 
     <section class="mood-more">
-      <h2 class="mood-section-title">More moods</h2>
-      ${moodChips(mood.slug)}
+      <h2 class="mood-section-title">${escapeHtml(tr(lang, 'more_moods'))}</h2>
+      ${moodChips(lang, mood.slug)}
     </section>`
   });
 }
 
-function renderMoodIndex(origin) {
+function renderMoodIndex(origin, lang) {
+  const homeLink = `<a href="${langPath(lang, '/')}">${escapeHtml(tr(lang, 'home_link'))}</a>`;
   return layout({
-    title: 'Movies by Mood: Find What to Watch Tonight | MovieMood',
-    description: 'Pick a mood — cozy, sad, mind-bending, date night — and get a hand-tuned list of films that fit it.',
-    canonical: `${origin}/moods`,
-    head: jsonLd(breadcrumbs(origin, [['Moods', '/moods']])),
-    hero: `<h1 class="home-title mood-title">Movies by <span class="title-accent">Mood</span></h1>
-    <p class="home-subtitle mood-intro">Pick how you feel and get a list of films that fit. Or describe your own mood on the <a href="/">home page</a>.</p>`,
+    lang,
+    origin,
+    path: '/moods',
+    title: `${tr(lang, 'index_title')} | MovieMood`,
+    description: tr(lang, 'index_desc'),
+    head: jsonLd(breadcrumbs(origin, [[tr(lang, 'moods'), langPath(lang, '/moods')]], lang)),
+    hero: `<h1 class="home-title mood-title">${escapeHtml(tr(lang, 'index_h1'))} <span class="title-accent">${escapeHtml(tr(lang, 'index_h1_accent'))}</span></h1>
+    <p class="home-subtitle mood-intro">${escapeHtml(tr(lang, 'index_intro')).replace('{link}', homeLink)}</p>`,
     main: `<section class="mood-list">
-      ${MOODS.map(m => `<a class="mood-tile" href="/moods/${m.slug}">
+      ${MOODS.map(m => `<a class="mood-tile" href="${langPath(lang, `/moods/${m.slug}`)}">
         <span class="mood-tile-emoji">${m.emoji}</span>
-        <h2 class="mood-tile-title">${escapeHtml(m.title)}</h2>
-        <p class="mood-tile-text">${escapeHtml(truncate(m.intro, 110))}</p>
+        <h2 class="mood-tile-title">${escapeHtml(moodTitle(m, lang))}</h2>
+        <p class="mood-tile-text">${escapeHtml(truncate(moodIntro(m, lang), 110))}</p>
       </a>`).join('\n      ')}
     </section>`
   });
 }
 
-function renderNotFound(origin) {
+function renderNotFound(origin, lang = 'en') {
   return layout({
-    title: 'Page not found | MovieMood',
-    description: 'This page does not exist. Browse movies by mood instead.',
-    canonical: `${origin}/moods`,
-    head: '<meta name="robots" content="noindex">',
-    hero: `<h1 class="home-title mood-title">Nothing <span class="title-accent">here</span></h1>
-    <p class="home-subtitle mood-intro">That page does not exist. Try one of these moods instead.</p>`,
-    main: `<section class="mood-more">${moodChips()}</section>`
+    lang,
+    origin,
+    path: '/moods',
+    noindex: true,
+    title: `${tr(lang, 'not_found_title')} | MovieMood`,
+    description: tr(lang, 'not_found_desc'),
+    hero: `<h1 class="home-title mood-title">${escapeHtml(tr(lang, 'not_found_h1'))} <span class="title-accent">${escapeHtml(tr(lang, 'not_found_h1_accent'))}</span></h1>
+    <p class="home-subtitle mood-intro">${escapeHtml(tr(lang, 'not_found_intro'))}</p>`,
+    main: `<section class="mood-more">${moodChips(lang)}</section>`
   });
+}
+
+// Home pages in the other languages: index.html with the texts search engines read translated
+// (the English home page is the static index.html itself; i18n.js translates the rest in the browser)
+async function renderHomePage(origin, lang) {
+  const templateRes = await fetch(`${origin}/index.html`);
+  if (!templateRes.ok) throw new Error(`template ${templateRes.status}`);
+  const template = await templateRes.text();
+
+  const title = tr(lang, 'home_title');
+  const description = tr(lang, 'home_desc');
+  const canonical = `${origin}${langPath(lang, '/')}`;
+  const chips = HOME_MOODS.map(slug => MOODS.find(m => m.slug === slug))
+    .map(m => `<a class="mood-chip" href="${langPath(lang, `/moods/${m.slug}`)}">${m.emoji} ${escapeHtml(moodTitle(m, lang))}</a>`);
+  chips.push(`<a class="mood-chip" href="${langPath(lang, '/moods')}">🎭 ${escapeHtml(tr(lang, 'all_moods'))}</a>`);
+  const seoSection = `<section class="home-seo">
+      <h2 class="mood-section-title home-seo-title">${escapeHtml(tr(lang, 'home_seo_title'))}</h2>
+      <p class="home-seo-text">${escapeHtml(tr(lang, 'home_seo_text'))}</p>
+      <div class="mood-chips">
+        ${chips.join('\n        ')}
+      </div>
+    </section>`;
+  const setMeta = (html, attr, name, value) => html.replace(
+    new RegExp(`<meta ${attr}="${name}" content="[^"]*">`),
+    () => `<meta ${attr}="${name}" content="${escapeHtml(value)}">`
+  );
+
+  let html = template
+    .replace(/<html lang="[^"]*"/, () => `<html lang="${lang}"`)
+    // /uk/ and /uk would resolve the page's relative links differently
+    .replace('<head>', () => '<head>\n  <base href="/">')
+    .replace(/<title>[^<]*<\/title>/, () => `<title>${escapeHtml(title)}</title>`)
+    .replace(/<link rel="canonical" href="[^"]*">(\s*<link rel="alternate"[^>]*>)*/, () => `<link rel="canonical" href="${escapeHtml(canonical)}">\n  ${alternates(origin, '/')}\n  ${ogLocales(lang)}`)
+    .replace(/<h1 class="home-title">[\s\S]*?<\/h1>/, () => `<h1 class="home-title">${escapeHtml(tr(lang, 'home_h1'))} <span class="title-accent">${escapeHtml(tr(lang, 'home_h1_accent'))}</span></h1>`)
+    .replace(/<p class="home-subtitle">[^<]*<\/p>/, () => `<p class="home-subtitle">${escapeHtml(tr(lang, 'home_subtitle'))}</p>`)
+    .replace(/<section class="home-seo">[\s\S]*?<\/section>/, () => seoSection)
+    .replace(/href="\/moods"/g, () => `href="${langPath(lang, '/moods')}"`);
+  html = setMeta(html, 'name', 'description', description);
+  html = setMeta(html, 'property', 'og:title', title);
+  html = setMeta(html, 'property', 'og:description', description);
+  html = setMeta(html, 'property', 'og:url', canonical);
+  return html;
 }
 
 // movie.html stays the single source of the movie page markup: it is fetched as a static
 // file and the parts search engines need are filled in before movie.js takes over.
 // Returns the page's HTML, or { redirect } when the address is not the page's own one
 // ("/movie/218" or an old title → "/movie/218-the-terminator"): one address per film for search engines
-async function renderTitlePage(type, id, origin, requestedPath) {
-  const [templateRes, details] = await Promise.all([
+async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
+  const detailsUrl = locale => `${TMDB_BASE_URL}/${type}/${id}?api_key=${TMDB_API_KEY}&language=${locale}`;
+  const [templateRes, details, english] = await Promise.all([
     fetch(`${origin}/movie.html`),
-    fetchJson(`${TMDB_BASE_URL}/${type}/${id}?api_key=${TMDB_API_KEY}&language=en-US`)
+    fetchJson(detailsUrl(TMDB_LOCALES[lang])),
+    // the address is built from the English title in every language
+    lang === 'en' ? null : fetchJson(detailsUrl('en-US'))
   ]);
-  const ownPath = titlePath(details, type);
+  const basePath = titlePath(english || details, type);
+  const ownPath = langPath(lang, basePath);
   if (requestedPath !== ownPath) return { redirect: ownPath };
 
   if (!templateRes.ok) throw new Error(`template ${templateRes.status}`);
@@ -408,15 +809,18 @@ async function renderTitlePage(type, id, origin, requestedPath) {
 
   const name = details.title || details.name;
   const year = (details.release_date || details.first_air_date || '').slice(0, 4);
-  const canonical = `${origin}${titlePath(details, type)}`;
-  const pageTitle = `${name}${year ? ` (${year})` : ''}: Where to Watch | MovieMood`;
-  const description = truncate(details.overview || `Where to watch ${name}, trailer, cast and similar titles.`, 155);
+  const canonical = `${origin}${ownPath}`;
+  const nameWithYear = `${name}${year ? ` (${year})` : ''}`;
+  const pageTitle = `${tr(lang, 'title_page_title', { name: nameWithYear })} | MovieMood`;
+  const description = truncate(details.overview || tr(lang, 'title_page_desc', { name }), 155);
   const poster = details.poster_path ? `${TMDB_IMAGE_BASE_URL}${details.poster_path}` : '';
 
   const schema = {
     '@context': 'https://schema.org',
     '@type': type === 'tv' ? 'TVSeries' : 'Movie',
     name,
+    alternateName: english && (english.title || english.name) !== name ? (english.title || english.name) : undefined,
+    inLanguage: lang,
     url: canonical,
     description: details.overview || undefined,
     image: poster || undefined,
@@ -433,31 +837,34 @@ async function renderTitlePage(type, id, origin, requestedPath) {
   const head = `<title>${escapeHtml(pageTitle)}</title>
   <meta name="description" content="${escapeHtml(description)}">
   <link rel="canonical" href="${escapeHtml(canonical)}">
+  ${alternates(origin, basePath)}
   <meta property="og:type" content="${type === 'tv' ? 'video.tv_show' : 'video.movie'}">
   <meta property="og:site_name" content="MovieMood">
+  ${ogLocales(lang)}
   <meta property="og:title" content="${escapeHtml(pageTitle)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${escapeHtml(canonical)}">
   ${details.backdrop_path ? `<meta property="og:image" content="https://image.tmdb.org/t/p/w1280${details.backdrop_path}">\n  <meta name="twitter:card" content="summary_large_image">` : ''}
   ${jsonLd(schema)}
-  ${jsonLd(breadcrumbs(origin, [[name, titlePath(details, type)]]))}`;
+  ${jsonLd(breadcrumbs(origin, [[name, ownPath]], lang))}`;
 
   const moodsSection = `<section class="mood-more movie-moods">
-    <h2 class="mood-section-title">Browse by mood</h2>
-    ${moodChips()}
+    <h2 class="mood-section-title">${escapeHtml(tr(lang, 'browse_by_mood'))}</h2>
+    ${moodChips(lang)}
   </section>
 
   `;
 
   // Function replacements: titles and overviews may contain "$", which String.replace would interpret
   return template
+    .replace(/<html lang="[^"]*"/, () => `<html lang="${lang}"`)
     .replace('<head>', () => '<head>\n  <base href="/">')
     // the template is kept out of the index; this address is the indexable one
     .replace('<meta name="robots" content="noindex, follow">', '')
     .replace(/<title>[^<]*<\/title>/, () => head)
     .replace('id="movieTitle"></h1>', () => `id="movieTitle">${escapeHtml(name)}</h1>`)
     .replace('id="movieOverview"></p>', () => `id="movieOverview">${escapeHtml(details.overview)}</p>`)
-    .replace('id="moviePoster" src="" alt="Movie Poster"', () => `id="moviePoster" src="${escapeHtml(poster)}" alt="${escapeHtml(name)} poster"`)
+    .replace('id="moviePoster" src="" alt="Movie Poster"', () => `id="moviePoster" src="${escapeHtml(poster)}" alt="${escapeHtml(name)} ${tr(lang, 'poster')}"`)
     .replace('<div class="trailer-modal"', () => `${moodsSection}<div class="trailer-modal"`)
     .replace('<script src="movie.js', () => `<script>window.__MM_PAGE = ${JSON.stringify({ id: String(id), type }).replace(/</g, '\\u003c')};</script>\n  <script src="movie.js`);
 }
@@ -469,13 +876,17 @@ const personPath = person => {
 
 // Same idea as renderTitlePage, with person.html as the template.
 // Returns the HTML, or { redirect } when the address is not the person's own one.
-async function renderPersonPage(id, origin, requestedPath) {
-  const [templateRes, person, credits] = await Promise.all([
+async function renderPersonPage(id, origin, requestedPath, lang = 'en') {
+  const personUrl = locale => `${TMDB_BASE_URL}/person/${id}?api_key=${TMDB_API_KEY}&language=${locale}`;
+  const [templateRes, person, english, credits] = await Promise.all([
     fetch(`${origin}/person.html`),
-    fetchJson(`${TMDB_BASE_URL}/person/${id}?api_key=${TMDB_API_KEY}&language=en-US`),
-    fetchJson(`${TMDB_BASE_URL}/person/${id}/combined_credits?api_key=${TMDB_API_KEY}&language=en-US`).catch(() => ({}))
+    fetchJson(personUrl(TMDB_LOCALES[lang])),
+    // TMDB translates names too (Киану Ривз); the address keeps the Latin one in every language
+    lang === 'en' ? null : fetchJson(personUrl('en-US')),
+    fetchJson(`${TMDB_BASE_URL}/person/${id}/combined_credits?api_key=${TMDB_API_KEY}&language=${TMDB_LOCALES[lang]}`).catch(() => ({}))
   ]);
-  const ownPath = personPath(person);
+  const basePath = personPath(english || person);
+  const ownPath = langPath(lang, basePath);
   if (requestedPath !== ownPath) return { redirect: ownPath };
 
   if (!templateRes.ok) throw new Error(`template ${templateRes.status}`);
@@ -491,11 +902,11 @@ async function renderPersonPage(id, origin, requestedPath) {
     .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))
     .slice(0, 3)
     .map(item => item.title || item.name);
-  const pageTitle = `${name}: Movies and TV Shows to Watch | MovieMood`;
+  const pageTitle = `${tr(lang, 'person_page_title', { name })} | MovieMood`;
   const description = truncate(
     known.length
-      ? `${name} movies and TV shows: ${known.join(', ')} and more. Where to watch, trailers and similar films.`
-      : person.biography || `${name}: movies and TV shows, where to watch them and similar films.`,
+      ? tr(lang, 'person_page_desc', { name, known: known.join(', ') })
+      : person.biography || tr(lang, 'person_page_desc_short', { name }),
     155
   );
   const photo = person.profile_path ? `https://image.tmdb.org/t/p/h632${person.profile_path}` : '';
@@ -504,6 +915,7 @@ async function renderPersonPage(id, origin, requestedPath) {
     '@context': 'https://schema.org',
     '@type': 'Person',
     name,
+    alternateName: english && english.name !== name ? english.name : undefined,
     url: canonical,
     image: photo || undefined,
     birthDate: person.birthday || undefined,
@@ -516,17 +928,20 @@ async function renderPersonPage(id, origin, requestedPath) {
   const head = `<title>${escapeHtml(pageTitle)}</title>
   <meta name="description" content="${escapeHtml(description)}">
   <link rel="canonical" href="${escapeHtml(canonical)}">
+  ${alternates(origin, basePath)}
   <meta property="og:type" content="profile">
   <meta property="og:site_name" content="MovieMood">
+  ${ogLocales(lang)}
   <meta property="og:title" content="${escapeHtml(pageTitle)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${escapeHtml(canonical)}">
   ${photo ? `<meta property="og:image" content="${escapeHtml(photo)}">` : ''}
   ${jsonLd(schema)}
-  ${jsonLd(breadcrumbs(origin, [[name, ownPath]]))}`;
+  ${jsonLd(breadcrumbs(origin, [[name, ownPath]], lang))}`;
 
   // Function replacements: names and biographies may contain "$", which String.replace would interpret
   return template
+    .replace(/<html lang="[^"]*"/, () => `<html lang="${lang}"`)
     .replace('<head>', () => '<head>\n  <base href="/">')
     // the template is kept out of the index; this address is the indexable one
     .replace('<meta name="robots" content="noindex, follow">', '')
@@ -547,13 +962,14 @@ function sendPage(res, page) {
   return send(res, 200, page);
 }
 
+// Every page in every language; the pages themselves point to their other-language versions
 async function renderSitemap(origin) {
   const moodMovies = await Promise.all(MOODS.map(mood => fetchMoodMovies(mood).catch(() => [])));
   const moviePaths = [...new Set(moodMovies.flat().map(m => titlePath(m)))];
   const paths = ['/', '/moods', ...MOODS.map(m => `/moods/${m.slug}`), ...moviePaths];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${paths.map(path => `  <url><loc>${escapeHtml(origin + path)}</loc></url>`).join('\n')}
+${LANGS.flatMap(lang => paths.map(path => `  <url><loc>${escapeHtml(origin + langPath(lang, path))}</loc></url>`)).join('\n')}
 </urlset>`;
 }
 
@@ -564,6 +980,11 @@ export default async function handler(req, res) {
   const origin = getOrigin(req);
   const query = req.query || Object.fromEntries(new URL(req.url, origin).searchParams);
   const kind = String(query.kind || '');
+  // "/uk/moods" arrives as kind=moods&lang=uk (vercel.json); no lang is English
+  const lang = LANGS.includes(query.lang) ? query.lang : 'en';
+  const prefix = langPath(lang, '');
+  // the plain pages pick the language up from ?lang= (i18n.js)
+  const fallbackLang = lang === 'en' ? '' : `&lang=${lang}`;
 
   try {
     if (kind === 'robots') {
@@ -574,15 +995,29 @@ export default async function handler(req, res) {
       return send(res, 200, await renderSitemap(origin), { type: 'application/xml; charset=utf-8' });
     }
 
+    if (kind === 'home') {
+      if (lang === 'en') {
+        res.setHeader('Location', '/');
+        return res.status(308).end();
+      }
+      try {
+        return send(res, 200, await renderHomePage(origin, lang));
+      } catch (error) {
+        console.error('Home page error:', error);
+        res.setHeader('Location', `/?lang=${lang}`);
+        return res.status(302).end();
+      }
+    }
+
     if (kind === 'moods') {
-      return send(res, 200, renderMoodIndex(origin));
+      return send(res, 200, renderMoodIndex(origin, lang));
     }
 
     if (kind === 'mood') {
       const mood = MOODS.find(m => m.slug === String(query.slug || '').toLowerCase());
-      if (!mood) return send(res, 404, renderNotFound(origin));
-      const movies = await fetchMoodMovies(mood);
-      return send(res, 200, renderMoodPage(mood, movies, origin));
+      if (!mood) return send(res, 404, renderNotFound(origin, lang));
+      const movies = await fetchMoodMovies(mood, lang);
+      return send(res, 200, renderMoodPage(mood, movies, origin, lang));
     }
 
     if (kind === 'title') {
@@ -590,15 +1025,15 @@ export default async function handler(req, res) {
       // ":id" from vercel.json is the whole last part of the address: "218-the-terminator"
       const segment = String(query.id || '');
       const id = parseInt(segment, 10);
-      if (!id) return send(res, 404, renderNotFound(origin));
+      if (!id) return send(res, 404, renderNotFound(origin, lang));
       try {
-        return sendPage(res, await renderTitlePage(type, id, origin, `/${type}/${segment}`));
+        return sendPage(res, await renderTitlePage(type, id, origin, `${prefix}/${type}/${segment}`, lang));
       } catch (error) {
-        if (error.message === 'TMDB 404') return send(res, 404, renderNotFound(origin));
+        if (error.message === 'TMDB 404') return send(res, 404, renderNotFound(origin, lang));
         // The plain client-side page still works without the server-rendered extras
         // (ssr=0 stops movie.js from sending the visitor straight back here)
         console.error('Title page error:', error);
-        res.setHeader('Location', `/movie.html?id=${id}&type=${type}&ssr=0`);
+        res.setHeader('Location', `/movie.html?id=${id}&type=${type}&ssr=0${fallbackLang}`);
         return res.status(302).end();
       }
     }
@@ -607,20 +1042,20 @@ export default async function handler(req, res) {
       // ":id" is the whole last part of the address: "6384-keanu-reeves"
       const segment = String(query.id || '');
       const id = parseInt(segment, 10);
-      if (!id) return send(res, 404, renderNotFound(origin));
+      if (!id) return send(res, 404, renderNotFound(origin, lang));
       try {
-        return sendPage(res, await renderPersonPage(id, origin, `/person/${segment}`));
+        return sendPage(res, await renderPersonPage(id, origin, `${prefix}/person/${segment}`, lang));
       } catch (error) {
-        if (error.message === 'TMDB 404') return send(res, 404, renderNotFound(origin));
+        if (error.message === 'TMDB 404') return send(res, 404, renderNotFound(origin, lang));
         console.error('Person page error:', error);
-        res.setHeader('Location', `/person.html?id=${id}&ssr=0`);
+        res.setHeader('Location', `/person.html?id=${id}&ssr=0${fallbackLang}`);
         return res.status(302).end();
       }
     }
 
-    return send(res, 404, renderNotFound(origin));
+    return send(res, 404, renderNotFound(origin, lang));
   } catch (error) {
     console.error('Page handler error:', error);
-    return send(res, 500, renderNotFound(origin));
+    return send(res, 500, renderNotFound(origin, lang));
   }
 }
