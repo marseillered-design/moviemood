@@ -2131,3 +2131,15 @@ a.nav-menu-item:hover, button.nav-menu-item:hover { background: var(--input-bg);
   /* out of the way of the streaming services at the bottom */
   .mute-btn { top: 76px; bottom: auto; right: 16px; }
 }
+/* "Films didn't load" message with a retry button (script.js showLoadError) */
+.load-error {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--text-dim);
+}
+.load-error p { max-width: 520px; line-height: 1.6; margin: 0; }

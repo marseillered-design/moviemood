@@ -7,7 +7,7 @@
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
-const ASSET_VERSION = '20261015g';
+const ASSET_VERSION = '20261015h';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -224,6 +224,9 @@ function layout({ title, description, canonical, image, head = '', hero, main })
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
+  <!-- Vercel Web Analytics -->
+  <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+  <script defer src="/_vercel/insights/script.js"></script>
   <meta name="theme-color" content="#0d0d14">
   ${head}
   <script>

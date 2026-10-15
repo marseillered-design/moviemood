@@ -852,6 +852,11 @@ async function searchWithAI(query, page = 1) {
   }
 }
 
+// Films that never arrive (a blocker extension, a filtering network) must not leave grey
+// placeholders forever: after this long the visitor gets an explanation and a retry button
+const LOAD_TIMEOUT_MS = 10000;
+let loadTimer = null;
+
 function showSkeleton() {
   moviesGrid.innerHTML = '';
   for (let i = 0; i < 12; i++) {
@@ -860,10 +865,30 @@ function showSkeleton() {
     skeleton.innerHTML = `<div class="skeleton-poster"></div><div class="skeleton-title"></div>`;
     moviesGrid.appendChild(skeleton);
   }
+  clearTimeout(loadTimer);
+  loadTimer = setTimeout(showLoadError, LOAD_TIMEOUT_MS);
 }
 
 function hideSkeleton() {
+  clearTimeout(loadTimer);
   document.querySelectorAll('.skeleton').forEach(s => s.remove());
+}
+
+function showLoadError() {
+  if (!moviesGrid.querySelector('.skeleton')) return;
+  const box = document.createElement('div');
+  box.className = 'load-error';
+  const text = document.createElement('p');
+  text.textContent = t('home.load_error');
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'search-btn';
+  button.textContent = t('home.retry');
+  // the query is kept in the address bar, so a reload repeats the same search
+  button.addEventListener('click', () => window.location.reload());
+  box.append(text, button);
+  moviesGrid.replaceChildren(box);
+  removeLoadMoreBtn();
 }
 
 function renderEmptyState(message) {
