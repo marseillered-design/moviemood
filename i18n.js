@@ -20,14 +20,14 @@
     // home
     // en must match the <title> in index.html: search engines read the page with the English interface
     'home.page_title': { en: 'MovieMood: Find a Movie for Your Mood', uk: 'MovieMood: фільм під ваш настрій', ru: 'MovieMood: фильм под ваше настроение', fr: 'MovieMood : un film selon votre humeur', es: 'MovieMood: una película para tu estado de ánimo' },
-    'home.title': { en: "WHAT'S YOUR", uk: 'ЯКИЙ У ВАС', ru: 'КАКОЕ У ВАС', fr: 'QUELLE EST VOTRE', es: '¿CÓMO TE' },
-    'home.title_accent': { en: 'MOOD?', uk: 'НАСТРІЙ?', ru: 'НАСТРОЕНИЕ?', fr: 'HUMEUR ?', es: 'SIENTES?' },
+    'home.title': { en: "What's your", uk: 'Який у вас', ru: 'Какое у вас', fr: 'Quelle est votre', es: '¿Cómo te' },
+    'home.title_accent': { en: 'mood?', uk: 'настрій?', ru: 'настроение?', fr: 'humeur ?', es: 'sientes?' },
     'home.subtitle': { en: "Tell us how you feel - we'll find the perfect film.", uk: 'Розкажіть, що на душі, — ми підберемо фільм.', ru: 'Расскажите, что на душе, — мы подберём фильм.', fr: 'Dites-nous comment vous vous sentez, nous trouvons le film.', es: 'Cuéntanos cómo te sientes y encontramos la película.' },
     'home.search': { en: 'Search', uk: 'Знайти', ru: 'Найти', fr: 'Chercher', es: 'Buscar' },
     'home.random': { en: 'Random', uk: 'Навмання', ru: 'Наугад', fr: 'Au hasard', es: 'Al azar' },
     'home.random_hint': { en: 'Show random films', uk: 'Показати випадкові фільми', ru: 'Показать случайные фильмы', fr: 'Afficher des films au hasard', es: 'Mostrar películas al azar' },
     'home.filters': { en: 'Filters', uk: 'Фільтри', ru: 'Фильтры', fr: 'Filtres', es: 'Filtros' },
-    'home.region': { en: 'Streaming region:', uk: 'Регіон стримінгу:', ru: 'Регион стриминга:', fr: 'Région de streaming :', es: 'Región de streaming:' },
+    'home.region': { en: 'Streaming region', uk: 'Регіон стримінгу', ru: 'Регион стриминга', fr: 'Région de streaming', es: 'Región de streaming' },
     'home.region_detected': { en: 'Auto-detected', uk: 'Визначено автоматично', ru: 'Определено автоматически', fr: 'Détectée automatiquement', es: 'Detectada automáticamente' },
     'home.content_type': { en: 'Content type', uk: 'Тип', ru: 'Тип', fr: 'Type de contenu', es: 'Tipo de contenido' },
     'home.options': { en: 'Options', uk: 'Параметри', ru: 'Параметры', fr: 'Options', es: 'Opciones' },

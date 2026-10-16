@@ -14,7 +14,8 @@ const moodInput = document.getElementById('moodInput');
 const searchBtn = document.getElementById('searchBtn');
 const countrySelect = document.getElementById('countrySelect');
 const moviesGrid = document.getElementById('moviesGrid');
-const SUPPORTED_REGIONS = ['US','CA','GB','DE','FR','IT','ES','NL','BE','AT','CH','SE','NO','DK','FI','PL','PT','IE','CZ','GR','UA'];
+// Any country code: TMDB knows where to watch in almost every country
+const isRegionCode = code => /^[A-Z]{2}$/.test(String(code || ''));
 const PERSONALIZATION_PROFILE_TTL_MS = 30 * 60 * 1000;
 const PROVIDER_AVAILABILITY_TTL_MS = 6 * 60 * 60 * 1000;
 let personalizationProfileCache = { signature: '', expiresAt: 0, profile: null };
@@ -34,16 +35,35 @@ async function fetchJsonWithTimeout(url, timeoutMs = 2500) {
   }
 }
 
-async function detectRegion() {
-  // A region the visitor picked (or that was detected before) wins over a new guess
-  const saved = mmRegion.get();
-  if (SUPPORTED_REGIONS.includes(saved)) {
-    currentRegion = saved;
-    if (countrySelect) countrySelect.value = saved;
-    return;
+// The picker in the filters lists a few countries; a detected one that is not there is added
+function setRegion(code) {
+  currentRegion = code;
+  if (!countrySelect) return;
+  if (![...countrySelect.options].some(option => option.value === code)) {
+    const option = document.createElement('option');
+    option.value = code;
+    const flag = String.fromCodePoint(...[...code].map(ch => 0x1F1A5 + ch.charCodeAt(0)));
+    option.textContent = `${flag} ${mmDisplayName('region', code)}`;
+    countrySelect.appendChild(option);
   }
+  countrySelect.value = code;
+}
+
+// Where the visitor is, fresh on every visit (people travel). A country picked by hand
+// in the filters wins until it is changed again.
+async function detectRegion() {
+  const saved = mmRegion.get();
+  let picked = false;
+  try { picked = localStorage.getItem('region_manual') === '1'; } catch (e) {}
+  if (isRegionCode(saved)) setRegion(saved);
+  if (picked && isRegionCode(saved)) return;
 
   const providers = [
+    // Vercel knows the country of every request: no third-party service, nothing to block
+    async () => {
+      const data = await fetchJsonWithTimeout('/api/page?kind=geo');
+      return data?.country;
+    },
     async () => {
       const data = await fetchJsonWithTimeout('https://ipapi.co/json/');
       return data?.country_code;
@@ -51,25 +71,14 @@ async function detectRegion() {
     async () => {
       const data = await fetchJsonWithTimeout('https://ipwho.is/');
       return data?.country_code;
-    },
-    async () => {
-      const data = await fetchJsonWithTimeout('https://ipinfo.io/json');
-      return data?.country;
     }
   ];
 
   for (const getCountry of providers) {
     const country = String(await getCountry() || '').toUpperCase();
-    if (country && SUPPORTED_REGIONS.includes(country)) {
-      currentRegion = country;
+    if (isRegionCode(country)) {
+      setRegion(country);
       mmRegion.set(country);
-      if (countrySelect) countrySelect.value = country;
-      const detected = document.getElementById('regionDetected');
-      if (detected) {
-        detected.textContent = t('home.region_detected');
-        detected.style.opacity = '1';
-        setTimeout(() => { detected.style.opacity = '0'; }, 3000);
-      }
       return;
     }
   }
@@ -299,6 +308,8 @@ document.addEventListener('DOMContentLoaded', () => {
   countrySelect.addEventListener('change', e => {
     currentRegion = e.target.value;
     mmRegion.set(currentRegion);
+    // picked by hand: kept instead of the detected country (see detectRegion)
+    try { localStorage.setItem('region_manual', '1'); } catch (e) {}
   });
   
   document.querySelectorAll('.tab').forEach(tab => {

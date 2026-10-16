@@ -1,22 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
-    <!-- the gradient of the MOVIEMOOD logo -->
-    <linearGradient id="logo" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#c084fc"/>
-      <stop offset="1" stop-color="#ec4899"/>
+    <!-- gold film, like the buttons of the site -->
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f0d08a"/>
+      <stop offset=".55" stop-color="#d4a85a"/>
+      <stop offset="1" stop-color="#a8742f"/>
     </linearGradient>
-    <!-- the glowing orbs of the site background: purple top-left, pink right, indigo bottom -->
-    <radialGradient id="glow1" cx=".12" cy=".1" r=".75">
-      <stop offset="0" stop-color="#7c3aed" stop-opacity=".6"/>
-      <stop offset="1" stop-color="#7c3aed" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="glow2" cx="1" cy=".55" r=".6">
-      <stop offset="0" stop-color="#ec4899" stop-opacity=".45"/>
-      <stop offset="1" stop-color="#ec4899" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="glow3" cx=".5" cy="1.05" r=".55">
-      <stop offset="0" stop-color="#6366f1" stop-opacity=".4"/>
-      <stop offset="1" stop-color="#6366f1" stop-opacity="0"/>
+    <!-- a soft light in the top-left corner -->
+    <radialGradient id="shine" cx=".2" cy=".12" r=".6">
+      <stop offset="0" stop-color="#fff6dc" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#fff6dc" stop-opacity="0"/>
     </radialGradient>
     <!-- film frame with see-through sprocket holes -->
     <mask id="film">
@@ -32,11 +25,9 @@
     </mask>
   </defs>
   <g mask="url(#film)">
-    <rect width="64" height="64" fill="#0d0d14"/>
-    <rect width="64" height="64" fill="url(#glow1)"/>
-    <rect width="64" height="64" fill="url(#glow2)"/>
-    <rect width="64" height="64" fill="url(#glow3)"/>
+    <rect width="64" height="64" fill="url(#gold)"/>
+    <rect width="64" height="64" fill="url(#shine)"/>
   </g>
-  <!-- "M" from Bebas Neue, the font of the logo -->
-  <path transform="translate(32 32) scale(.98) translate(-32 -32)" d="M18.97 52V12h8.97l4 28.63h.12l4-28.63h8.97v40h-5.94V21.71h-.12L34.4 52h-5.26l-4.57-30.29h-.11V52z" fill="url(#logo)"/>
+  <!-- "M" from Bebas Neue, in the dark chocolate of the site -->
+  <path transform="translate(32 32) scale(.98) translate(-32 -32)" d="M18.97 52V12h8.97l4 28.63h.12l4-28.63h8.97v40h-5.94V21.71h-.12L34.4 52h-5.26l-4.57-30.29h-.11V52z" fill="#120c09"/>
 </svg>

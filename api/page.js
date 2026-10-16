@@ -10,7 +10,7 @@
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
-const ASSET_VERSION = '20261016f';
+const ASSET_VERSION = '20261016g';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -423,8 +423,8 @@ const TEXT = {
     es: 'Describe cómo te sientes con tus palabras y obtén películas y series muy valoradas: tráilers, dónde verlas y selecciones para cada noche.'
   },
   // home.title, home.title_accent and home.subtitle in i18n.js
-  home_h1: { en: 'WHAT’S YOUR', uk: 'ЯКИЙ У ВАС', ru: 'КАКОЕ У ВАС', fr: 'QUELLE EST VOTRE', es: '¿CÓMO TE' },
-  home_h1_accent: { en: 'MOOD?', uk: 'НАСТРІЙ?', ru: 'НАСТРОЕНИЕ?', fr: 'HUMEUR ?', es: 'SIENTES?' },
+  home_h1: { en: 'What’s your', uk: 'Який у вас', ru: 'Какое у вас', fr: 'Quelle est votre', es: '¿Cómo te' },
+  home_h1_accent: { en: 'mood?', uk: 'настрій?', ru: 'настроение?', fr: 'humeur ?', es: 'sientes?' },
   home_subtitle: {
     en: 'Tell us how you feel - we’ll find the perfect film.',
     uk: 'Розкажіть, що на душі, — ми підберемо фільм.',
@@ -578,15 +578,15 @@ function layout({ lang = 'en', origin, path, title, description, image, head = '
   <meta property="og:url" content="${escapeHtml(canonical)}">
   <meta property="og:image" content="${escapeHtml(image || `${origin}/og-image.png`)}">
   <link rel="stylesheet" href="/style.css?v=${ASSET_VERSION}">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="icon" href="/favicon.ico" sizes="32x32">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.ico?v=2" sizes="32x32">
+  <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
   <link rel="manifest" href="/site.webmanifest">
   <!-- Vercel Web Analytics -->
   <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
   <script defer src="/_vercel/insights/script.js"></script>
-  <meta name="theme-color" content="#0d0d14">
+  <meta name="theme-color" content="#120c09">
   ${head}
   <script>
     try {
@@ -977,6 +977,12 @@ export default async function handler(req, res) {
   const fallbackLang = lang === 'en' ? '' : `&lang=${lang}`;
 
   try {
+    if (kind === 'geo') {
+      res.setHeader('Cache-Control', 'private, no-store');
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      return res.status(200).send(JSON.stringify({ country: String(req.headers['x-vercel-ip-country'] || '') }));
+    }
+
     if (kind === 'robots') {
       return send(res, 200, `User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ${origin}/sitemap.xml\n`, { type: 'text/plain; charset=utf-8' });
     }
