@@ -2152,6 +2152,24 @@ a.nav-menu-item:hover, button.nav-menu-item:hover { background: var(--input-bg);
 a.similar-card { display: block; text-decoration: none; color: inherit; }
 a.person-chip, a.actor-card { color: inherit; text-decoration: none; }
 
-/* Crawlable intro with links to the collections at the bottom of the home page */
-.home-seo { margin-top: 56px; text-align: center; }
-.home-seo-text { max-width: 720px; margin: 0 auto 20px; color: var(--text-dim); line-height: 1.7; font-size: 0.95rem; }
+/* Mood collections right under the home page search (links search engines follow, too) */
+.quick-moods {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+.quick-moods .mood-chip { font-size: 0.84rem; padding: 6px 13px; white-space: nowrap; }
+/* Phones: one line that scrolls sideways instead of four rows of buttons */
+@media (max-width: 600px) {
+  .quick-moods {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 14px -16px 0;
+    padding: 0 16px 2px;
+  }
+  .quick-moods::-webkit-scrollbar { display: none; }
+}

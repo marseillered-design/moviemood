@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://api.themoviedb.org">
   <link rel="preconnect" href="https://image.tmdb.org">
-  <link rel="stylesheet" href="style.css?v=20261016a">
+  <link rel="stylesheet" href="style.css?v=20261016b">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -76,6 +76,18 @@
         <button class="filters-btn" id="filtersBtn">&#x2699;&#xFE0F;<span class="btn-label">Filters</span></button>
       </div>
 
+      <nav class="quick-moods" aria-label="Mood collections">
+        <a class="mood-chip" href="/moods/rainy-day-movies">🌧️ <span data-i18n="quick.rainy">Rainy day</span></a>
+        <a class="mood-chip" href="/moods/cozy-movies">🕯️ <span data-i18n="quick.cozy">Cozy</span></a>
+        <a class="mood-chip" href="/moods/feel-good-movies">😊 <span data-i18n="quick.feel_good">Feel-good</span></a>
+        <a class="mood-chip" href="/moods/movies-to-cry-to">😢 <span data-i18n="quick.cry">To cry to</span></a>
+        <a class="mood-chip" href="/moods/date-night-movies">💕 <span data-i18n="quick.date">Date night</span></a>
+        <a class="mood-chip" href="/moods/mind-bending-movies">🌀 <span data-i18n="quick.mind">Mind-bending</span></a>
+        <a class="mood-chip" href="/moods/family-movie-night">👨‍👩‍👧 <span data-i18n="quick.family">Family</span></a>
+        <a class="mood-chip" href="/moods/best-90s-movies">📼 <span data-i18n="quick.nineties">90s</span></a>
+        <a class="mood-chip" href="/moods">🎭 <span data-i18n="quick.all">All moods</span></a>
+      </nav>
+
 <div class="region-row">
         <span class="region-label">&#x1F30D; Streaming region:</span>
         <select class="country-select" id="countrySelect">
@@ -121,21 +133,6 @@
       </div>
       <button class="load-more-btn" id="loadMoreBtn" style="display: none;">Load More</button>
     </section>
-    <section class="home-seo">
-      <h2 class="mood-section-title home-seo-title">Movies for every mood</h2>
-      <p class="home-seo-text">MovieMood finds films by how you feel. Describe your mood in any words — a cozy rainy evening, something to cry to, a mind-bending thriller — and get well-loved movies and series with trailers and where to watch them.</p>
-      <div class="mood-chips">
-        <a class="mood-chip" href="/moods/rainy-day-movies">🌧️ Movies for a Rainy Day</a>
-        <a class="mood-chip" href="/moods/cozy-movies">🕯️ Cozy Movies</a>
-        <a class="mood-chip" href="/moods/feel-good-movies">😊 Feel-Good Movies</a>
-        <a class="mood-chip" href="/moods/movies-to-cry-to">😢 Movies to Cry To</a>
-        <a class="mood-chip" href="/moods/date-night-movies">💕 Date Night Movies</a>
-        <a class="mood-chip" href="/moods/mind-bending-movies">🌀 Mind-Bending Movies</a>
-        <a class="mood-chip" href="/moods/family-movie-night">👨‍👩‍👧 Family Movie Night</a>
-        <a class="mood-chip" href="/moods/best-90s-movies">📼 Best Movies of the 90s</a>
-        <a class="mood-chip" href="/moods">🎭 All mood collections</a>
-      </div>
-    </section>
   </main>
 
   <footer class="home-footer">
@@ -173,10 +170,10 @@
     themeToggle?.addEventListener('click', window.__mmToggleTheme);
   })();
   </script>
-  <script src="i18n.js?v=20261016a"></script>
-  <script src="/urls.js?v=20261016a"></script>
-  <script src="nav.js?v=20261016a"></script>
-  <script src="script.js?v=20261016a"></script>
+  <script src="i18n.js?v=20261016b"></script>
+  <script src="/urls.js?v=20261016b"></script>
+  <script src="nav.js?v=20261016b"></script>
+  <script src="script.js?v=20261016b"></script>
 </body>
 </html>
 

@@ -40,8 +40,6 @@
     'home.empty_trending': { en: 'Trending is unavailable right now.', uk: 'Популярне зараз недоступне.', ru: 'Популярное сейчас недоступно.', fr: 'Les tendances sont indisponibles pour le moment.', es: 'Las tendencias no están disponibles ahora.' },
     'home.load_error': { en: "Films didn't load. A browser extension or your network may be blocking them — try again or turn off the blocker for this site.", uk: 'Фільми не завантажилися. Можливо, їх блокує розширення браузера або мережа — спробуйте ще раз або вимкніть блокувальник для цього сайту.', ru: 'Фильмы не загрузились. Возможно, их блокирует расширение браузера или сеть — попробуйте ещё раз или отключите блокировщик для этого сайта.', fr: "Les films ne se sont pas chargés. Une extension du navigateur ou votre réseau les bloque peut-être — réessayez ou désactivez le bloqueur pour ce site.", es: 'Las películas no se cargaron. Puede que una extensión del navegador o tu red las bloquee: inténtalo de nuevo o desactiva el bloqueador en este sitio.' },
     'home.retry': { en: 'Try again', uk: 'Спробувати ще раз', ru: 'Попробовать ещё раз', fr: 'Réessayer', es: 'Reintentar' },
-    'home.seo_title': { en: 'Movies for every mood', uk: 'Фільми під будь-який настрій', ru: 'Фильмы под любое настроение', fr: 'Des films pour chaque humeur', es: 'Películas para cada estado de ánimo' },
-    'home.seo_text': { en: 'MovieMood finds films by how you feel. Describe your mood in any words — a cozy rainy evening, something to cry to, a mind-bending thriller — and get well-loved movies and series with trailers and where to watch them.', uk: 'MovieMood підбирає фільми за настроєм. Опишіть його будь-якими словами — затишний дощовий вечір, щось поплакати, трилер, що вибухає мозок, — і отримайте улюблені глядачами фільми й серіали з трейлерами та тим, де їх дивитися.', ru: 'MovieMood подбирает фильмы по настроению. Опишите его любыми словами — уютный дождливый вечер, что-то поплакать, триллер со взрывом мозга — и получите любимые зрителями фильмы и сериалы с трейлерами и тем, где их смотреть.', fr: "MovieMood trouve des films selon votre humeur. Décrivez-la avec vos propres mots — une soirée pluvieuse cocooning, de quoi pleurer, un thriller renversant — et obtenez des films et séries appréciés, avec bandes-annonces et où les regarder.", es: 'MovieMood encuentra películas según cómo te sientes. Describe tu ánimo con tus palabras —una tarde lluviosa y acogedora, algo para llorar, un thriller alucinante— y recibe películas y series muy queridas, con tráilers y dónde verlas.' },
     'home.understood': { en: 'Showing:', uk: 'Показую:', ru: 'Показываю:', fr: 'Résultats pour :', es: 'Mostrando:' },
     'home.title_search': { en: 'title search', uk: 'пошук за назвою', ru: 'поиск по названию', fr: 'recherche par titre', es: 'búsqueda por título' },
     'home.until_year': { en: 'before {year}', uk: 'до {year}', ru: 'до {year}', fr: 'avant {year}', es: 'antes de {year}' },
@@ -61,6 +59,16 @@
     'card.unmark_watched': { en: 'Watched - click to undo', uk: 'Переглянуто — натисніть, щоб скасувати', ru: 'Просмотрено — нажмите, чтобы отменить', fr: 'Vu - cliquez pour annuler', es: 'Vista: pulsa para deshacer' },
     'card.watched': { en: 'Watched', uk: 'Переглянуто', ru: 'Просмотрено', fr: 'Vu', es: 'Vista' },
     'card.remove': { en: 'Remove', uk: 'Прибрати', ru: 'Убрать', fr: 'Retirer', es: 'Quitar' },
+    // short labels of the mood buttons under the home page search
+    'quick.rainy': { en: 'Rainy day', uk: 'Дощовий день', ru: 'Дождливый день', fr: 'Jour de pluie', es: 'Día de lluvia' },
+    'quick.cozy': { en: 'Cozy', uk: 'Затишні', ru: 'Уютные', fr: 'Cocooning', es: 'Acogedoras' },
+    'quick.feel_good': { en: 'Feel-good', uk: 'Гарний настрій', ru: 'Хорошее настроение', fr: 'Feel-good', es: 'Para animarse' },
+    'quick.cry': { en: 'To cry to', uk: 'Поплакати', ru: 'Поплакать', fr: 'Pour pleurer', es: 'Para llorar' },
+    'quick.date': { en: 'Date night', uk: 'Побачення', ru: 'Свидание', fr: 'En amoureux', es: 'Para una cita' },
+    'quick.mind': { en: 'Mind-bending', uk: 'Ламають мозок', ru: 'Взрыв мозга', fr: 'Casse-tête', es: 'Para pensar' },
+    'quick.family': { en: 'Family', uk: 'Для сім’ї', ru: 'Для семьи', fr: 'En famille', es: 'En familia' },
+    'quick.nineties': { en: '90s', uk: '90-ті', ru: '90-е', fr: 'Années 90', es: 'Años 90' },
+    'quick.all': { en: 'All moods', uk: 'Усі настрої', ru: 'Все настроения', fr: 'Toutes les humeurs', es: 'Todos los ánimos' },
     'footer.tmdb': { en: 'This product uses the TMDB API but is not endorsed or certified by TMDB.', uk: 'Сайт використовує TMDB API, але не схвалений і не сертифікований TMDB.', ru: 'Сайт использует TMDB API, но не одобрен и не сертифицирован TMDB.', fr: "Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB.", es: 'Este producto usa la API de TMDB, pero no está avalado ni certificado por TMDB.' },
     'discover': { en: 'Discover Movies', uk: 'Шукати фільми', ru: 'Искать фильмы', fr: 'Découvrir des films', es: 'Descubrir películas' },
 
@@ -194,8 +202,6 @@
     ['.tab[data-type="documentary"]', 'type.documentary', 'text', '🎥'],
     ['.anime-toggle .toggle-label', 'home.include_anime'],
     ['.example-text', 'home.examples'],
-    ['.home-seo-title', 'home.seo_title'],
-    ['.home-seo-text', 'home.seo_text'],
     ['.home-footer .footer-moods', 'home.browse_moods'],
     ['.home-footer .footer-tmdb', 'footer.tmdb'],
     ['#btnPlayTrailer', 'movie.play_trailer', 'text', '▶'],
@@ -306,6 +312,9 @@
     document.querySelectorAll('#countrySelect option').forEach(option => {
       option.textContent = `${flagEmoji(option.value)} ${displayName('region', option.value)}`;
     });
+
+    // Short labels marked in the page itself (the mood buttons under the search)
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
 
     // Pages whose footer is a single plain line
     document.querySelectorAll('.home-footer p').forEach(p => {

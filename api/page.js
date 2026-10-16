@@ -10,7 +10,7 @@
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
-const ASSET_VERSION = '20261016a';
+const ASSET_VERSION = '20261016b';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -432,19 +432,19 @@ const TEXT = {
     fr: 'Dites-nous comment vous vous sentez, nous trouvons le film.',
     es: 'Cuéntanos cómo te sientes y encontramos la película.'
   },
-  home_seo_title: { en: 'Movies for every mood', uk: 'Фільми на будь-який настрій', ru: 'Фильмы на любое настроение', fr: 'Des films pour chaque humeur', es: 'Películas para cada estado de ánimo' },
-  home_seo_text: {
-    en: 'MovieMood finds films by how you feel. Describe your mood in any words — a cozy rainy evening, something to cry to, a mind-bending thriller — and get well-loved movies and series with trailers and where to watch them.',
-    uk: 'MovieMood підбирає фільми за настроєм. Опишіть його будь-якими словами — затишний дощовий вечір, щось, щоб поплакати, трилер, що ламає мозок, — і отримайте улюблені глядачами фільми й серіали з трейлерами та інформацією, де їх дивитися.',
-    ru: 'MovieMood подбирает фильмы по настроению. Опишите его любыми словами — уютный дождливый вечер, что-нибудь, чтобы поплакать, триллер, который взрывает мозг, — и получите любимые зрителями фильмы и сериалы с трейлерами и информацией, где их смотреть.',
-    fr: 'MovieMood trouve des films selon ce que vous ressentez. Décrivez votre humeur avec vos mots — une soirée pluvieuse au chaud, de quoi pleurer, un thriller à retourner le cerveau — et obtenez des films et séries appréciés, avec bandes-annonces et où les regarder.',
-    es: 'MovieMood encuentra películas según cómo te sientes. Describe tu estado de ánimo con tus palabras — una tarde de lluvia acogedora, algo para llorar, un thriller que te vuele la cabeza — y obtén películas y series muy valoradas, con tráilers y dónde verlas.'
-  },
-  all_moods: { en: 'All mood collections', uk: 'Усі добірки за настроєм', ru: 'Все подборки по настроению', fr: 'Toutes les sélections par humeur', es: 'Todas las selecciones por estado de ánimo' }
+  // labels of the mood buttons under the search (quick.* in i18n.js)
+  quick: {
+    rainy: { en: 'Rainy day', uk: 'Дощовий день', ru: 'Дождливый день', fr: 'Jour de pluie', es: 'Día de lluvia' },
+    cozy: { en: 'Cozy', uk: 'Затишні', ru: 'Уютные', fr: 'Cocooning', es: 'Acogedoras' },
+    feel_good: { en: 'Feel-good', uk: 'Гарний настрій', ru: 'Хорошее настроение', fr: 'Feel-good', es: 'Para animarse' },
+    cry: { en: 'To cry to', uk: 'Поплакати', ru: 'Поплакать', fr: 'Pour pleurer', es: 'Para llorar' },
+    date: { en: 'Date night', uk: 'Побачення', ru: 'Свидание', fr: 'En amoureux', es: 'Para una cita' },
+    mind: { en: 'Mind-bending', uk: 'Ламають мозок', ru: 'Взрыв мозга', fr: 'Casse-tête', es: 'Para pensar' },
+    family: { en: 'Family', uk: 'Для сім’ї', ru: 'Для семьи', fr: 'En famille', es: 'En familia' },
+    nineties: { en: '90s', uk: '90-ті', ru: '90-е', fr: 'Années 90', es: 'Años 90' },
+    all: { en: 'All moods', uk: 'Усі настрої', ru: 'Все настроения', fr: 'Toutes les humeurs', es: 'Todos los ánimos' }
+  }
 };
-
-// Collections shown on the home page, in this order
-const HOME_MOODS = ['rainy-day-movies', 'cozy-movies', 'feel-good-movies', 'movies-to-cry-to', 'date-night-movies', 'mind-bending-movies', 'family-movie-night', 'best-90s-movies'];
 
 const tr = (lang, key, vars) => {
   let text = TEXT[key][lang] ?? TEXT[key].en;
@@ -756,16 +756,6 @@ async function renderHomePage(origin, lang) {
   const title = tr(lang, 'home_title');
   const description = tr(lang, 'home_desc');
   const canonical = `${origin}${langPath(lang, '/')}`;
-  const chips = HOME_MOODS.map(slug => MOODS.find(m => m.slug === slug))
-    .map(m => `<a class="mood-chip" href="${langPath(lang, `/moods/${m.slug}`)}">${m.emoji} ${escapeHtml(moodTitle(m, lang))}</a>`);
-  chips.push(`<a class="mood-chip" href="${langPath(lang, '/moods')}">🎭 ${escapeHtml(tr(lang, 'all_moods'))}</a>`);
-  const seoSection = `<section class="home-seo">
-      <h2 class="mood-section-title home-seo-title">${escapeHtml(tr(lang, 'home_seo_title'))}</h2>
-      <p class="home-seo-text">${escapeHtml(tr(lang, 'home_seo_text'))}</p>
-      <div class="mood-chips">
-        ${chips.join('\n        ')}
-      </div>
-    </section>`;
   const setMeta = (html, attr, name, value) => html.replace(
     new RegExp(`<meta ${attr}="${name}" content="[^"]*">`),
     () => `<meta ${attr}="${name}" content="${escapeHtml(value)}">`
@@ -779,8 +769,8 @@ async function renderHomePage(origin, lang) {
     .replace(/<link rel="canonical" href="[^"]*">(\s*<link rel="alternate"[^>]*>)*/, () => `<link rel="canonical" href="${escapeHtml(canonical)}">\n  ${alternates(origin, '/')}\n  ${ogLocales(lang)}`)
     .replace(/<h1 class="home-title">[\s\S]*?<\/h1>/, () => `<h1 class="home-title">${escapeHtml(tr(lang, 'home_h1'))} <span class="title-accent">${escapeHtml(tr(lang, 'home_h1_accent'))}</span></h1>`)
     .replace(/<p class="home-subtitle">[^<]*<\/p>/, () => `<p class="home-subtitle">${escapeHtml(tr(lang, 'home_subtitle'))}</p>`)
-    .replace(/<section class="home-seo">[\s\S]*?<\/section>/, () => seoSection)
-    .replace(/href="\/moods"/g, () => `href="${langPath(lang, '/moods')}"`);
+    .replace(/<span data-i18n="quick\.(\w+)">[^<]*<\/span>/g, (all, key) => `<span data-i18n="quick.${key}">${escapeHtml(TEXT.quick[key]?.[lang] ?? '')}</span>`)
+    .replace(/href="\/moods(\/[^"]*)?"/g, (all, rest = '') => `href="${langPath(lang, `/moods${rest}`)}"`);
   html = setMeta(html, 'name', 'description', description);
   html = setMeta(html, 'property', 'og:title', title);
   html = setMeta(html, 'property', 'og:description', description);
