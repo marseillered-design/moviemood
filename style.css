@@ -1887,6 +1887,18 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 .movie-card.watched .movie-poster {
   filter: saturate(0.86) brightness(0.9);
 }
+/* Watched: the eye lights up and stays visible (the heart works the same way) */
+.watched-btn.active {
+  opacity: 1;
+  background: rgba(251, 191, 36, 0.85);
+  border-color: #fbbf24;
+}
+.watched-btn.active:hover { background: rgba(251, 191, 36, 0.65); }
+.movie-card .fav-btn.active { opacity: 1; }
+.btn-fav.watched-on {
+  background: rgba(251, 191, 36, 0.22);
+  border-color: rgba(251, 191, 36, 0.7);
+}
 .watched-badge {
   position: absolute;
   top: 10px;

@@ -1177,11 +1177,12 @@ function isFavorite(id, mediaType = 'movie') {
 }
 
 const FAV_ICONS = { on: '\u2764\uFE0F', off: '\uD83E\uDD0D' };
-// an eye for "not watched yet", a check mark for "watched"
-const WATCHED_ICONS = { on: '\u2705', off: '\uD83D\uDC41\uFE0F' };
+// The eye in both states, like the heart: a watched title gets a lit-up eye (see .watched-btn.active)
+const WATCHED_ICONS = { on: '\uD83D\uDC41\uFE0F', off: '\uD83D\uDC41\uFE0F' };
 
 function setCardButton(button, active, icons, labels) {
   button.textContent = active ? icons.on : icons.off;
+  button.classList.toggle('active', active);
   button.title = t(active ? labels.on : labels.off);
   button.setAttribute('aria-label', button.title);
 }
@@ -1205,7 +1206,6 @@ function createCard(movie) {
     <div class="card-poster-wrapper">
       <img src="${poster}" class="movie-poster" loading="lazy" alt="">
       ${rating ? `<span class="tmdb-mini-score card-score">${rating}</span>` : ''}
-      ${watchedActive ? `<span class="watched-badge">${t('card.watched')}</span>` : ''}
       <div class="card-overlay"></div>
     </div>
     <div class="card-info">
@@ -1237,16 +1237,6 @@ function createCard(movie) {
     const active = isWatched(movie.id, cardMediaType);
     setCardButton(watchedBtn, active, WATCHED_ICONS, watchedLabels);
     card.classList.toggle('watched', active);
-
-    const posterWrap = card.querySelector('.card-poster-wrapper');
-    let badge = card.querySelector('.watched-badge');
-    if (active && !badge) {
-      badge = document.createElement('span');
-      badge.className = 'watched-badge';
-      badge.textContent = t('card.watched');
-      posterWrap.appendChild(badge);
-    }
-    if (!active && badge) badge.remove();
   });
 
   // The streaming region may have changed since the card was drawn

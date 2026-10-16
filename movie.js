@@ -301,7 +301,9 @@ function setupWatchedBtn(details) {
   const isWatched = () => getWatched().some(w => w.id === id && normalizeMediaType(w.media_type) === type);
 
   const update = () => {
-    btn.textContent = isWatched() ? `✅ ${t('card.watched')}` : `👁️ ${t('card.mark_watched')}`;
+    // the same eye as on the cards, lit up once watched
+    btn.textContent = `👁️ ${t(isWatched() ? 'card.watched' : 'card.mark_watched')}`;
+    btn.classList.toggle('watched-on', isWatched());
   };
 
   update();
