@@ -109,7 +109,7 @@ async function postJson(url, options, timeoutMs) {
 }
 
 // Groq: fast and free to start with. Models come and go, so a retired one falls through to the next.
-const GROQ_MODELS = ['llama-3.3-70b-versatile', 'openai/gpt-oss-20b', 'llama-3.1-8b-instant'];
+const GROQ_MODELS = ['openai/gpt-oss-120b', 'llama-3.3-70b-versatile', 'openai/gpt-oss-20b', 'llama-3.1-8b-instant'];
 
 // maxTokens: a list of 20 titles needs more room than a few genre ids
 async function askGroq(prompt, timeoutMs, { maxTokens = 1000 } = {}) {
@@ -175,7 +175,7 @@ Return ONLY valid JSON, no markdown:
  "picks": [{"title": "English title", "year": 1999, "type": "movie"}]}
 Rules:
 - "source" is the title they meant; "type" is "movie" or "tv".
-- "picks": exactly 20 well-known, well-rated titles that fans of the source genuinely love for the same reasons (tone, themes, style), best matches first.
+- "picks": up to 15 well-known, well-rated titles that fans of the source genuinely love for the same reasons (tone, themes, style), best matches first. Fewer is better than loosely related ones.
 - No sequels, prequels, remakes or spin-offs of the source, and not the source itself.
 - Same type as the source (series for a series), unless the wishes say otherwise.
 - Use official English titles and the release year (first air year for series).`;
@@ -191,7 +191,7 @@ function parseLikeAnswer(content) {
     const title = item => item && typeof item.title === 'string' && item.title.trim()
       ? { title: item.title.trim().slice(0, 100), year: Number.isInteger(item.year) ? item.year : undefined, type: item.type === 'tv' ? 'tv' : 'movie' }
       : null;
-    const picks = (Array.isArray(parsed.picks) ? parsed.picks : []).map(title).filter(Boolean).slice(0, 20);
+    const picks = (Array.isArray(parsed.picks) ? parsed.picks : []).map(title).filter(Boolean).slice(0, 15);
     if (picks.length < 5) return null;
     return { like_source: title(parsed.source) || undefined, like_picks: picks };
   } catch (e) {
