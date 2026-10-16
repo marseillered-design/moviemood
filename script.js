@@ -309,11 +309,8 @@ document.addEventListener('DOMContentLoaded', () => {
       currentPage = 1;
       lastAiData = null;
       removeLoadMoreBtn();
-      if (currentType === 'trending') {
-        currentQuery = '';
-        moodInput.value = '';
-        loadTrendingMixed();
-      }
+      if (moodInput.value.trim()) handleSearch(true);
+      else loadTrendingMixed();
     });
   });
   
@@ -336,19 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadTrendingUnderSearch() {
   if (!moodInput || moodInput.value.trim()) return;
-
-  showSkeleton();
-  const results = await fetchTrendingMixed(1, currentType);
-  hideSkeleton();
-
-  if (results.length > 0) {
-    displayMovies(results, false);
-    addLoadMoreBtn();
-  } else {
-    renderEmptyState(t('home.empty_trending'));
-  }
-
-  removeLoadMoreBtn();
+  await loadTrendingMixed(true);
 }
 
 async function handleSearch(resetPage = true) {
@@ -621,20 +606,23 @@ async function personalizeItems(items, { preferredType = currentType } = {}) {
     .map(x => x.item);
 }
 
+// What is popular this week, for the tab that is open: films, series or documentaries
+// ("trending" is both films and series)
 async function fetchTrendingMixed(page = 1, preferredType = currentType) {
   try {
-    const [movieRes, tvRes] = await Promise.all([
-      fetch(`${TMDB_BASE_URL}/trending/movie/week?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&page=${page}`),
-      fetch(`${TMDB_BASE_URL}/trending/tv/week?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&page=${page}`)
-    ]);
+    const base = `api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&page=${page}`;
+    const sources = currentType === 'documentary'
+      ? [['movie', `${TMDB_BASE_URL}/discover/movie?${base}&with_genres=99&sort_by=popularity.desc&vote_count.gte=50`]]
+      : (currentType === 'trending' ? ['movie', 'tv'] : [normalizeMediaType(currentType)])
+        .map(type => [type, `${TMDB_BASE_URL}/trending/${type}/week?${base}`]);
 
-    const movieData = movieRes.ok ? await movieRes.json() : { results: [] };
-    const tvData = tvRes.ok ? await tvRes.json() : { results: [] };
+    const lists = await Promise.all(sources.map(async ([type, url]) => {
+      const res = await fetch(url);
+      const data = res.ok ? await res.json() : { results: [] };
+      return (data.results || []).map(item => ({ ...item, media_type: type }));
+    }));
 
-    const merged = [
-      ...(movieData.results || []).map(item => ({ ...item, media_type: 'movie' })),
-      ...(tvData.results || []).map(item => ({ ...item, media_type: 'tv' }))
-    ]
+    const merged = lists.flat()
       .filter(item => item.poster_path)
       .sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
 
@@ -662,7 +650,7 @@ async function loadTrendingMixed(resetPage = true) {
   }
 
   showSkeleton();
-  const results = await fetchTrendingMixed(currentPage, 'trending');
+  const results = await fetchTrendingMixed(currentPage, currentType);
   hideSkeleton();
 
   if (results.length > 0) {
@@ -682,7 +670,7 @@ async function loadMore() {
 
   let results = [];
   if (lastAiData?.mode === 'trending_mixed') {
-    results = await fetchTrendingMixed(currentPage, 'trending');
+    results = await fetchTrendingMixed(currentPage, currentType);
   } else if (lastAiData) {
     results = await fetchByAiData(lastAiData, currentPage);
   } else {
