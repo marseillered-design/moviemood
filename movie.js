@@ -228,8 +228,10 @@ async function loadMovie() {
 
 // "Recommendations" are based on what people who liked this title also liked;
 // TMDB's "similar" only matches genres and keywords and is often random. Use it to fill gaps.
+// Titles already marked as watched are left out.
 function pickSimilar(recommended = [], similar = []) {
-  const seen = new Set([String(movieId)]);
+  const type = normalizeMediaType(mediaType);
+  const seen = new Set([String(movieId), ...getWatched().filter(w => normalizeMediaType(w.media_type) === type).map(w => String(w.id))]);
   const usable = item => {
     const key = String(item.id);
     if (!item.poster_path || item.vote_count < 50 || seen.has(key)) return false;

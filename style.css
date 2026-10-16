@@ -2061,9 +2061,15 @@ a.nav-menu-item:hover, button.nav-menu-item:hover { background: var(--input-bg);
 .nav-menu-count { color: var(--text-dim); font-size: 0.8rem; }
 .nav-menu-sep { height: 1px; margin: 6px 4px; background: var(--border); }
 .nav-menu-row .lang-select { padding: 6px 8px; }
+/* "🌐 Language" stays on one line next to the picker */
+.nav-menu-row > span { white-space: nowrap; }
 /* The theme button keeps its sun / moon icon and becomes a menu row */
 .nav-menu-panel .theme-toggle.nav-menu-item {
   justify-content: flex-start;
+  /* lined up with the other rows: same padding, icon and label as close as "🌐 Language" */
+  margin: 0;
+  padding: 10px 12px;
+  gap: 6px;
   border: 0;
   background: none;
   font: inherit;

@@ -91,8 +91,18 @@ function shuffle(array) {
   return arr;
 }
 
+function getWatchedKeys() {
+  try {
+    const list = JSON.parse(localStorage.getItem('watched') || '[]');
+    return Array.isArray(list) ? list.map(itemKey) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
 async function collectTrailerItems(pool) {
-  const existing = new Set(feedState.items.map(itemKey));
+  // already shown, or marked as watched: not offered again
+  const existing = new Set([...feedState.items.map(itemKey), ...getWatchedKeys()]);
   const fresh = shuffle(pool).filter(item => {
     if (existing.has(itemKey(item))) return false;
     existing.add(itemKey(item));

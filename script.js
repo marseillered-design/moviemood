@@ -706,7 +706,7 @@ async function searchTMDB(query, page = 1) {
       );
       const data = await res.json();
       const filtered = (data.results || []).filter(item => item.media_type === 'movie' || item.media_type === 'tv');
-      return await personalizeItems(filtered, { preferredType: 'trending' });
+      return markTitleMatches(await personalizeItems(filtered, { preferredType: 'trending' }));
     }
 
     const endpoint = currentType === 'tv' ? 'tv' : 'movie';
@@ -714,12 +714,16 @@ async function searchTMDB(query, page = 1) {
       `${TMDB_BASE_URL}/search/${endpoint}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&query=${encodeURIComponent(query)}&page=${page}`
     );
     const data = await res.json();
-    return data.results || [];
+    return markTitleMatches(data.results || []);
   } catch (e) {
     console.error(e);
     return [];
   }
 }
+
+// Found by name: shown even when already watched (see displayMovies)
+const markTitleMatches = items => items.map(item => ({ ...item, title_match: true }));
+
 async function fetchByAiData(aiData, page = 1) {
   try {
     const endpoint = (currentType === 'tv' || aiData.media_type === 'tv') ? 'tv' : 'movie';
@@ -944,9 +948,14 @@ function renderUnderstood(aiData) {
   });
 }
 
+// Titles marked as watched are not suggested again (they stay on the "Watched" page),
+// unless the visitor looked one up by name
 function displayMovies(movies, append = false) {
   if (!append) moviesGrid.innerHTML = '';
-  movies.forEach(movie => moviesGrid.appendChild(createCard(movie)));
+  const watched = new Set(getWatchedList().map(w => `${normalizeMediaType(w.media_type)}:${w.id}`));
+  movies
+    .filter(movie => movie.title_match || !watched.has(`${normalizeMediaType(movie.media_type || currentType)}:${movie.id}`))
+    .forEach(movie => moviesGrid.appendChild(createCard(movie)));
 }
 
 function addLoadMoreBtn() {
