@@ -965,6 +965,15 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
   border: 1px solid rgba(1,180,228,0.25);
   color: #01b4e4;
 }
+/* IMDb's own yellow; a link to the title's IMDb page */
+.imdb-badge {
+  background: rgba(245, 197, 24, 0.12);
+  border: 1px solid rgba(245, 197, 24, 0.4);
+  color: #f5c518;
+  text-decoration: none;
+}
+.imdb-badge:hover { background: rgba(245, 197, 24, 0.22); }
+[data-theme="light"] .imdb-badge { color: #8a6d00; }
 
 /* SIMILAR */
 .similar-section { max-width: 1100px; margin: 0 auto; }

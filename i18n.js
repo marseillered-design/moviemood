@@ -120,6 +120,7 @@
     'movie.genres': { en: 'Genres', uk: 'Жанри', ru: 'Жанры', fr: 'Genres', es: 'Géneros' },
     'movie.rating': { en: 'Rating', uk: 'Рейтинг', ru: 'Рейтинг', fr: 'Note', es: 'Puntuación' },
     'movie.similar': { en: 'More Like This', uk: 'Схожі', ru: 'Похожие', fr: 'Dans le même genre', es: 'Títulos similares' },
+    'movie.imdb_votes': { en: '{votes} votes on IMDb', uk: '{votes} голосів на IMDb', ru: '{votes} голосов на IMDb', fr: '{votes} votes sur IMDb', es: '{votes} votos en IMDb' },
     'movie.where_to_watch': { en: 'Where to watch ({region})', uk: 'Де дивитися ({region})', ru: 'Где смотреть ({region})', fr: 'Où regarder ({region})', es: 'Dónde ver ({region})' },
     'movie.stream': { en: 'Stream', uk: 'Підписка', ru: 'Подписка', fr: 'Streaming', es: 'Suscripción' },
     'movie.rent': { en: 'Rent', uk: 'Оренда', ru: 'Аренда', fr: 'Location', es: 'Alquiler' },

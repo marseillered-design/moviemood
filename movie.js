@@ -68,6 +68,8 @@ async function loadMovie() {
     tmdb(`/similar?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`),
     tmdb(`/keywords?api_key=${TMDB_API_KEY}`),
   ]);
+  // series keep their IMDb id among the external ids
+  const imdbId = details.imdb_id || (endpoint === 'tv' ? (await tmdb(`/external_ids?api_key=${TMDB_API_KEY}`)).imdb_id : '');
 
   // Many titles have no description in Ukrainian, Russian etc. — fall back to the English one
   let englishOverview = '';
@@ -106,11 +108,7 @@ async function loadMovie() {
     document.getElementById('moviePoster').src = `${TMDB_IMAGE_BASE_URL}${details.poster_path}`;
   }
 
-  if (details.imdb_id) {
-    const imdbLink = document.getElementById('imdbLink');
-    imdbLink.href = `https://www.imdb.com/title/${details.imdb_id}`;
-    imdbLink.style.display = 'inline-flex';
-  }
+  if (imdbId) showImdb(imdbId);
 
   trailerCandidates = orderTrailers(videos.results || []);
   if (trailerCandidates.length) {
@@ -317,6 +315,33 @@ function setupWatchedBtn(details) {
     localStorage.setItem('watched', JSON.stringify(list));
     update();
   });
+}
+
+// The yellow IMDb button, and the IMDb rating next to TMDB's once it arrives (api/page.js).
+// Both lead to the title's page on IMDb.
+function showImdb(imdbId) {
+  const url = `https://www.imdb.com/title/${imdbId}/`;
+  const button = document.getElementById('imdbLink');
+  button.href = url;
+  button.style.display = 'inline-flex';
+
+  fetch(`/api/page?kind=imdb&id=${imdbId}`)
+    .then(res => (res.ok ? res.json() : {}))
+    .then(({ rating, votes }) => {
+      if (!rating) return;
+      button.textContent = `⭐ ${rating} IMDb`;
+      if (votes) button.title = t('movie.imdb_votes', { votes });
+
+      const badge = document.createElement('a');
+      badge.className = 'rating-badge imdb-badge';
+      badge.href = url;
+      badge.target = '_blank';
+      badge.rel = 'noopener';
+      badge.textContent = `⭐ ${rating} IMDb`;
+      if (votes) badge.title = button.title;
+      document.querySelector('.ratings-row')?.appendChild(badge);
+    })
+    .catch(() => {});
 }
 
 // Official trailers first, then teasers, then the rest (clips, featurettes)

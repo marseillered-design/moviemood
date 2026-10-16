@@ -10,7 +10,7 @@
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
-const ASSET_VERSION = '20261016g';
+const ASSET_VERSION = '20261016h';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -977,6 +977,18 @@ export default async function handler(req, res) {
   const fallbackLang = lang === 'en' ? '' : `&lang=${lang}`;
 
   try {
+    // IMDb rating of one title (TMDB does not have it): OMDb, kept for a day by Vercel's cache.
+    // Needs OMDB_API_KEY in Vercel; without it the movie page shows the plain IMDb link.
+    if (kind === 'imdb') {
+      const imdbId = String(query.id || '');
+      const key = (process.env.OMDB_API_KEY || '').trim();
+      if (!/^tt\d{5,10}$/.test(imdbId) || !key) return send(res, 200, JSON.stringify({ rating: null }), { type: 'application/json; charset=utf-8', maxAge: 3600 });
+      const data = await fetchJson(`https://www.omdbapi.com/?i=${imdbId}&apikey=${encodeURIComponent(key)}`).catch(() => ({}));
+      const rating = /^\d+(\.\d)?$/.test(data.imdbRating || '') ? data.imdbRating : null;
+      const votes = /^[\d,]+$/.test(data.imdbVotes || '') ? data.imdbVotes : null;
+      return send(res, 200, JSON.stringify({ rating, votes }), { type: 'application/json; charset=utf-8' });
+    }
+
     if (kind === 'geo') {
       res.setHeader('Cache-Control', 'private, no-store');
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
