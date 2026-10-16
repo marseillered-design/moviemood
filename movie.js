@@ -344,13 +344,22 @@ function showImdb(imdbId) {
     .catch(() => {});
 }
 
-// Official trailers first, then teasers, then the rest (clips, featurettes)
+// "Official Trailer" first, then other trailers, then teasers. Recaps of the earlier films
+// ("Final Trailer (Peter's Journey)", "Look Back") go last: they are mostly old footage.
+const RECAP_VIDEO = /journey|recap|look ?back|retrospective|story so far|tribute|anniversary|reaction|tv spot|\bspot\b|review/i;
+function trailerRank(video) {
+  const name = video.name || '';
+  let rank = ({ Trailer: 0, Teaser: 4 })[video.type] ?? 8;
+  if (!video.official) rank += 1;
+  if (/official trailer|main trailer/i.test(name)) rank -= 1;
+  if (RECAP_VIDEO.test(name)) rank += 3;
+  return rank;
+}
+
 function orderTrailers(videos) {
-  const typeRank = { Trailer: 0, Teaser: 1 };
-  const rank = v => (typeRank[v.type] ?? 2) * 2 + (v.official ? 0 : 1);
   return videos
     .filter(v => v.site === 'YouTube')
-    .sort((a, b) => rank(a) - rank(b))
+    .sort((a, b) => trailerRank(a) - trailerRank(b))
     .slice(0, 6)
     .map(v => v.key);
 }

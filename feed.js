@@ -69,12 +69,24 @@ async function fetchTrending(mediaType, page = 1) {
   return (data.results || []).map(item => ({ ...item, media_type: mediaType }));
 }
 
+// "Official Trailer" first, then other trailers, then teasers. Recaps of the earlier films
+// ("Final Trailer (Peter's Journey)", "Look Back") go last: they are mostly old footage.
+const RECAP_VIDEO = /journey|recap|look ?back|retrospective|story so far|tribute|anniversary|reaction|tv spot|\bspot\b|review/i;
+function trailerRank(video) {
+  const name = video.name || '';
+  let rank = ({ Trailer: 0, Teaser: 4 })[video.type] ?? 8;
+  if (!video.official) rank += 1;
+  if (/official trailer|main trailer/i.test(name)) rank -= 1;
+  if (RECAP_VIDEO.test(name)) rank += 3;
+  return rank;
+}
+
 // A trailer in the visitor's language when there is one, otherwise the English one
 async function fetchTrailerKey(mediaType, id) {
   try {
     const data = await fetchJson(`${TMDB_BASE_URL}/${mediaType}/${id}/videos?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&include_video_language=${MM_LANG},en`);
     const videos = (data.results || []).filter(v => v.site === 'YouTube');
-    const pick = list => list.find(v => v.type === 'Trailer') || list.find(v => v.type === 'Teaser') || list[0];
+    const pick = list => [...list].sort((a, b) => trailerRank(a) - trailerRank(b))[0];
     const trailer = pick(videos.filter(v => v.iso_639_1 === MM_LANG)) || pick(videos);
     return trailer?.key || null;
   } catch {
