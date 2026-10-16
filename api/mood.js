@@ -111,10 +111,11 @@ async function postJson(url, options, timeoutMs) {
 // Groq: fast and free to start with. Models come and go, so a retired one falls through to the next.
 const GROQ_MODELS = ['llama-3.3-70b-versatile', 'openai/gpt-oss-20b', 'llama-3.1-8b-instant'];
 
-async function askGroq(prompt, timeoutMs) {
+// maxTokens: a list of 20 titles needs more room than a few genre ids
+async function askGroq(prompt, timeoutMs, { maxTokens = 1000 } = {}) {
   const models = envValue('GROQ_MODEL') ? [envValue('GROQ_MODEL')] : GROQ_MODELS;
   const started = Date.now();
-  let lastError = 'no model tried';
+  const errors = [];
 
   for (const model of models) {
     const timeLeft = timeoutMs - (Date.now() - started);
@@ -126,18 +127,20 @@ async function askGroq(prompt, timeoutMs) {
         model,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.1,
-        max_completion_tokens: 1000,
+        max_completion_tokens: maxTokens,
         response_format: { type: 'json_object' },
+        // gpt-oss thinks before answering and could spend the whole budget on it
+        ...(model.startsWith('openai/gpt-oss') ? { reasoning_effort: 'low' } : {}),
       }),
     }, timeLeft);
 
-    if (result.data) return { content: result.data.choices?.[0]?.message?.content || '' };
-    lastError = `${model} ${result.error}`;
+    if (result.data) return { content: result.data.choices?.[0]?.message?.content || '', model };
+    errors.push(`${model} ${result.error}`);
     // only an unknown or retired model is worth another try; quota or outage errors are not
     const modelGone = (result.status === 404 || result.status === 400) && /model/i.test(result.errorText || '');
     if (!modelGone) break;
   }
-  return { error: lastError };
+  return { error: errors.join(' ; ') || 'no model tried' };
 }
 
 const AI_PROVIDERS = [
@@ -155,9 +158,9 @@ async function askLikePicks(query, like) {
   for (const provider of providers) {
     const timeLeft = deadline - Date.now();
     if (timeLeft < 500) break;
-    const answer = await provider.ask(buildLikePrompt(query, like), timeLeft);
+    const answer = await provider.ask(buildLikePrompt(query, like), timeLeft, { maxTokens: 3000 });
     const data = answer.content ? parseLikeAnswer(answer.content) : null;
-    if (data) return { data, status: [...statuses, `${provider.name}: ok`].join(' | ') };
+    if (data) return { data, status: [...statuses, `${provider.name}: ok (${answer.model})`].join(' | ') };
     statuses.push(`${provider.name}: ${answer.error || `unusable answer: ${answer.content.slice(0, 200)}`}`);
   }
   return { data: null, status: statuses.join(' | ') || 'timeout' };
