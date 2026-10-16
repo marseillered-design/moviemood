@@ -156,8 +156,16 @@ async function loadMovie() {
   const providerRegion = providers.results?.[region] ? region : 'US';
   const regionData = providers.results?.[providerRegion];
   if (regionData) {
-    // Single place to swap in affiliate links later (per provider_id)
-    const providerLink = () => regionData.link || '#';
+    // Straight to the title inside the service (its search, as TMDB has no deep links);
+    // services without a reliable search address keep TMDB's "where to watch" page.
+    // Affiliate tags, once there are any, go into PROVIDER_SEARCH.
+    const searchTitle = /^[\p{Script=Latin}\p{N}\p{P}\p{Zs}]+$/u.test(details.original_title || details.original_name || '')
+      ? (details.original_title || details.original_name)
+      : title;
+    const providerLink = provider => {
+      const search = providerSearch(provider, providerRegion);
+      return search ? search(encodeURIComponent(searchTitle)) : (regionData.link || '#');
+    };
 
     const types = [
       { key: 'flatrate', label: t('movie.stream') },
@@ -170,7 +178,7 @@ async function loadMovie() {
       if (regionData[key]?.length) {
         html += `<div class="provider-group"><span class="provider-label">${label}</span><div class="provider-logos">`;
         // logo and name: not everyone recognises a service by its icon
-        html += regionData[key].map(p => `<a href="${providerLink(p)}" target="_blank" rel="noopener sponsored" class="provider-link" title="${t('movie.provider_hint', { type: label, name: p.provider_name })}"><img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="" class="provider-logo-img"><span class="provider-name">${p.provider_name}</span></a>`).join('');
+        html += regionData[key].map(p => `<a href="${providerLink(p)}" target="_blank" rel="noopener nofollow" class="provider-link" title="${t('movie.provider_hint', { type: label, name: p.provider_name })}"><img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="" class="provider-logo-img"><span class="provider-name">${p.provider_name}</span></a>`).join('');
         html += `</div></div>`;
       }
     });
@@ -342,6 +350,37 @@ function showImdb(imdbId) {
       document.querySelector('.ratings-row')?.appendChild(badge);
     })
     .catch(() => {});
+}
+
+// Search pages of the services, by TMDB provider id; channels inside Amazon or Apple
+// ("HBO Max Amazon Channel") are matched by name. q is the title, already URL-encoded.
+const PROVIDER_SEARCH = {
+  netflix: q => `https://www.netflix.com/search?q=${q}`,
+  amazon: q => `https://www.primevideo.com/search/?phrase=${q}`,
+  apple: (q, region) => `https://tv.apple.com/${region.toLowerCase()}/search?term=${q}`,
+  disney: q => `https://www.disneyplus.com/search?q=${q}`,
+  hulu: q => `https://www.hulu.com/search?q=${q}`,
+  googleplay: q => `https://play.google.com/store/search?q=${q}&c=movies`,
+  youtube: q => `https://www.youtube.com/results?search_query=${q}`,
+  // Rakuten's address for the United Kingdom is "uk"
+  rakuten: (q, region) => `https://www.rakuten.tv/${region === 'GB' ? 'uk' : region.toLowerCase()}/search?q=${q}`,
+  mubi: q => `https://mubi.com/en/search/films?query=${q}`,
+  plex: q => `https://watch.plex.tv/search?q=${q}`
+};
+const PROVIDER_IDS = {
+  8: 'netflix', 1796: 'netflix', 175: 'netflix',
+  9: 'amazon', 119: 'amazon', 10: 'amazon', 613: 'amazon', 2100: 'amazon',
+  2: 'apple', 350: 'apple',
+  337: 'disney', 15: 'hulu', 3: 'googleplay', 192: 'youtube', 188: 'youtube',
+  35: 'rakuten', 11: 'mubi', 538: 'plex'
+};
+
+function providerSearch(provider, region) {
+  const name = String(provider.provider_name || '');
+  const service = PROVIDER_IDS[provider.provider_id]
+    || (/amazon/i.test(name) ? 'amazon' : /apple tv/i.test(name) ? 'apple' : '');
+  const search = PROVIDER_SEARCH[service];
+  return search ? q => search(q, region) : null;
 }
 
 // Official trailers first, then teasers, then the rest (clips, featurettes)
