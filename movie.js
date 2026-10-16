@@ -300,7 +300,7 @@ function setupWatchedBtn(details) {
 
   const update = () => {
     // the same eye as on the cards, lit up once watched
-    btn.textContent = `👁️ ${t(isWatched() ? 'card.watched' : 'card.mark_watched')}`;
+    setIconLabel(btn, '👁️', t(isWatched() ? 'card.watched' : 'card.mark_watched'));
     btn.classList.toggle('watched-on', isWatched());
   };
 
@@ -329,7 +329,7 @@ function showImdb(imdbId) {
     .then(res => (res.ok ? res.json() : {}))
     .then(({ rating, votes }) => {
       if (!rating) return;
-      button.textContent = `⭐ ${rating} IMDb`;
+      setIconLabel(button, `⭐ ${rating}`, 'IMDb');
       if (votes) button.title = t('movie.imdb_votes', { votes });
 
       const badge = document.createElement('a');
@@ -422,6 +422,16 @@ function closeTrailerModal() {
   document.body.style.overflow = '';
 }
 
+// "❤️ In favorites": icon and words apart, so that phones can show the icon alone
+function setIconLabel(button, icon, label) {
+  const text = document.createElement('span');
+  text.className = 'btn-text';
+  text.textContent = ` ${label}`;
+  button.replaceChildren(icon, text);
+  button.title = label;
+  button.setAttribute('aria-label', label);
+}
+
 function setupFavoriteBtn(details) {
   const btn = document.getElementById('btnFavorite');
   const id = parseInt(movieId, 10);
@@ -430,7 +440,8 @@ function setupFavoriteBtn(details) {
   const isFav = () => isFavoriteItem(id, normalizedType);
 
   const update = () => {
-    btn.textContent = isFav() ? `❤️ ${t('movie.in_favorites')}` : `🤍 ${t('movie.add_favorite')}`;
+    if (isFav()) setIconLabel(btn, '❤️', t('movie.in_favorites'));
+    else setIconLabel(btn, '🤍', t('movie.add_favorite'));
   };
 
   update();

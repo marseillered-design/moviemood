@@ -2307,5 +2307,33 @@ a.person-chip, a.actor-card { color: inherit; text-decoration: none; }
   .movie-card .card-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
 
+/* ==================== PHONES: THE TRAILER ON TOP ==================== */
+/* On a tall screen the background trailer was cropped to its middle and hidden under the text.
+   Phones get it as a clean 16:9 picture under the nav, the details below it: a short description,
+   one row of buttons (Play, then round ♥ 👁 and IMDb). Wider screens keep the background video. */
+@media (max-width: 600px) {
+  .movie-hero-section { height: auto; min-height: 0; overflow: visible; padding-top: 64px; background: #0e0a08; }
+  .movie-hero-section .hero-video-wrapper {
+    position: relative; inset: auto; width: 100%; height: auto; aspect-ratio: 16 / 9;
+  }
+  /* the backdrop picture shows in the same frame until the trailer starts (or if there is none) */
+  .movie-hero-section .hero-backdrop { inset: auto; top: 64px; left: 0; width: 100%; aspect-ratio: 16 / 9; }
+  .movie-hero-section .hero-video-wrapper iframe {
+    position: absolute; inset: 0; top: 0; left: 0; width: 100%; height: 100%; transform: none;
+  }
+  .movie-hero-section .hero-gradient { display: none; }
+  .movie-hero-section .hero-content { position: relative; min-height: 0; padding: 16px 16px 24px; }
+  .hero-left { animation: none; }
+  .movie-hero-section .mute-btn { top: calc(64px + 56.25vw - 48px); right: 10px; }
+
+  .hero-badges { display: none; }
+  .hero-title { font-size: 1.7rem; margin-bottom: 4px; }
+  .hero-overview { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .hero-actions { display: grid; grid-template-columns: 1fr auto auto auto; gap: 8px; }
+  .hero-actions .btn-play { padding: 12px 14px; justify-content: center; }
+  .hero-actions .btn-fav, .hero-actions .btn-imdb { padding: 12px 13px; justify-content: center; }
+  .hero-actions .btn-text { display: none; }
+}
+
 /* The region picker now sits in the filters panel: its label looks like the others there */
 .filter-group-label.region-label { font-size: 0.72rem; }
