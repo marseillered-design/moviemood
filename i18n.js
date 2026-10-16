@@ -51,6 +51,10 @@
     'avoid.animation': { en: 'cartoons', uk: 'мультфільми', ru: 'мультфильмы', fr: 'dessins animés', es: 'dibujos animados' },
     'avoid.kids': { en: 'kids’ films', uk: 'дитячі фільми', ru: 'детские фильмы', fr: 'films pour enfants', es: 'cine infantil' },
     'avoid.long': { en: 'over 2 hours', uk: 'довше 2 годин', ru: 'дольше 2 часов', fr: 'plus de 2 h', es: 'más de 2 horas' },
+    // above the popular titles before anything is searched, per tab
+    'home.popular_movie': { en: 'Popular movies this week', uk: 'Популярні фільми тижня', ru: 'Популярные фильмы недели', fr: 'Films populaires cette semaine', es: 'Películas populares de la semana' },
+    'home.popular_tv': { en: 'Popular series this week', uk: 'Популярні серіали тижня', ru: 'Популярные сериалы недели', fr: 'Séries populaires cette semaine', es: 'Series populares de la semana' },
+    'home.popular_documentary': { en: 'Popular documentaries', uk: 'Популярні документальні фільми', ru: 'Популярные документальные фильмы', fr: 'Documentaires populaires', es: 'Documentales populares' },
     'home.title_search': { en: 'title search', uk: 'пошук за назвою', ru: 'поиск по названию', fr: 'recherche par titre', es: 'búsqueda por título' },
     'home.until_year': { en: 'before {year}', uk: 'до {year}', ru: 'до {year}', fr: 'avant {year}', es: 'antes de {year}' },
     'home.since_year': { en: 'since {year}', uk: 'з {year}', ru: 'с {year}', fr: 'depuis {year}', es: 'desde {year}' },

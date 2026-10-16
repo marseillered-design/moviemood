@@ -369,6 +369,7 @@ async function handleSearch(resetPage = true) {
   }
 
   renderUnderstood(null);
+  setResultsHeading(null);
   showSkeleton();
 
   if (currentType === 'trending') {
@@ -423,6 +424,7 @@ async function handleSearch(resetPage = true) {
 
 async function handleSurprise() {
   renderUnderstood(null);
+  setResultsHeading(null);
   const randomPage = Math.floor(Math.random() * 5) + 1;
   currentPage = randomPage;
   removeLoadMoreBtn();
@@ -652,12 +654,23 @@ async function fetchTrendingMixed(page = 1, preferredType = currentType) {
   }
 }
 
+// "Popular movies this week" above the list nobody asked for yet; a search has its own
+// "Showing: ..." line instead (null hides the heading)
+function setResultsHeading(text) {
+  const heading = document.getElementById('resultsHeading');
+  if (!heading) return;
+  heading.textContent = text || '';
+  heading.hidden = !text;
+}
+
 async function loadTrendingMixed(resetPage = true) {
   if (resetPage) {
     currentPage = 1;
     currentQuery = '';
     lastAiData = { mode: 'trending_mixed' };
     removeLoadMoreBtn();
+    renderUnderstood(null);
+    setResultsHeading(t(`home.popular_${currentType === 'tv' || currentType === 'documentary' ? currentType : 'movie'}`));
   }
 
   showSkeleton();

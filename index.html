@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://api.themoviedb.org">
   <link rel="preconnect" href="https://image.tmdb.org">
-  <link rel="stylesheet" href="style.css?v=20261016h">
+  <link rel="stylesheet" href="style.css?v=20261016j">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" href="/favicon.ico?v=2" sizes="32x32">
   <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
@@ -70,8 +70,8 @@
         <div class="search-input-wrapper">
           <span class="search-icon">&#x1F50D;</span>
           <input type="text" class="mood-input" placeholder="e.g. 'horrors of 90s' or 'dark sci-fi like Interstellar'" id="moodInput">
+          <button class="search-btn" id="searchBtn">Search</button>
         </div>
-        <button class="search-btn" id="searchBtn">Search</button>
         <button class="surprise-btn" id="surpriseBtn">&#x1F3B2;<span class="btn-label">Random</span></button>
         <button class="filters-btn" id="filtersBtn">&#x2699;&#xFE0F;<span class="btn-label">Filters</span></button>
       </div>
@@ -137,6 +137,7 @@
     </section>
 
     <section class="results-section">
+      <h2 class="results-heading" id="resultsHeading" hidden></h2>
       <div class="understood-row" id="understoodRow" hidden></div>
       <div class="movies-grid" id="moviesGrid">
         <div class="welcome-message">
@@ -182,10 +183,10 @@
     themeToggle?.addEventListener('click', window.__mmToggleTheme);
   })();
   </script>
-  <script src="i18n.js?v=20261016h"></script>
-  <script src="/urls.js?v=20261016h"></script>
-  <script src="nav.js?v=20261016h"></script>
-  <script src="script.js?v=20261016h"></script>
+  <script src="i18n.js?v=20261016j"></script>
+  <script src="/urls.js?v=20261016j"></script>
+  <script src="nav.js?v=20261016j"></script>
+  <script src="script.js?v=20261016j"></script>
 </body>
 </html>
 
