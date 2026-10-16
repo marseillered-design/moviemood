@@ -2158,7 +2158,7 @@ const I18N_TERMS = {
   "thriller": ["триллер*", "трилер*"],
   "mystery": ["детектив*", "загадочн*", "загадков*", "mystere*", "misterio*", "policier*"],
   "drama": ["драм*", "drame*"],
-  "romantic": ["романтич*", "romantique*", "romantico*", "romantica*"],
+  "romantic": ["романтич*", "романтик*", "romantique*", "romantico*", "romantica*"],
   "romance": ["мелодрам*", "любов*", "любви", "кохан*", "amour", "amor"],
   "fantasy": ["фэнтези", "фентези", "фентезі", "fantastique*", "fantasia"],
   "sci-fi": ["фантастик*", "science fiction", "ciencia ficcion"],
@@ -2760,7 +2760,8 @@ function extractLikeTitle(query) {
 // ══════════════════════════════════════════════
 const NEGATION_TARGETS = [
   ['horror', 'scary|horror|horrors|frightening|creepy|terrifying|spooky', { genres: [27] }],
-  ['gore', 'gory|gore|bloody|blood|splatter|graphic', { keywords: [10292, 344603, 367145] }],
+  // body horror: "The Substance" carries that tag, not "gore"
+  ['gore', 'gory|gore|bloody|blood|splatter|graphic', { keywords: [10292, 344603, 367145, 283085] }],
   ['violence', 'violent|violence|brutal|cruel|cruelty', { genres: [10752], keywords: [10292, 262404, 367145] }],
   ['sad', 'sad|depressing|heavy|tragic|tearjerker|tearjerkers|crying|tears|drama', { keywords: [156924, 9872] }],
   ['romance', 'romantic|romance|love story|love stories|cheesy|mushy', { genres: [10749] }],

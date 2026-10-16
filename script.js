@@ -762,7 +762,11 @@ async function resolveLikePicks(picks) {
   const found = await Promise.all(picks.map(async pick => {
     const yearParam = pick.year ? `&${pick.type === 'tv' ? 'first_air_date_year' : 'year'}=${pick.year}` : '';
     const data = await tmdbJson(`${TMDB_BASE_URL}/search/${pick.type}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&query=${encodeURIComponent(pick.title)}${yearParam}`);
-    const item = (data.results || [])[0];
+    // "Paprika" is the anime, not "Paprika Western": the same name first, then the best-known
+    const results = (data.results || []).slice(0, 5);
+    const wanted = normalizeTitle(pick.title);
+    const item = results.find(r => [r.title, r.name, r.original_title, r.original_name].some(name => normalizeTitle(name) === wanted))
+      || results.sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))[0];
     return item ? { ...item, media_type: pick.type } : null;
   }));
   return found.filter(Boolean);
