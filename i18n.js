@@ -209,6 +209,8 @@
     ['#surpriseBtn', 'home.random_hint', 'title'],
     ['#surpriseBtn .btn-label', 'home.random'],
     ['#filtersBtn .btn-label', 'home.filters'],
+    ['.chip-icon[data-press="surpriseBtn"]', 'home.random_hint', 'title'],
+    ['.chip-icon[data-press="filtersBtn"]', 'home.filters', 'title'],
     ['.region-label', 'home.region', 'text', '🌍'],
     ['.filter-group:nth-child(1) .filter-group-label', 'home.content_type'],
     ['.filter-group:nth-child(2) .filter-group-label', 'home.options'],

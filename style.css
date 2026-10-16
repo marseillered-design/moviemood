@@ -2284,5 +2284,28 @@ a.person-chip, a.actor-card { color: inherit; text-decoration: none; }
 }
 .results-heading[hidden] { display: none; }
 
+/* ==================== PHONES: A CALM FIRST SCREEN ==================== */
+/* The title and the search, one row of moods (Random and Filters are its first two round
+   chips), then the popular titles. The big Random / Filters buttons are for wider screens. */
+.chip-icon { display: none; }
+@media (max-width: 600px) {
+  .home-subtitle:not(.mood-intro) { display: none; }
+  .home-hero { padding: 28px 16px 10px; }
+  .home-title { font-size: 2.3rem; margin-bottom: 14px; }
+  .search-container { grid-template-columns: 1fr; margin-bottom: 14px; }
+  .search-container .surprise-btn, .search-container .filters-btn { display: none; }
+  .quick-moods .chip-icon {
+    display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+    padding: 6px 12px; cursor: pointer; font-size: 0.9rem;
+    border-color: rgba(212, 168, 90, 0.45); background: rgba(212, 168, 90, 0.08);
+  }
+  .quick-moods .chip-icon.active { border-color: #e3bd6d; background: rgba(212, 168, 90, 0.22); }
+  .results-section { margin-top: 30px; }
+  /* cards: smaller round buttons and one line of title */
+  .movie-card .fav-btn, .movie-card .watched-btn { width: 28px; height: 28px; font-size: 0.8rem; }
+  .movie-card .watched-btn { top: 40px; }
+  .movie-card .card-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+
 /* The region picker now sits in the filters panel: its label looks like the others there */
 .filter-group-label.region-label { font-size: 0.72rem; }

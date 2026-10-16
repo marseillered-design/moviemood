@@ -330,6 +330,14 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   document.getElementById('surpriseBtn').addEventListener('click', handleSurprise);
+  // the small round chips on phones do what the big buttons do
+  document.querySelectorAll('[data-press]').forEach(chip => {
+    chip.addEventListener('click', e => {
+      e.stopPropagation();
+      document.getElementById(chip.dataset.press)?.click();
+      chip.classList.toggle('active', document.getElementById(chip.dataset.press)?.classList.contains('active'));
+    });
+  });
   
   // FILTERS PANEL
   const filtersBtn = document.getElementById('filtersBtn');
