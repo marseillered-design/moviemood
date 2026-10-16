@@ -724,9 +724,131 @@ async function searchTMDB(query, page = 1) {
 // Found by name: shown even when already watched (see displayMovies)
 const markTitleMatches = items => items.map(item => ({ ...item, title_match: true }));
 
+// "inception", "amelie": for comparing what was typed with TMDB titles
+const normalizeTitle = text => String(text || '').toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[^\p{L}\p{N}]+/gu, '');
+
+const tmdbJson = url => fetch(url).then(res => res.json()).catch(() => ({}));
+const LIKE_LOCALES = ['en-US', 'ru-RU', 'uk-UA', 'fr-FR', 'es-ES'];
+
+// The title the visitor compares with. The AI names it in English with its year; otherwise
+// the typed name is looked up, in the page language first ("Начало" is Inception in Russian).
+async function findLikeSource(aiData) {
+  const src = aiData.like_source;
+  if (src?.title) {
+    const yearParam = src.year ? `&${src.type === 'tv' ? 'first_air_date_year' : 'year'}=${src.year}` : '';
+    const data = await tmdbJson(`${TMDB_BASE_URL}/search/${src.type}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&query=${encodeURIComponent(src.title)}${yearParam}`);
+    const item = (data.results || [])[0];
+    if (item) return { ...item, media_type: src.type };
+  }
+
+  const wanted = normalizeTitle(aiData.like_title);
+  const locales = [TMDB_LANG, ...LIKE_LOCALES.filter(code => code !== TMDB_LANG)];
+  let fallback = null;
+  for (const locale of locales) {
+    const data = await tmdbJson(`${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&language=${locale}&query=${encodeURIComponent(aiData.like_title)}`);
+    const candidates = (data.results || []).slice(0, 10)
+      .filter(item => (item.media_type === 'movie' || item.media_type === 'tv') && (item.vote_count || 0) >= 50);
+    // the title that was meant: its name starts with what was typed, and many people know it
+    const named = candidates.filter(item => [item.title, item.name, item.original_title, item.original_name]
+      .some(name => name && normalizeTitle(name).startsWith(wanted)));
+    if (named.length) return named.sort((a, b) => b.vote_count - a.vote_count)[0];
+    fallback = fallback || candidates.find(item => item.vote_count >= 1000) || null;
+  }
+  return fallback;
+}
+
+// The AI's picks, each looked up on TMDB (in the page language, so titles and posters fit)
+async function resolveLikePicks(picks) {
+  const found = await Promise.all(picks.map(async pick => {
+    const yearParam = pick.year ? `&${pick.type === 'tv' ? 'first_air_date_year' : 'year'}=${pick.year}` : '';
+    const data = await tmdbJson(`${TMDB_BASE_URL}/search/${pick.type}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&query=${encodeURIComponent(pick.title)}${yearParam}`);
+    const item = (data.results || [])[0];
+    return item ? { ...item, media_type: pick.type } : null;
+  }));
+  return found.filter(Boolean);
+}
+
+// Without the AI: titles that share the source's TMDB keywords, rare keywords counting more
+// ("subconscious" says more than "spy"), plus a little for TMDB's own recommendations.
+// Sequels are left out: "like Harry Potter" means other worlds, not the next Harry Potter.
+async function rankLikeByKeywords(source) {
+  const { id, type } = source;
+  const base = `${TMDB_BASE_URL}/${type}/${id}`;
+  const [details, keywordData, recommendations] = await Promise.all([
+    tmdbJson(`${base}?api_key=${TMDB_API_KEY}`),
+    tmdbJson(`${base}/keywords?api_key=${TMDB_API_KEY}`),
+    tmdbJson(`${base}/recommendations?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`)
+  ]);
+  const keywords = (keywordData.keywords || keywordData.results || []).slice(0, 20);
+  const genres = new Set((details.genres || []).map(g => g.id));
+  const ownName = normalizeTitle(details.title || details.name).slice(0, 8);
+
+  const lists = await Promise.all(keywords.map(keyword => tmdbJson(
+    `${TMDB_BASE_URL}/discover/${type}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&with_keywords=${keyword.id}&sort_by=vote_count.desc&vote_count.gte=${type === 'tv' ? 150 : 300}`
+  )));
+  const score = new Map();
+  const items = new Map();
+  const add = (item, weight) => {
+    score.set(item.id, (score.get(item.id) || 0) + weight);
+    items.set(item.id, item);
+  };
+  lists.forEach(list => {
+    const weight = Math.log10(5000 / Math.max(list.total_results || 1, 5));
+    (list.results || []).forEach(item => add(item, weight));
+  });
+  (recommendations.results || []).slice(0, 10).forEach(item => add(item, 0.5));
+  score.delete(id);
+
+  return [...score.entries()]
+    .map(([itemId, points]) => {
+      const item = items.get(itemId);
+      const sharedGenres = (item.genre_ids || []).filter(g => genres.has(g)).length;
+      return { item: { ...item, media_type: type }, sharedGenres, total: points + sharedGenres * 0.6 };
+    })
+    .filter(({ item, sharedGenres }) => sharedGenres > 0 && item.poster_path && !normalizeTitle(item.title || item.name).startsWith(ownName))
+    .sort((a, b) => b.total - a.total)
+    .map(({ item }) => item);
+}
+
+// "movies like Inception". Page 1: the AI's picks (or the keyword ranking without them);
+// next pages continue with the keyword ranking. What was shown is kept in aiData.
+async function fetchLikeTitle(aiData, page) {
+  if (!aiData._like) {
+    const source = await findLikeSource(aiData);
+    if (!source) return [];
+    aiData._like = { id: source.id, type: source.media_type, name: source.title || source.name };
+    aiData._likeShown = new Set([`${source.media_type}:${source.id}`]);
+  }
+  const shown = aiData._likeShown;
+  const fresh = item => {
+    const key = `${item.media_type}:${item.id}`;
+    if (!item.poster_path || shown.has(key)) return false;
+    shown.add(key);
+    return true;
+  };
+
+  let items = page === 1 && aiData.like_picks?.length ? (await resolveLikePicks(aiData.like_picks)).filter(fresh) : [];
+  if (items.length < 12) {
+    aiData._likeRanked = aiData._likeRanked || await rankLikeByKeywords(aiData._like);
+    for (const item of aiData._likeRanked) {
+      if (items.length >= 20) break;
+      if (fresh(item)) items.push(item);
+    }
+  }
+  return items;
+}
+
 async function fetchByAiData(aiData, page = 1) {
   try {
     const endpoint = (currentType === 'tv' || aiData.media_type === 'tv') ? 'tv' : 'movie';
+
+    if (aiData.like_title && !aiData._likeMissing) {
+      const similar = await fetchLikeTitle(aiData, page);
+      if (similar.length) return similar;
+      // title not found: the rest of the query ("dark sci-fi") decides
+      if (!aiData._like) aiData._likeMissing = true;
+      else return [];
+    }
 
     // 0. The server only half-understood the query: it may be a title in another language
     if (aiData.title_query) {
@@ -753,7 +875,9 @@ async function fetchByAiData(aiData, page = 1) {
     }
     
     // 3. Discover by genre / topic / country / years
-    if (aiData.genres?.length || aiData.genres_any?.length || aiData.keywords?.length || aiData.language || aiData.year_from || aiData.year_to) {
+    // ("nothing scary" has no genre at all, only things to leave out)
+    if (aiData.genres?.length || aiData.genres_any?.length || aiData.keywords?.length || aiData.language || aiData.year_from || aiData.year_to ||
+        aiData.exclude_genres?.length || aiData.exclude_keywords?.length) {
       const isDocumentary = currentType === 'documentary';
       // A mood recipe asks for any of several genres ("cozy" = comedy, romance or family)
       const useAnyGenre = !isDocumentary && aiData.genres_any?.length > 0;
@@ -774,23 +898,31 @@ async function fetchByAiData(aiData, page = 1) {
       if (aiData.year_to) yearParam += `&${dateField}.lte=${aiData.year_to}-12-31`;
 
       // When filtering by era: sort by rating - best films of that period come first.
-      // Moods: the most rated (best-loved) films first. Otherwise: well-known modern films first.
-      const sortBy = hasYears ? 'vote_average.desc' : (aiData.sort === 'votes' ? 'vote_count.desc' : 'popularity.desc');
+      // Moods and topics ("zombie", "friendship"): the most rated (best-loved) films first,
+      // not this month's releases. Otherwise: well-known modern films first.
+      const sortBy = hasYears ? 'vote_average.desc' : (aiData.sort === 'votes' || keywordIds.length ? 'vote_count.desc' : 'popularity.desc');
       // Popularity alone surfaces brand-new releases nobody has rated yet,
       // so require enough votes and a decent score. Topics, countries, TV and docs
       // are smaller pools and get a lower bar.
       const isNarrow = keywordIds.length > 0 || Boolean(aiData.language);
       const isMainstreamMovie = endpoint === 'movie' && !isDocumentary && !isNarrow && !isMood;
-      const minVotes = hasYears ? 200 : (isMainstreamMovie ? 500 : (isMood ? 300 : 100));
+      const minVotes = hasYears ? 200 : (isMainstreamMovie ? 1000 : (isMood ? 300 : 100));
       const ratingParam = hasYears ? '' : `&vote_average.gte=${isNarrow ? 6 : 6.5}`;
       const languageParam = aiData.language ? `&with_original_language=${aiData.language}` : '';
 
       // A bare "comedy" or "horror" means live-action films, not cartoons that share the genre
       const isPlainGenre = endpoint === 'movie' && genreIds.length === 1 && !keywordIds.length && !isMood && ![16, 10751, 99].includes(genreIds[0]);
+      // "epic fantasy adventure" too: cartoons only when animation, family or anime was asked for
+      const wantsCartoons = includeAnime || isMood || genreIds.some(g => [16, 10751].includes(g));
+      const skipCartoons = endpoint === 'movie' && !isDocumentary && genreIds.length > 0 && !wantsCartoons;
       // series use their own genre ids; never exclude a genre that was asked for
       const moodExcluded = endpoint === 'tv' ? mapGenresToTv(aiData.exclude_genres || []) : (aiData.exclude_genres || []);
-      const excludedGenres = [...moodExcluded.filter(g => !genreIds.includes(g)), ...(isPlainGenre ? [16] : [])];
-      const excludeParam = excludedGenres.length ? `&without_genres=${[...new Set(excludedGenres)].join(',')}` : '';
+      const excludedGenres = [...moodExcluded.filter(g => !genreIds.includes(g)), ...(isPlainGenre || skipCartoons ? [16] : [])];
+      const excludeParam = (excludedGenres.length ? `&without_genres=${[...new Set(excludedGenres)].join(',')}` : '') +
+        // "not too gory", "no tearjerkers"
+        (aiData.exclude_keywords?.length ? `&without_keywords=${aiData.exclude_keywords.join('|')}` : '') +
+        // "not too long" (series only have episode lengths)
+        (aiData.max_runtime && endpoint === 'movie' ? `&with_runtime.lte=${aiData.max_runtime}` : '');
 
       const buildDiscoverUrl = ({ genres = genreIds, joiner = genreJoiner, keywords = keywordIds, moodKeywords = moodKeywordIds, votes = minVotes }) =>
         `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&sort_by=${sortBy}&vote_count.gte=${votes}&page=${page}` +
@@ -915,7 +1047,10 @@ function renderUnderstood(aiData) {
   if (!row) return;
 
   const chips = [];
-  if (aiData) {
+  if (aiData?._like) {
+    // "movies like Inception": the results are that title's recommendations, genres say nothing
+    chips.push(t('home.like', { title: aiData._like.name }));
+  } else if (aiData) {
     if (aiData.media_type === 'tv' || currentType === 'tv') chips.push(t('type.series'));
     if (aiData.mood) chips.push(t(`moodname.${aiData.mood}`));
     // with a mood recipe the genres are only "any of", the mood name says more
@@ -928,6 +1063,8 @@ function renderUnderstood(aiData) {
     else if (from && to) chips.push(from === to ? String(from) : `${from}–${to}`);
     else if (to) chips.push(t('home.until_year', { year: to }));
     else if (from) chips.push(t('home.since_year', { year: from }));
+
+    (aiData.avoid || []).forEach(what => chips.push(`🚫 ${t(`avoid.${what}`)}`));
 
     if (aiData.search_query) chips.push(`${t('home.title_search')}: «${aiData.search_query}»`);
   }

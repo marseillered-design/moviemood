@@ -16,20 +16,40 @@ export default async function handler(req, res) {
     const translated = translateQuery(query);
     const lookupText = translated.changed ? translated.text : query;
 
+    // "movies like Inception": the client lists what fans of that title also liked.
+    // The rest of the query ("dark sci-fi like ...") is the fallback if the title is not found.
+    const like = extractLikeTitle(query);
+    if (like) {
+      const restParsed = like.rest ? resolveLocally(translateQuery(like.rest).text) : null;
+      const answer = { ...(restParsed?.result || { title_query: like.title }), like_title: like.title };
+      if (restParsed?.parsed.media_type) answer.media_type = restParsed.parsed.media_type;
+      // The AI knows which films fans of a title love; without it the client compares TMDB keywords
+      const picks = await askLikePicks(query, like);
+      if (picks.data) Object.assign(answer, picks.data);
+      console.log(`[LIKE] "${query}" → ${JSON.stringify(answer)}`);
+      return reply(answer, picks.status);
+    }
+
+    // "scary but not too gory": "not too gory" is a filter, the parser reads only "scary but".
+    // A query that is nothing but a negation ("not too heavy") is still read as a whole.
+    const negations = extractNegations(lookupText.toLowerCase());
+    const strippedLocal = negations.any && negations.text ? resolveLocally(negations.text) : null;
+
     // Phrase database + concept parser (genre, mood, topic, decade, country)
-    const local = resolveLocally(lookupText);
+    const local = strippedLocal?.result ? strippedLocal : resolveLocally(lookupText);
 
     // If no AI answers: best local guess, or a plain title search when nothing
     // was understood. title_query lets the client try a title search first
     // ("Звёздные войны" must not become a war movie list).
     const localFallback = () => {
-      if (!local.result) return { search_query: query };
-      return local.maybeTitle ? { ...local.result, title_query: query } : local.result;
+      if (!local.result) return negations.any ? applyNegations({}, negations) : { search_query: query };
+      return applyNegations(local.maybeTitle ? { ...local.result, title_query: query } : local.result, negations);
     };
 
     // A half-understood query goes to the AI instead of matching on a single known word
     const providers = AI_PROVIDERS.filter(provider => provider.key());
-    if (local.confident || !providers.length) {
+    // (a query that was only a negation, "nothing too scary", needs no AI either)
+    if (local.confident || (negations.any && !negations.text) || !providers.length) {
       console.log(`[LOCAL] "${query}" (${lookupText}) → ${JSON.stringify(local.result)}`);
       return reply(localFallback(), local.confident ? 'not_needed' : 'no_key');
     }
@@ -50,7 +70,7 @@ export default async function handler(req, res) {
 
       if (parsed) {
         // The AI only returns genres/years; the topic, country and movie/series come from the parser
-        return reply(enrich(parsed, local.parsed), [...statuses, `${provider.name}: ok`].join(' | '));
+        return reply(applyNegations(enrich(parsed, local.parsed), negations), [...statuses, `${provider.name}: ok`].join(' | '));
       }
       const status = answer.error || `unusable answer: ${answer.content.slice(0, 200)}`;
       console.error(`${provider.name} failed:`, status);
@@ -123,6 +143,58 @@ async function askGroq(prompt, timeoutMs) {
 const AI_PROVIDERS = [
   { name: 'groq', key: () => envValue('GROQ_API_KEY'), ask: askGroq },
 ];
+
+// "movies like Inception": the AI names the source title and 20 titles its fans also love.
+// The client looks each of them up on TMDB. Returns { data: { like_source, like_picks } | null, status }.
+async function askLikePicks(query, like) {
+  const providers = AI_PROVIDERS.filter(provider => provider.key());
+  if (!providers.length) return { data: null, status: 'no_key' };
+
+  const deadline = Date.now() + AI_TIME_BUDGET_MS;
+  const statuses = [];
+  for (const provider of providers) {
+    const timeLeft = deadline - Date.now();
+    if (timeLeft < 500) break;
+    const answer = await provider.ask(buildLikePrompt(query, like), timeLeft);
+    const data = answer.content ? parseLikeAnswer(answer.content) : null;
+    if (data) return { data, status: [...statuses, `${provider.name}: ok`].join(' | ') };
+    statuses.push(`${provider.name}: ${answer.error || `unusable answer: ${answer.content.slice(0, 200)}`}`);
+  }
+  return { data: null, status: statuses.join(' | ') || 'timeout' };
+}
+
+function buildLikePrompt(query, like) {
+  return `A visitor of a movie recommendation site typed: "${query}"
+They want titles similar to "${like.title}" (the title may be written in English, Ukrainian, Russian, French or Spanish).${like.rest ? `
+Their other wishes: "${like.rest}".` : ''}
+Return ONLY valid JSON, no markdown:
+{"source": {"title": "original English title", "year": 2010, "type": "movie"},
+ "picks": [{"title": "English title", "year": 1999, "type": "movie"}]}
+Rules:
+- "source" is the title they meant; "type" is "movie" or "tv".
+- "picks": exactly 20 well-known, well-rated titles that fans of the source genuinely love for the same reasons (tone, themes, style), best matches first.
+- No sequels, prequels, remakes or spin-offs of the source, and not the source itself.
+- Same type as the source (series for a series), unless the wishes say otherwise.
+- Use official English titles and the release year (first air year for series).`;
+}
+
+// { like_source, like_picks } or null
+function parseLikeAnswer(content) {
+  try {
+    const clean = content.replace(/```json|```/g, '').trim();
+    const jsonMatch = clean.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+    const parsed = JSON.parse(jsonMatch[0]);
+    const title = item => item && typeof item.title === 'string' && item.title.trim()
+      ? { title: item.title.trim().slice(0, 100), year: Number.isInteger(item.year) ? item.year : undefined, type: item.type === 'tv' ? 'tv' : 'movie' }
+      : null;
+    const picks = (Array.isArray(parsed.picks) ? parsed.picks : []).map(title).filter(Boolean).slice(0, 20);
+    if (picks.length < 5) return null;
+    return { like_source: title(parsed.source) || undefined, like_picks: picks };
+  } catch (e) {
+    return null;
+  }
+}
 
 // The AI's JSON, or null when it is missing or unusable
 function parseAiAnswer(content) {
@@ -2210,6 +2282,14 @@ const I18N_TERMS = {
   "ukrainian": ["украинск*", "українськ*", "ukrainien*", "ucranian*"],
   "turkish": ["турецк*", "турецьк*", "turque*", "turco*"],
 
+  // negations: "не страшный" → "not scary", "без крови" → "without gory"
+  "not": ["не", "pas", "pas de"],
+  "without": ["без", "sans", "sin"],
+  "too": ["слишком", "занадто", "надто", "trop", "demasiado"],
+  "gory": ["кровав*", "кривав*", "кровищ*", "sanglant*", "sangrient*"],
+  "violence": ["насили*", "насильств*", "жестокост*", "жорстокост*", "жестк*", "жорстк*", "violencia", "violent*"],
+  "long": ["длинн*", "довг*", "долг*", "largo*", "larga*"],
+
   // glue words
   "best": ["лучш*", "найкращ*", "кращ*", "meilleur*", "mejor*"],
   "new": ["нов*", "свеж*", "свіж*", "nouveau", "nouveaux", "nouveautes", "nuevo*", "nueva*"],
@@ -2422,6 +2502,7 @@ const MOOD_PROFILE_WORDS = [
 
 // TMDB keyword id → trigger phrases
 const TOPIC_WORDS = [
+  [12565, 'psychological thriller|psychological'],
   [12377, 'zombie|zombies|undead'], [3133, 'vampire|vampires'], [12564, 'werewolf|werewolves'],
   [162846, 'ghost|ghosts'], [3358, 'haunted house|haunted'], [10714, 'serial killer|serial killers|maniac'],
   [10051, 'heist|heists|robbery'], [15363, 'bank robbery'], [4379, 'time travel|time traveling|time travelling'],
@@ -2629,6 +2710,97 @@ function applyMoodProfile(result, parsed) {
   }
   const kept = new Set([...(result.genres || []), ...(result.genres_any || [])]);
   result.exclude_genres = profile.exclude_genres.filter(g => !kept.has(g));
+}
+
+// ══════════════════════════════════════════════
+// "LIKE <TITLE>"
+// "movies like Inception", "фильмы как Начало", "схожі на Друзі", "films comme Amélie",
+// "películas como Titanic": the client shows what people who liked that title also liked
+// (TMDB recommendations), which beats any genre guess.
+// ══════════════════════════════════════════════
+const LIKE_MARKERS = [
+  /(?:^|\s)(?:like|similar to|in the style of)\s+(.+)$/u,
+  /(?:^|\s)(?:похож\p{L}*|схож\p{L}*|подобн\p{L}*)\s+на\s+(.+)$/u,
+  /(?:^|\s)(?:фильм\p{L}*|кино|сериал\p{L}*|мульт\p{L}*|фільм\p{L}*|серіал\p{L}*|что-то|что то|щось)\s+(?:как|як|типа|в стиле|у стилі)\s+(.+)$/u,
+  /(?:^|\s)(?:comme|du genre|dans le style de|similaires? [aà])\s+(.+)$/u,
+  /(?:^|\s)(?:como|parecid\p{L}*\s+a|similares?\s+a|al estilo de)\s+(.+)$/u
+];
+// "like Interstellar but darker": the comparison ends where the extra wishes start
+const LIKE_TAIL = /\s+(?:but|only|except|and|но|але|только|тільки|mais|pero|sauf|excepto)\s+.*$/u;
+
+// { title, rest } or null. rest is the query without the comparison ("dark sci-fi").
+function extractLikeTitle(query) {
+  const text = String(query || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  for (const marker of LIKE_MARKERS) {
+    const match = text.match(marker);
+    if (!match) continue;
+    const title = match[1]
+      .replace(LIKE_TAIL, '')
+      .replace(/^(?:the\s+)?(?:movie|film|series|show|фильм|фільм|сериал|серіал)\s+/u, '')
+      .replace(/^[\s"'«»“”„]+|[\s"'«»“”„.,!?]+$/gu, '');
+    if (title.length < 2 || title.length > 60 || title.split(' ').length > 8) continue;
+
+    // "like crying", "like a rainy day": a mood, not a title
+    const probe = parseConcepts(translateQuery(title).text);
+    const describesMood = probe.genres.length || probe.moodGenres.length || probe.moodProfile;
+    if (describesMood && countCoverage(probe).unknown === 0) continue;
+
+    return { title, rest: text.slice(0, match.index).trim() };
+  }
+  return null;
+}
+
+// ══════════════════════════════════════════════
+// NEGATIONS
+// "scary but not too gory", "no cartoons", "не слишком длинный": what the visitor does NOT want
+// becomes a filter instead of being read as a wish ("not scary" used to give horror films)
+// ══════════════════════════════════════════════
+const NEGATION_TARGETS = [
+  ['horror', 'scary|horror|horrors|frightening|creepy|terrifying|spooky', { genres: [27] }],
+  ['gore', 'gory|gore|bloody|blood|splatter|graphic', { keywords: [10292, 344603, 367145] }],
+  ['violence', 'violent|violence|brutal|cruel|cruelty', { genres: [10752], keywords: [10292, 262404, 367145] }],
+  ['sad', 'sad|depressing|heavy|tragic|tearjerker|tearjerkers|crying|tears|drama', { keywords: [156924, 9872] }],
+  ['romance', 'romantic|romance|love story|love stories|cheesy|mushy', { genres: [10749] }],
+  ['animation', 'animated|animation|cartoon|cartoons|anime', { genres: [16] }],
+  ['kids', 'kids|childish|children|for kids|for children', { genres: [10751] }],
+  ['long', 'long|lengthy', { runtime: 120 }],
+  // nothing to filter by, but still not a wish
+  [null, 'boring|slow|stupid|dumb|predictable|cliche|cliched|cheap|bad', {}]
+];
+const NEGATION_RE = new RegExp(
+  `(?:^|\\s)(?:not|no|without|non|nothing|never|less|dont want|don't want)[\\s-]+(?:(?:too|very|so|overly|that|much|any|a|lot|of|the|really|super)\\s+)*(${NEGATION_TARGETS.map(([, words]) => words).join('|')})(?=\\s|$)`,
+  'gu'
+);
+
+// { text, avoid, genres, keywords, runtime, any }: text is the query without the negated phrases
+function extractNegations(text) {
+  const found = { avoid: [], genres: [], keywords: [], runtime: null };
+  const stripped = text.replace(NEGATION_RE, (whole, word) => {
+    const [label, , filter] = NEGATION_TARGETS.find(([, words]) => words.split('|').includes(word));
+    if (label && !found.avoid.includes(label)) found.avoid.push(label);
+    found.genres.push(...(filter.genres || []));
+    found.keywords.push(...(filter.keywords || []));
+    if (filter.runtime) found.runtime = filter.runtime;
+    return ' ';
+  }).replace(/\s+/g, ' ').trim();
+  return { ...found, text: stripped, any: stripped !== text.trim() };
+}
+
+// The filters win over whatever the query or the AI suggested
+function applyNegations(result, negations) {
+  if (!negations?.any) return result;
+  const out = { ...(result || {}) };
+  const dropped = new Set(negations.genres);
+  for (const key of ['genres', 'genres_any']) {
+    if (!out[key]) continue;
+    out[key] = out[key].filter(g => !dropped.has(g));
+    if (!out[key].length) delete out[key];
+  }
+  if (negations.genres.length) out.exclude_genres = [...new Set([...(out.exclude_genres || []), ...negations.genres])];
+  if (negations.keywords.length) out.exclude_keywords = [...new Set(negations.keywords)];
+  if (negations.runtime) out.max_runtime = negations.runtime;
+  if (negations.avoid.length) out.avoid = negations.avoid;
+  return out;
 }
 
 // Best answer without the AI. confident = false means the AI should have a say first.
