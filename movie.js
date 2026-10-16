@@ -355,8 +355,13 @@ function orderTrailers(videos) {
     .map(v => v.key);
 }
 
+// Phones show the trailer as its own 16:9 picture (style.css): there it is a normal YouTube player
+// with its own buttons. Phones only allow sound after a tap on the player itself, so our mute
+// button, which restarts the video, cannot switch the sound on there.
+const isPhoneLayout = () => window.matchMedia('(max-width: 600px)').matches;
+
 const heroEmbedUrl = (key, mute) =>
-  `https://www.youtube.com/embed/${key}?autoplay=1&mute=${mute ? 1 : 0}&controls=0&loop=1&playlist=${key}&rel=0&modestbranding=1&enablejsapi=1&playsinline=1`;
+  `https://www.youtube.com/embed/${key}?autoplay=1&mute=${mute ? 1 : 0}&controls=${isPhoneLayout() ? 1 : 0}&loop=1&playlist=${key}&rel=0&modestbranding=1&enablejsapi=1&playsinline=1`;
 
 function startHeroVideo(key) {
   const iframe = document.createElement('iframe');
@@ -373,7 +378,7 @@ function startHeroVideo(key) {
   document.getElementById('heroVideoWrapper').replaceChildren(iframe);
 
   const muteBtn = document.getElementById('muteBtn');
-  muteBtn.style.display = 'flex';
+  muteBtn.style.display = isPhoneLayout() ? 'none' : 'flex';
   muteBtn.textContent = isMuted ? '\uD83D\uDD07' : '\uD83D\uDD0A';
 }
 
@@ -410,7 +415,7 @@ function toggleMute() {
 
 function openTrailerModal(key) {
   const modal = document.getElementById('trailerModal');
-  document.getElementById('trailerContainer').innerHTML = `<iframe src="https://www.youtube.com/embed/${key}?autoplay=1&controls=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  document.getElementById('trailerContainer').innerHTML = `<iframe src="https://www.youtube.com/embed/${key}?autoplay=1&controls=1&playsinline=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
 }
