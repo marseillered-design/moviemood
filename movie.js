@@ -1,7 +1,10 @@
 const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
-const TMDB_BACKDROP_URL = 'https://image.tmdb.org/t/p/original';
+// "More like this" cards: w342 is sharp at card size, half the weight of w500
+const TMDB_CARD_URL = 'https://image.tmdb.org/t/p/w342';
+// The backdrop never shows larger than the screen: "original" files weigh several megabytes
+const TMDB_BACKDROP_URL = `https://image.tmdb.org/t/p/${window.matchMedia('(max-width: 600px)').matches ? 'w780' : 'w1280'}`;
 
 const params = new URLSearchParams(window.location.search);
 // Pretty URLs (/movie/603-the-matrix) are rendered by api/page.js, which passes the id here
@@ -192,7 +195,7 @@ async function loadMovie() {
       return `
         <a class="similar-card" href="${mmTitleUrl(m, mediaType)}" data-id="${m.id}" data-type="${normalizeMediaType(mediaType)}" data-title="${(m.title || m.name || '').replace(/"/g, '&quot;')}" data-poster="${m.poster_path || ''}">
           <div class="similar-poster-wrap">
-            <img src="${m.poster_path ? TMDB_IMAGE_BASE_URL + m.poster_path : ''}" alt="${m.title || m.name}">
+            <img src="${m.poster_path ? TMDB_CARD_URL + m.poster_path : ''}" loading="lazy" alt="${m.title || m.name}">
             ${simRating ? `<span class="tmdb-mini-score card-score">${simRating}</span>` : ''}
             <button class="similar-fav-btn" type="button">${fav}</button>
           </div>

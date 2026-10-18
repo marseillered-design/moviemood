@@ -10,7 +10,9 @@
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
-const ASSET_VERSION = '20261016n';
+// posters in the card grids: sharp at card size, half the weight of w500
+const TMDB_CARD_URL = 'https://image.tmdb.org/t/p/w342';
+const ASSET_VERSION = '20261018a';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -655,7 +657,7 @@ function movieCard(movie, lang) {
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '';
   return `<a class="movie-card" href="${langPath(lang, titlePath(movie))}">
         <div class="card-poster-wrapper">
-          <img src="${TMDB_IMAGE_BASE_URL}${movie.poster_path}" class="movie-poster" loading="lazy" alt="${escapeHtml(title)}${year ? ` (${year})` : ''} ${tr(lang, 'poster')}">
+          <img src="${TMDB_CARD_URL}${movie.poster_path}" class="movie-poster" loading="lazy" alt="${escapeHtml(title)}${year ? ` (${year})` : ''} ${tr(lang, 'poster')}">
           ${rating ? `<span class="tmdb-mini-score card-score">${rating}</span>` : ''}
         </div>
         <div class="card-info">

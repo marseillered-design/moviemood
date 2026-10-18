@@ -1,18 +1,77 @@
 {
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/moods", "destination": "/api/page?kind=moods" },
-    { "source": "/moods/:slug", "destination": "/api/page?kind=mood&slug=:slug" },
-    { "source": "/movie/:id", "destination": "/api/page?kind=title&type=movie&id=:id" },
-    { "source": "/tv/:id", "destination": "/api/page?kind=title&type=tv&id=:id" },
-    { "source": "/person/:id", "destination": "/api/page?kind=person&id=:id" },
-    { "source": "/:lang(uk|ru|fr|es)", "destination": "/api/page?kind=home&lang=:lang" },
-    { "source": "/:lang(uk|ru|fr|es)/moods", "destination": "/api/page?kind=moods&lang=:lang" },
-    { "source": "/:lang(uk|ru|fr|es)/moods/:slug", "destination": "/api/page?kind=mood&slug=:slug&lang=:lang" },
-    { "source": "/:lang(uk|ru|fr|es)/movie/:id", "destination": "/api/page?kind=title&type=movie&id=:id&lang=:lang" },
-    { "source": "/:lang(uk|ru|fr|es)/tv/:id", "destination": "/api/page?kind=title&type=tv&id=:id&lang=:lang" },
-    { "source": "/:lang(uk|ru|fr|es)/person/:id", "destination": "/api/page?kind=person&id=:id&lang=:lang" },
-    { "source": "/sitemap.xml", "destination": "/api/page?kind=sitemap" },
-    { "source": "/robots.txt", "destination": "/api/page?kind=robots" }
+    {
+      "source": "/moods",
+      "destination": "/api/page?kind=moods"
+    },
+    {
+      "source": "/moods/:slug",
+      "destination": "/api/page?kind=mood&slug=:slug"
+    },
+    {
+      "source": "/movie/:id",
+      "destination": "/api/page?kind=title&type=movie&id=:id"
+    },
+    {
+      "source": "/tv/:id",
+      "destination": "/api/page?kind=title&type=tv&id=:id"
+    },
+    {
+      "source": "/person/:id",
+      "destination": "/api/page?kind=person&id=:id"
+    },
+    {
+      "source": "/:lang(uk|ru|fr|es)",
+      "destination": "/api/page?kind=home&lang=:lang"
+    },
+    {
+      "source": "/:lang(uk|ru|fr|es)/moods",
+      "destination": "/api/page?kind=moods&lang=:lang"
+    },
+    {
+      "source": "/:lang(uk|ru|fr|es)/moods/:slug",
+      "destination": "/api/page?kind=mood&slug=:slug&lang=:lang"
+    },
+    {
+      "source": "/:lang(uk|ru|fr|es)/movie/:id",
+      "destination": "/api/page?kind=title&type=movie&id=:id&lang=:lang"
+    },
+    {
+      "source": "/:lang(uk|ru|fr|es)/tv/:id",
+      "destination": "/api/page?kind=title&type=tv&id=:id&lang=:lang"
+    },
+    {
+      "source": "/:lang(uk|ru|fr|es)/person/:id",
+      "destination": "/api/page?kind=person&id=:id&lang=:lang"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/page?kind=sitemap"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/api/page?kind=robots"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)\\.(js|css)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.(png|svg|ico|webmanifest)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800"
+        }
+      ]
+    }
   ]
 }

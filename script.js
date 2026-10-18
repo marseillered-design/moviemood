@@ -1,7 +1,8 @@
 // TMDB
 const TMDB_API_KEY = '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+// card-sized posters: w342 is sharp at the size cards are shown and half the weight of w500
+const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w342';
 let currentRegion = 'US';
 let currentType = 'movie';
 let includeAnime = false;
