@@ -579,8 +579,9 @@ function layout({ lang = 'en', origin, path, title, description, image, head = '
   <meta property="og:image" content="${escapeHtml(image || `${origin}/og-image.png`)}">
   <link rel="stylesheet" href="/style.css?v=${ASSET_VERSION}">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="icon" href="/favicon.ico?v=2" sizes="32x32">
+  <link rel="icon" href="/favicon.ico?v=2" sizes="16x16 32x32 48x48">
   <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
+  <link rel="icon" href="/icon-192.png?v=2" type="image/png" sizes="192x192">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
   <link rel="manifest" href="/site.webmanifest">
   <!-- Vercel Web Analytics -->
