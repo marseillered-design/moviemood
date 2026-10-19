@@ -774,6 +774,11 @@ async function renderHomePage(origin, lang) {
     .replace(/<p class="home-subtitle">[^<]*<\/p>/, () => `<p class="home-subtitle">${escapeHtml(tr(lang, 'home_subtitle'))}</p>`)
     .replace(/<span data-i18n="quick\.(\w+)">[^<]*<\/span>/g, (all, key) => `<span data-i18n="quick.${key}">${escapeHtml(TEXT.quick[key]?.[lang] ?? '')}</span>`)
     .replace(/href="\/moods(\/[^"]*)?"/g, (all, rest = '') => `href="${langPath(lang, `/moods${rest}`)}"`);
+  // the structured data names this page, in its language, at its own address
+  html = html.replace(
+    '{"@type":"WebPage","name":"MovieMood: Find a Movie for Your Mood","url":"https://www.themoviemood.com/"',
+    () => `{"@type":"WebPage","name":${JSON.stringify(title)},"url":${JSON.stringify(canonical)},"inLanguage":"${lang}"`
+  );
   html = setMeta(html, 'name', 'description', description);
   html = setMeta(html, 'property', 'og:title', title);
   html = setMeta(html, 'property', 'og:description', description);
