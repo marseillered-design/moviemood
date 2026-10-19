@@ -380,6 +380,8 @@ const TEXT = {
     fr: '{name} : où regarder en streaming',
     es: '{name}: dónde ver online'
   },
+  // the same, shorter, for long film names (see fitTitle)
+  title_page_short: { en: '{name}: Where to Watch', uk: '{name}: де дивитися', ru: '{name}: где смотреть', fr: '{name} : où regarder', es: '{name}: dónde ver' },
   title_page_desc: {
     en: 'Where to watch {name}, trailer, cast and similar titles.',
     uk: 'Де дивитися {name} онлайн: трейлер, актори та схожі фільми.',
@@ -447,6 +449,10 @@ const TEXT = {
     all: { en: 'All moods', uk: 'Усі настрої', ru: 'Все настроения', fr: 'Toutes les humeurs', es: 'Todos los ánimos' }
   }
 };
+
+// Google cuts titles at about 60–65 characters: the first version that fits wins
+// (the full one, then without "| MovieMood", then shorter wording, then without the year)
+const fitTitle = (...versions) => versions.find(title => title.length <= 65) || versions[versions.length - 1];
 
 const tr = (lang, key, vars) => {
   let text = TEXT[key][lang] ?? TEXT[key].en;
@@ -809,7 +815,12 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   const year = (details.release_date || details.first_air_date || '').slice(0, 4);
   const canonical = `${origin}${ownPath}`;
   const nameWithYear = `${name}${year ? ` (${year})` : ''}`;
-  const pageTitle = `${tr(lang, 'title_page_title', { name: nameWithYear })} | MovieMood`;
+  const pageTitle = fitTitle(
+    `${tr(lang, 'title_page_title', { name: nameWithYear })} | MovieMood`,
+    tr(lang, 'title_page_title', { name: nameWithYear }),
+    tr(lang, 'title_page_short', { name: nameWithYear }),
+    tr(lang, 'title_page_short', { name })
+  );
   const description = truncate(details.overview || tr(lang, 'title_page_desc', { name }), 155);
   const poster = details.poster_path ? `${TMDB_IMAGE_BASE_URL}${details.poster_path}` : '';
 
@@ -900,7 +911,7 @@ async function renderPersonPage(id, origin, requestedPath, lang = 'en') {
     .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))
     .slice(0, 3)
     .map(item => item.title || item.name);
-  const pageTitle = `${tr(lang, 'person_page_title', { name })} | MovieMood`;
+  const pageTitle = fitTitle(`${tr(lang, 'person_page_title', { name })} | MovieMood`, tr(lang, 'person_page_title', { name }));
   const description = truncate(
     known.length
       ? tr(lang, 'person_page_desc', { name, known: known.join(', ') })
