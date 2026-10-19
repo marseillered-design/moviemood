@@ -2338,9 +2338,10 @@ a.person-chip, a.actor-card { color: inherit; text-decoration: none; }
 }
 
 /* ==================== DESKTOP: PROJECTOR BEAM ==================== */
-/* Home page on computers only: a soft golden projector beam swings slowly over the title, with dust
-   floating in the light. Phones, touch screens and "reduce motion" settings get nothing. */
-@media (min-width: 900px) and (hover: hover) and (prefers-reduced-motion: no-preference) {
+/* Home page on computers only: a soft golden projector beam over the title, with dust in the light.
+   It moves unless the system asks for less motion (Windows "Show animations" off): then it stands still.
+   Phones and touch screens get nothing. */
+@media (min-width: 900px) and (hover: hover) {
   body[data-page="home"] .home-hero { overflow: visible; }
   body[data-page="home"] .home-hero::before {
     content: '';
@@ -2350,13 +2351,12 @@ a.person-chip, a.actor-card { color: inherit; text-decoration: none; }
     width: 1100px;
     height: 640px;
     transform-origin: 50% 0;
-    transform: translateX(-50%) rotate(-7deg);
+    transform: translateX(-50%);
     background: conic-gradient(from 156deg at 50% 0%, transparent 0deg, rgba(240, 208, 138, 0.09) 12deg,
       rgba(255, 226, 160, 0.22) 24deg, rgba(240, 208, 138, 0.09) 36deg, transparent 48deg);
     filter: blur(3px);
     pointer-events: none;
     z-index: -1;
-    animation: mmBeam 9s ease-in-out infinite alternate;
   }
   /* one 2px speck, copied 60 times by its shadows */
   body[data-page="home"] .home-hero::after {
@@ -2430,9 +2430,15 @@ a.person-chip, a.actor-card { color: inherit; text-decoration: none; }
       18px 223px 0 1px rgba(255, 226, 160, 0.35),
       142px 235px 0 0px rgba(255, 236, 190, 0.75),
       -182px 168px 0 1px rgba(255, 236, 190, 0.75);
-    animation: mmDust 22s ease-in-out infinite alternate;
   }
-  @keyframes mmBeam { to { transform: translateX(-50%) rotate(7deg); } }
+}
+@media (min-width: 900px) and (hover: hover) and (prefers-reduced-motion: no-preference) {
+  body[data-page="home"] .home-hero::before { animation: mmBeam 9s ease-in-out infinite alternate; }
+  body[data-page="home"] .home-hero::after { animation: mmDust 22s ease-in-out infinite alternate; }
+  @keyframes mmBeam {
+    from { transform: translateX(-50%) rotate(-7deg); }
+    to { transform: translateX(-50%) rotate(7deg); }
+  }
   @keyframes mmDust {
     from { transform: translate(0, 0); opacity: 0.9; }
     50% { opacity: 0.5; }
