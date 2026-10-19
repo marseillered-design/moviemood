@@ -2359,6 +2359,9 @@ a.person-chip, a.actor-card { color: inherit; text-decoration: none; }
     z-index: -1;
     will-change: transform;
     backface-visibility: hidden;
+    /* the light fades out before the posters instead of ending in a line */
+    -webkit-mask-image: linear-gradient(#000 45%, transparent 85%);
+    mask-image: linear-gradient(#000 45%, transparent 85%);
   }
   /* things in front of the moving beam stop blurring what is behind them: that blur was
      recalculated on every frame of the animation (they are nearly opaque anyway) */
