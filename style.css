@@ -2352,12 +2352,21 @@ a.person-chip, a.actor-card { color: inherit; text-decoration: none; }
     height: 640px;
     transform-origin: 50% 0;
     transform: translateX(-50%);
-    background: conic-gradient(from 156deg at 50% 0%, transparent 0deg, rgba(240, 208, 138, 0.09) 12deg,
-      rgba(255, 226, 160, 0.22) 24deg, rgba(240, 208, 138, 0.09) 36deg, transparent 48deg);
-    filter: blur(3px);
+    background: conic-gradient(from 156deg at 50% 0%, transparent 0deg, rgba(240, 208, 138, 0.03) 6deg,
+      rgba(240, 208, 138, 0.10) 13deg, rgba(255, 226, 160, 0.20) 24deg, rgba(240, 208, 138, 0.10) 35deg,
+      rgba(240, 208, 138, 0.03) 42deg, transparent 48deg);
     pointer-events: none;
     z-index: -1;
+    will-change: transform;
+    backface-visibility: hidden;
   }
+  /* things in front of the moving beam stop blurring what is behind them: that blur was
+     recalculated on every frame of the animation (they are nearly opaque anyway) */
+  body[data-page="home"] .mood-input,
+  body[data-page="home"] .search-container .surprise-btn,
+  body[data-page="home"] .search-container .filters-btn,
+  body[data-page="home"] .movie-card,
+  body[data-page="home"] .card-score { backdrop-filter: none; -webkit-backdrop-filter: none; }
   /* one 2px speck, copied 60 times by its shadows */
   body[data-page="home"] .home-hero::after {
     content: '';
@@ -2369,6 +2378,7 @@ a.person-chip, a.actor-card { color: inherit; text-decoration: none; }
     border-radius: 50%;
     pointer-events: none;
     z-index: -1;
+    will-change: transform, opacity;
     box-shadow:
       237px 241px 0 1px rgba(255, 226, 160, 0.35),
       238px 270px 0 0px rgba(255, 236, 190, 0.5),
@@ -2433,11 +2443,13 @@ a.person-chip, a.actor-card { color: inherit; text-decoration: none; }
   }
 }
 @media (min-width: 900px) and (hover: hover) and (prefers-reduced-motion: no-preference) {
-  body[data-page="home"] .home-hero::before { animation: mmBeam 9s ease-in-out infinite alternate; }
+  body[data-page="home"] .home-hero::before { animation: mmBeam 16s linear infinite; }
   body[data-page="home"] .home-hero::after { animation: mmDust 22s ease-in-out infinite alternate; }
   @keyframes mmBeam {
-    from { transform: translateX(-50%) rotate(-7deg); }
-    to { transform: translateX(-50%) rotate(7deg); }
+    0%, 100% { transform: translateX(-50%) rotate(-6deg); }
+    22% { transform: translateX(-50%) rotate(-1deg); }
+    50% { transform: translateX(-50%) rotate(6deg); }
+    78% { transform: translateX(-50%) rotate(1deg); }
   }
   @keyframes mmDust {
     from { transform: translate(0, 0); opacity: 0.9; }
