@@ -695,7 +695,11 @@ function renderMoodPage(mood, movies, origin, lang) {
     lang,
     origin,
     path,
-    title: `${tr(lang, 'mood_page_title', { title: name, n: movies.length })} | MovieMood`,
+    title: fitTitle(
+      `${tr(lang, 'mood_page_title', { title: name, n: movies.length })} | MovieMood`,
+      tr(lang, 'mood_page_title', { title: name, n: movies.length }),
+      `${name} | MovieMood`
+    ),
     description: truncate(intro, 155),
     image: movies[0]?.backdrop_path ? `https://image.tmdb.org/t/p/w1280${movies[0].backdrop_path}` : '',
     head: jsonLd(itemList) + jsonLd(breadcrumbs(origin, [[tr(lang, 'moods'), langPath(lang, '/moods')], [name, langPath(lang, path)]], lang)),
