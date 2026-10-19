@@ -11,7 +11,20 @@ const params = new URLSearchParams(window.location.search);
 const serverPage = window.__MM_PAGE || null;
 const movieId = serverPage?.id || params.get('id');
 const mediaType = serverPage?.type || params.get('type') || 'movie';
-const region = params.get('region') || mmRegion.get() || 'US';
+// The streaming region: from the address, then the visitor's choice or a previous visit; otherwise
+// the country Vercel sees. Visitors from Google often land here first, without passing the home page
+// that used to be the only place where the country was detected.
+const knownRegion = params.get('region') || mmRegion.get();
+const regionReady = knownRegion
+  ? Promise.resolve(knownRegion)
+  : fetch('/api/page?kind=geo')
+    .then(res => res.json())
+    .then(({ country }) => {
+      if (!/^[A-Z]{2}$/.test(country || '')) return 'US';
+      mmRegion.set(country);
+      return country;
+    })
+    .catch(() => 'US');
 
 // Old links (movie.html?id=...) move to the page's own address, which search engines can read.
 // ssr=0 marks the server's fallback to this plain page: no redirect back then.
@@ -156,6 +169,7 @@ async function loadMovie() {
   ).join('') || '';
   document.getElementById('movieCast').innerHTML = castHTML;
 
+  const region = await regionReady;
   const providerRegion = providers.results?.[region] ? region : 'US';
   const regionData = providers.results?.[providerRegion];
   if (regionData) {
