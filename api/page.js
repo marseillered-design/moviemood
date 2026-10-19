@@ -12,7 +12,7 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 // posters in the card grids: sharp at card size, half the weight of w500
 const TMDB_CARD_URL = 'https://image.tmdb.org/t/p/w342';
-const ASSET_VERSION = '20261020a';
+const ASSET_VERSION = '20261020b';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -154,6 +154,9 @@ const MOODS = [
 const LANGS = ['en', 'uk', 'ru', 'fr', 'es'];
 const TMDB_LOCALES = { en: 'en-US', uk: 'uk-UA', ru: 'ru-RU', fr: 'fr-FR', es: 'es-ES' };
 const OG_LOCALES = { en: 'en_US', uk: 'uk_UA', ru: 'ru_RU', fr: 'fr_FR', es: 'es_ES' };
+// "Where to watch" in the page's text and description: the country most readers of each
+// language version are in (the browser then shows the visitor's own country)
+const WATCH_COUNTRIES = { en: 'US', uk: 'UA', ru: 'KZ', fr: 'FR', es: 'ES' };
 
 // [title, intro] of each collection in the other languages
 const MOOD_TEXT = {
@@ -382,6 +385,26 @@ const TEXT = {
   },
   // the same, shorter, for long film names (see fitTitle)
   title_page_short: { en: '{name}: Where to Watch', uk: '{name}: де дивитися', ru: '{name}: где смотреть', fr: '{name} : où regarder', es: '{name}: dónde ver' },
+  // "Where to watch Inception: Netflix, Apple TV." — first words of the description in search results
+  title_page_where: {
+    en: 'Where to watch {name}: {services}.',
+    uk: 'Де дивитися {name}: {services}.',
+    ru: 'Где смотреть {name}: {services}.',
+    fr: 'Où regarder {name} : {services}.',
+    es: 'Dónde ver {name}: {services}.'
+  },
+  // visible on the page before the browser draws the full list for the visitor's own country
+  title_page_where_in: {
+    en: 'Where to watch in {country}:',
+    uk: 'Де дивитися ({country}):',
+    ru: 'Где смотреть ({country}):',
+    fr: 'Où regarder ({country}) :',
+    es: 'Dónde ver ({country}):'
+  },
+  watch_stream: { en: 'stream', uk: 'підписка', ru: 'подписка', fr: 'abonnement', es: 'suscripción' },
+  watch_rent: { en: 'rent', uk: 'оренда', ru: 'аренда', fr: 'location', es: 'alquiler' },
+  watch_buy: { en: 'buy', uk: 'купівля', ru: 'покупка', fr: 'achat', es: 'compra' },
+  trailer: { en: 'Official Trailer', uk: 'Офіційний трейлер', ru: 'Официальный трейлер', fr: 'Bande-annonce officielle', es: 'Tráiler oficial' },
   title_page_desc: {
     en: 'Where to watch {name}, trailer, cast and similar titles.',
     uk: 'Де дивитися {name} онлайн: трейлер, актори та схожі фільми.',
@@ -804,7 +827,7 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   const detailsUrl = locale => `${TMDB_BASE_URL}/${type}/${id}?api_key=${TMDB_API_KEY}&language=${locale}`;
   const [templateRes, details, english] = await Promise.all([
     fetch(`${origin}/movie.html`),
-    fetchJson(detailsUrl(TMDB_LOCALES[lang])),
+    fetchJson(`${detailsUrl(TMDB_LOCALES[lang])}&append_to_response=videos,watch/providers&include_video_language=en,${lang}`),
     // the address is built from the English title in every language
     lang === 'en' ? null : fetchJson(detailsUrl('en-US'))
   ]);
@@ -825,8 +848,55 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
     tr(lang, 'title_page_short', { name: nameWithYear }),
     tr(lang, 'title_page_short', { name })
   );
-  const description = truncate(details.overview || tr(lang, 'title_page_desc', { name }), 155);
   const poster = details.poster_path ? `${TMDB_IMAGE_BASE_URL}${details.poster_path}` : '';
+
+  // Streaming services in the country of this language version
+  const country = WATCH_COUNTRIES[lang];
+  const watch = details['watch/providers']?.results?.[country] || {};
+  const services = [];
+  for (const [kind, label] of [['flatrate', 'watch_stream'], ['rent', 'watch_rent'], ['buy', 'watch_buy']]) {
+    for (const provider of watch[kind] || []) {
+      const known = services.find(item => item.name === provider.provider_name);
+      if (known) known.kinds.push(tr(lang, label));
+      else services.push({ name: provider.provider_name, kinds: [tr(lang, label)] });
+    }
+  }
+  const serviceNames = services.slice(0, 3).map(item => item.name).join(', ');
+  const description = truncate(
+    [serviceNames && tr(lang, 'title_page_where', { name, services: serviceNames }), details.overview || tr(lang, 'title_page_desc', { name })]
+      .filter(Boolean).join(' '),
+    155
+  );
+  const countryName = (() => {
+    try { return new Intl.DisplayNames([lang], { type: 'region' }).of(country); } catch (e) { return country; }
+  })();
+  const providersHtml = services.length
+    ? `<p class="providers-ssr">${escapeHtml(tr(lang, 'title_page_where_in', { country: countryName }))} ${services.slice(0, 8)
+      .map(item => `${escapeHtml(item.name)} (${escapeHtml(item.kinds.join(', '))})`).join(', ')}</p>`
+    : '';
+
+  // The trailer, described for video search: official trailer first, recaps of older films last
+  const trailerRank = video => {
+    let rank = ({ Trailer: 0, Teaser: 4 })[video.type] ?? 8;
+    if (!video.official) rank += 1;
+    if (/official trailer|main trailer/i.test(video.name || '')) rank -= 1;
+    if (/journey|recap|look ?back|retrospective|tribute|anniversary|reaction|tv spot|review/i.test(video.name || '')) rank += 3;
+    if (video.iso_639_1 === lang) rank -= 0.5;
+    return rank;
+  };
+  const trailer = (details.videos?.results || [])
+    .filter(video => video.site === 'YouTube' && ['Trailer', 'Teaser'].includes(video.type))
+    .sort((a, b) => trailerRank(a) - trailerRank(b))[0];
+  const video = trailer ? {
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    name: `${nameWithYear} — ${tr(lang, 'trailer')}`,
+    description: truncate(details.overview || `${nameWithYear} — ${tr(lang, 'trailer')}`, 300),
+    thumbnailUrl: [`https://i.ytimg.com/vi/${trailer.key}/hqdefault.jpg`],
+    uploadDate: trailer.published_at || details.release_date || details.first_air_date || undefined,
+    embedUrl: `https://www.youtube.com/embed/${trailer.key}`,
+    inLanguage: trailer.iso_639_1 || undefined
+  } : null;
 
   const schema = {
     '@context': 'https://schema.org',
@@ -859,6 +929,7 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   <meta property="og:url" content="${escapeHtml(canonical)}">
   ${details.backdrop_path ? `<meta property="og:image" content="https://image.tmdb.org/t/p/w1280${details.backdrop_path}">\n  <meta name="twitter:card" content="summary_large_image">` : ''}
   ${jsonLd(schema)}
+  ${video ? jsonLd(video) : ''}
   ${jsonLd(breadcrumbs(origin, [[name, ownPath]], lang))}`;
 
   const moodsSection = `<section class="mood-more movie-moods">
@@ -877,6 +948,7 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
     .replace(/<title>[^<]*<\/title>/, () => head)
     .replace('id="movieTitle"></h1>', () => `id="movieTitle">${escapeHtml(name)}</h1>`)
     .replace('id="movieOverview"></p>', () => `id="movieOverview">${escapeHtml(details.overview)}</p>`)
+    .replace('<div class="hero-providers" id="watchProviders"></div>', () => `<div class="hero-providers" id="watchProviders">${providersHtml}</div>`)
     .replace('id="moviePoster" src="" alt="Movie Poster"', () => `id="moviePoster" src="${escapeHtml(poster)}" alt="${escapeHtml(name)} ${tr(lang, 'poster')}"`)
     .replace('<div class="trailer-modal"', () => `${moodsSection}<div class="trailer-modal"`)
     .replace('<script src="movie.js', () => `<script>window.__MM_PAGE = ${JSON.stringify({ id: String(id), type }).replace(/</g, '\\u003c')};</script>\n  <script src="movie.js`);
@@ -976,10 +1048,26 @@ function sendPage(res, page) {
 }
 
 // Every page in every language; the pages themselves point to their other-language versions
+// Every page in every language; the pages themselves point to their other-language versions.
+// Besides the films of the collections: what is popular, new, trending and best rated, films
+// and series — the titles people search "where to watch" for.
+const SITEMAP_LISTS = [
+  ['movie', 'movie/popular', 5], ['movie', 'movie/top_rated', 10], ['movie', 'movie/now_playing', 3],
+  ['movie', 'movie/upcoming', 2], ['movie', 'trending/movie/week', 5],
+  ['tv', 'tv/popular', 5], ['tv', 'tv/top_rated', 5], ['tv', 'trending/tv/week', 3]
+];
+
 async function renderSitemap(origin) {
   const moodMovies = await Promise.all(MOODS.map(mood => fetchMoodMovies(mood).catch(() => [])));
-  const moviePaths = [...new Set(moodMovies.flat().map(m => titlePath(m)))];
-  const paths = ['/', '/moods', ...MOODS.map(m => `/moods/${m.slug}`), ...moviePaths];
+  const lists = await Promise.all(SITEMAP_LISTS.flatMap(([type, list, pages]) =>
+    Array.from({ length: pages }, (_, i) =>
+      fetchJson(`${TMDB_BASE_URL}/${list}?api_key=${TMDB_API_KEY}&language=en-US&page=${i + 1}`)
+        .then(data => (data.results || [])
+          .filter(item => !item.adult && item.poster_path && (item.vote_count || 0) >= 20)
+          .map(item => titlePath(item, type)))
+        .catch(() => []))));
+  const titlePaths = [...new Set([...moodMovies.flat().map(m => titlePath(m)), ...lists.flat()])];
+  const paths = ['/', '/moods', ...MOODS.map(m => `/moods/${m.slug}`), ...titlePaths];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${LANGS.flatMap(lang => paths.map(path => `  <url><loc>${escapeHtml(origin + langPath(lang, path))}</loc></url>`)).join('\n')}

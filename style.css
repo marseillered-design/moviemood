@@ -854,6 +854,7 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 .provider-link { display: inline-flex; transition: transform 0.15s ease; }
 .provider-link:hover { transform: translateY(-2px); }
 .providers-credit { font-size: 0.68rem; color: var(--text-dim); opacity: 0.6; }
+.providers-ssr { font-size: 0.85rem; color: var(--text-dim); margin: 6px 0 0; line-height: 1.5; }
 
 /* DETAILS */
 .movie-details-section {
