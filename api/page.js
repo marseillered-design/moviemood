@@ -142,6 +142,16 @@ const MOODS = [
     slug: 'best-80s-movies', emoji: '🕹️', title: 'Best Movies of the 80s', query: '80s',
     discover: 'primary_release_date.gte=1980-01-01&primary_release_date.lte=1989-12-31&sort_by=vote_average.desc&vote_count.gte=3000',
     intro: 'Synths, practical effects and heroes with one-liners. The best-loved films of the 1980s for a properly nostalgic evening.'
+  },
+  {
+    slug: 'best-anime-movies', emoji: '🎌', title: 'Best Anime Movies', query: 'anime',
+    discover: 'with_genres=16&with_keywords=210024&sort_by=vote_count.desc&vote_count.gte=500',
+    intro: 'From Studio Ghibli to Makoto Shinkai: the best-loved anime films, the kind that enchant children and adults alike.'
+  },
+  {
+    slug: 'best-documentaries', emoji: '🎥', title: 'Best Documentaries', query: 'documentary',
+    discover: 'with_genres=99&sort_by=vote_count.desc&vote_count.gte=300',
+    intro: 'True stories told better than fiction: nature, sport, music and crime documentaries that people keep recommending.'
   }
 ];
 
@@ -297,6 +307,18 @@ const MOOD_TEXT = {
     ru: ['Лучшие фильмы 90-х', 'Десятилетие видеопрокатов и аншлагов в пятницу вечером. Самые высоко оценённые фильмы 1990-х, которые до сих пор не устарели.'],
     fr: ['Meilleurs films des années 90', 'La décennie des vidéoclubs et des vendredis soir à guichets fermés. Les films les mieux notés des années 1990, qui n’ont pas pris une ride.'],
     es: ['Mejores películas de los 90', 'La década de los videoclubes y los viernes con las salas llenas. Las películas mejor valoradas de los años 90, que siguen aguantando.']
+  },
+  'best-anime-movies': {
+    uk: ['Найкращі аніме-фільми', 'Від Studio Ghibli до Макото Сінкая: найулюбленіші повнометражні аніме, які зачаровують і дітей, і дорослих.'],
+    ru: ['Лучшие аниме-фильмы', 'От Studio Ghibli до Макото Синкая: самые любимые полнометражные аниме, которые очаровывают и детей, и взрослых.'],
+    fr: ['Meilleurs films d’anime', 'Du studio Ghibli à Makoto Shinkai : les films d’anime les plus aimés, qui enchantent petits et grands.'],
+    es: ['Mejores películas de anime', 'Del Studio Ghibli a Makoto Shinkai: las películas de anime más queridas, que encantan a pequeños y mayores.']
+  },
+  'best-documentaries': {
+    uk: ['Найкращі документальні фільми', 'Справжні історії, розказані краще за вигадку: документальні фільми про природу, спорт, музику та злочини, які всі радять.'],
+    ru: ['Лучшие документальные фильмы', 'Настоящие истории, рассказанные лучше вымысла: документальные фильмы о природе, спорте, музыке и преступлениях, которые все советуют.'],
+    fr: ['Meilleurs documentaires', 'Des histoires vraies mieux racontées que la fiction : nature, sport, musique et faits divers, les documentaires que tout le monde recommande.'],
+    es: ['Mejores documentales', 'Historias reales contadas mejor que la ficción: documentales de naturaleza, deporte, música y crímenes que todos recomiendan.']
   },
   'best-80s-movies': {
     uk: ['Найкращі фільми 80-х', 'Синтезатори, практичні ефекти й герої з крилатими фразами. Найулюбленіші фільми 1980-х для по-справжньому ностальгійного вечора.'],
@@ -1056,14 +1078,19 @@ function sendPage(res, page) {
 const SITEMAP_LISTS = [
   ['movie', 'movie/popular', 5], ['movie', 'movie/top_rated', 10], ['movie', 'movie/now_playing', 3],
   ['movie', 'movie/upcoming', 2], ['movie', 'trending/movie/week', 5],
-  ['tv', 'tv/popular', 5], ['tv', 'tv/top_rated', 5], ['tv', 'trending/tv/week', 3]
+  ['tv', 'tv/popular', 5], ['tv', 'tv/top_rated', 5], ['tv', 'trending/tv/week', 3],
+  // anime and documentaries rarely make the general lists
+  ['movie', 'discover/movie?with_genres=16&with_keywords=210024&sort_by=vote_count.desc', 5],
+  ['tv', 'discover/tv?with_genres=16&with_keywords=210024&sort_by=vote_count.desc', 5],
+  ['movie', 'discover/movie?with_genres=99&sort_by=vote_count.desc', 5],
+  ['tv', 'discover/tv?with_genres=99&sort_by=vote_count.desc', 3]
 ];
 
 async function renderSitemap(origin) {
   const moodMovies = await Promise.all(MOODS.map(mood => fetchMoodMovies(mood).catch(() => [])));
   const lists = await Promise.all(SITEMAP_LISTS.flatMap(([type, list, pages]) =>
     Array.from({ length: pages }, (_, i) =>
-      fetchJson(`${TMDB_BASE_URL}/${list}?api_key=${TMDB_API_KEY}&language=en-US&page=${i + 1}`)
+      fetchJson(`${TMDB_BASE_URL}/${list}${list.includes('?') ? '&' : '?'}api_key=${TMDB_API_KEY}&language=en-US&page=${i + 1}`)
         .then(data => (data.results || [])
           .filter(item => !item.adult && item.poster_path && (item.vote_count || 0) >= 20)
           .map(item => titlePath(item, type)))
