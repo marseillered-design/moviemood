@@ -150,7 +150,8 @@ const MOODS = [
   },
   {
     slug: 'best-documentaries', emoji: '🎥', title: 'Best Documentaries', query: 'documentary',
-    discover: 'with_genres=99&sort_by=vote_count.desc&vote_count.gte=300',
+    // best rated, without concert films (10402) and TV specials (10770) such as reunions
+    discover: 'with_genres=99&without_genres=10402,10770&sort_by=vote_average.desc&vote_count.gte=700',
     intro: 'True stories told better than fiction: nature, sport, music and crime documentaries that people keep recommending.'
   }
 ];
