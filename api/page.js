@@ -854,8 +854,10 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   const country = WATCH_COUNTRIES[lang];
   const watch = details['watch/providers']?.results?.[country] || {};
   const services = [];
+  // "HBO Max Amazon Channel" is HBO Max again, bought through Amazon: one name is enough
+  const isChannel = provider => / (amazon|apple tv|roku premium) channel$|with ads$/i.test(provider.provider_name || '');
   for (const [kind, label] of [['flatrate', 'watch_stream'], ['rent', 'watch_rent'], ['buy', 'watch_buy']]) {
-    for (const provider of watch[kind] || []) {
+    for (const provider of (watch[kind] || []).filter(p => !isChannel(p))) {
       const known = services.find(item => item.name === provider.provider_name);
       if (known) known.kinds.push(tr(lang, label));
       else services.push({ name: provider.provider_name, kinds: [tr(lang, label)] });
