@@ -1963,6 +1963,9 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 }
 [data-theme="light"] .lang-select { color-scheme: light; border-color: rgba(201, 160, 90, 0.32); }
 .lang-select:hover, .lang-select:focus-visible { border-color: var(--purple-light); color: var(--text); }
+/* The open list: Firefox-based browsers (Zen) draw it on white and kept the pale text of the closed picker */
+.lang-select option { background: #1b130e; color: #f5ede3; }
+[data-theme="light"] .lang-select option { background: #fbf6ee; color: #2b1d14; }
 .movie-nav .nav-links { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 
 /* "Showing: Comedy · 1980s · #zombie" above the results */
