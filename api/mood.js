@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     const likeOf = req.body.like_of;
     if (likeOf && typeof likeOf.title === 'string' && likeOf.title.trim()) {
       const name = `${likeOf.title.trim().slice(0, 100)}${Number.isInteger(likeOf.year) ? ` (${likeOf.year})` : ''}`;
-      const picks = await askLikePicks(`${likeOf.type === 'tv' ? 'shows' : 'movies'} like ${name}`, { title: name, rest: '' }, 8000);
+      const picks = await askLikePicks(`${likeOf.type === 'tv' ? 'shows' : 'movies'} like ${name}`, { title: name, rest: '', forPage: true }, 8000);
       return reply(picks.data || {}, picks.status);
     }
 
@@ -184,7 +184,7 @@ Return ONLY valid JSON, no markdown:
  "picks": [{"title": "English title", "year": 1999, "type": "movie"}]}
 Rules:
 - "source" is the title they meant; "type" is "movie" or "tv".
-- "picks": up to 15 well-known, well-rated titles that fans of the source genuinely love for the same reasons (tone, themes, style), best matches first. Fewer is better than loosely related ones.
+- "picks": ${like.forPage ? '12 to 15' : 'up to 15'} well-known, well-rated titles that fans of the source genuinely love for the same reasons (tone, themes, style), best matches first. ${like.forPage ? 'Only titles that truly fit.' : 'Fewer is better than loosely related ones.'}
 - No sequels, prequels, remakes or spin-offs of the source, and not the source itself.
 - Same type as the source (series for a series), unless the wishes say otherwise.
 - Use official English titles and the release year (first air year for series).`;
