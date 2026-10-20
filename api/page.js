@@ -3,16 +3,19 @@
 //   /moods/:slug        → one collection ("Movies for a Rainy Day")
 //   /movie/:id, /tv/:id → movie.html with real <title>, description and content filled in
 //   /person/:id         → person.html, the same way
+//   /movies-like/:id, /shows-like/:id → what fans of one film or series love most
 //   /uk, /ru, /fr, /es, /de  → the home page in that language; the pages above also exist under
 //                         these prefixes (/uk/moods/cozy-movies, /fr/movie/218-the-terminator)
 //   /sitemap.xml, /robots.txt
+
+import LIKE_DATA from './_like-data.js';
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 // posters in the card grids: sharp at card size, half the weight of w500
 const TMDB_CARD_URL = 'https://image.tmdb.org/t/p/w342';
-const ASSET_VERSION = '20261020c';
+const ASSET_VERSION = '20261020d';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -497,6 +500,37 @@ const TEXT = {
     de: '{name}: Filme und Serien, wo man sie schauen kann, und ähnliche Filme.'
   },
 
+  // "Movies like Inception" pages
+  like_h1_movie: { en: 'Movies Like {name}', uk: 'Фільми, схожі на «{name}»', ru: 'Фильмы, похожие на «{name}»', fr: 'Films comme {name}', es: 'Películas como {name}', de: 'Filme wie {name}' },
+  like_h1_tv: { en: 'Shows Like {name}', uk: 'Серіали, схожі на «{name}»', ru: 'Сериалы, похожие на «{name}»', fr: 'Séries comme {name}', es: 'Series como {name}', de: 'Serien wie {name}' },
+  like_title: { en: '{h1}: {n} to Watch Next', uk: '{h1}: {n} найкращих', ru: '{h1}: {n} лучших', fr: '{h1} : {n} à voir ensuite', es: '{h1}: {n} para ver después', de: '{h1}: {n} Empfehlungen' },
+  like_desc: {
+    en: 'What to watch after {name}: {picks} and more, {n} similar picks with trailers and where to watch.',
+    uk: 'Що подивитися після «{name}»: {picks} та інші — {n} схожих, з трейлерами і де дивитися.',
+    ru: 'Что посмотреть после «{name}»: {picks} и другие — {n} похожих, с трейлерами и где смотреть.',
+    fr: 'Que regarder après {name} : {picks} et d’autres, {n} titres similaires avec bandes-annonces et où les regarder.',
+    es: 'Qué ver después de {name}: {picks} y más, {n} títulos similares con tráilers y dónde verlos.',
+    de: 'Was nach {name} schauen: {picks} und mehr – {n} ähnliche Titel mit Trailern und Streaming-Infos.'
+  },
+  like_intro_movie: {
+    en: 'Loved {name}? These {n} films have the same feel: the ones its fans love most. Open any of them for the trailer and where to watch it.',
+    uk: 'Після «{name}» хочеться ще чогось схожого? Ці {n} фільмів мають той самий настрій: їх найбільше люблять шанувальники оригіналу. Відкрийте будь-який — там трейлер і де дивитися.',
+    ru: 'После «{name}» хочется ещё чего-то похожего? Эти {n} фильмов того же настроения: их больше всего любят поклонники оригинала. Откройте любой — там трейлер и где смотреть.',
+    fr: 'Vous avez aimé {name} ? Ces {n} films ont la même atmosphère : ce sont ceux que ses fans préfèrent. Ouvrez-en un pour la bande-annonce et savoir où le regarder.',
+    es: '¿Te gustó {name}? Estas {n} películas tienen el mismo espíritu: son las favoritas de sus fans. Abre cualquiera para ver el tráiler y dónde verla.',
+    de: 'Dir hat {name} gefallen? Diese {n} Filme haben dasselbe Gefühl: die Favoriten seiner Fans. Öffne einen davon für den Trailer und wo du ihn schauen kannst.'
+  },
+  like_intro_tv: {
+    en: 'Loved {name}? These {n} series have the same feel: the ones its fans love most. Open any of them for the trailer and where to watch it.',
+    uk: 'Після «{name}» хочеться ще чогось схожого? Ці {n} серіалів мають той самий настрій: їх найбільше люблять шанувальники оригіналу. Відкрийте будь-який — там трейлер і де дивитися.',
+    ru: 'После «{name}» хочется ещё чего-то похожего? Эти {n} сериалов того же настроения: их больше всего любят поклонники оригинала. Откройте любой — там трейлер и где смотреть.',
+    fr: 'Vous avez aimé {name} ? Ces {n} séries ont la même atmosphère : ce sont celles que ses fans préfèrent. Ouvrez-en une pour la bande-annonce et savoir où la regarder.',
+    es: '¿Te gustó {name}? Estas {n} series tienen el mismo espíritu: son las favoritas de sus fans. Abre cualquiera para ver el tráiler y dónde verla.',
+    de: 'Dir hat {name} gefallen? Diese {n} Serien haben dasselbe Gefühl: die Favoriten ihrer Fans. Öffne eine davon für den Trailer und wo du sie schauen kannst.'
+  },
+  like_where: { en: 'Where to watch {name}', uk: 'Де дивитися «{name}»', ru: 'Где смотреть «{name}»', fr: 'Où regarder {name}', es: 'Dónde ver {name}', de: 'Wo {name} schauen' },
+  like_more: { en: 'More lists like this', uk: 'Ще схожі добірки', ru: 'Ещё похожие подборки', fr: 'Autres listes du même genre', es: 'Más listas parecidas', de: 'Weitere ähnliche Listen' },
+
   // Same as home.page_title in i18n.js, which sets the title again in the browser
   home_title: {
     en: 'MovieMood: Find a Movie for Your Mood',
@@ -746,11 +780,11 @@ const moodChips = (lang, exceptSlug = '') => `<div class="mood-chips">
       ${MOODS.filter(m => m.slug !== exceptSlug).map(m => `<a class="mood-chip" href="${langPath(lang, `/moods/${m.slug}`)}">${m.emoji} ${escapeHtml(moodTitle(m, lang))}</a>`).join('\n      ')}
     </div>`;
 
-function movieCard(movie, lang) {
+function movieCard(movie, lang, path = titlePath(movie)) {
   const title = movie.title || movie.name;
   const year = (movie.release_date || movie.first_air_date || '').slice(0, 4);
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '';
-  return `<a class="movie-card" href="${langPath(lang, titlePath(movie))}">
+  return `<a class="movie-card" href="${langPath(lang, path)}">
         <div class="card-poster-wrapper">
           <img src="${TMDB_CARD_URL}${movie.poster_path}" class="movie-poster" loading="lazy" alt="${escapeHtml(title)}${year ? ` (${year})` : ''} ${tr(lang, 'poster')}">
           ${rating ? `<span class="tmdb-mini-score card-score">${rating}</span>` : ''}
@@ -809,6 +843,101 @@ function renderMoodPage(mood, movies, origin, lang) {
     <section class="mood-more">
       <h2 class="mood-section-title">${escapeHtml(tr(lang, 'more_moods'))}</h2>
       ${moodChips(lang, mood.slug)}
+    </section>`
+  });
+}
+
+// ══════════════════════════════════════════════
+// "MOVIES LIKE X"
+// /movies-like/27205-inception, /shows-like/1399-game-of-thrones: the titles fans of one film
+// or series love most. The lists are built once by scripts/build_like.py (api/_like-data.js);
+// the page only fetches the titles in its language.
+// ══════════════════════════════════════════════
+const LIKE_PREFIXES = { movie: '/movies-like', tv: '/shows-like' };
+// "/movie/27205-inception" → "/movies-like/27205-inception"
+const likePath = path => path.replace(/^\/(movie|tv)\//, (_, type) => `${LIKE_PREFIXES[type]}/`);
+const likeEntry = (type, id) => LIKE_DATA[`${type}/${id}`];
+
+async function renderLikePage(type, id, origin, requestedPath, lang) {
+  const entry = likeEntry(type, id);
+  if (!entry) return null;
+  const basePath = likePath(entry.path);
+  const ownPath = langPath(lang, basePath);
+  if (requestedPath !== ownPath) return { redirect: ownPath };
+
+  // "/tv/1399-game-of-thrones" → the series in the page's language
+  const details = path => {
+    const [, kind, titleId] = path.match(/^\/(movie|tv)\/(\d+)/);
+    return fetchJson(`${TMDB_BASE_URL}/${kind}/${titleId}?api_key=${TMDB_API_KEY}&language=${TMDB_LOCALES[lang]}`)
+      .then(item => ({ ...item, path }));
+  };
+  const [source, ...found] = await Promise.all([
+    details(entry.path),
+    ...entry.picks.map(path => details(path).catch(() => null))
+  ]);
+  const picks = found.filter(item => item?.poster_path);
+
+  const name = source.title || source.name;
+  const year = (source.release_date || source.first_air_date || '').slice(0, 4);
+  const h1 = tr(lang, `like_h1_${type}`, { name });
+  const pickName = item => item.title || item.name;
+  const intro = tr(lang, `like_intro_${type}`, { name, n: picks.length });
+  const itemList = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: h1,
+    description: intro,
+    inLanguage: lang,
+    itemListElement: picks.map((item, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: pickName(item),
+      url: `${origin}${langPath(lang, item.path)}`
+    }))
+  };
+  // the picks that have a list of their own: one more step for visitors and search engines
+  const moreLists = picks.filter(item => LIKE_DATA[item.path.replace(/^\/(movie|tv)\/(\d+).*/, '$1/$2')]);
+  const rating = source.vote_average ? source.vote_average.toFixed(1) : '';
+
+  return layout({
+    lang,
+    origin,
+    path: basePath,
+    title: fitTitle(
+      `${tr(lang, 'like_title', { h1, n: picks.length })} | MovieMood`,
+      tr(lang, 'like_title', { h1, n: picks.length }),
+      `${h1} | MovieMood`,
+      h1
+    ),
+    description: truncate(tr(lang, 'like_desc', { name, n: picks.length, picks: picks.slice(0, 3).map(pickName).join(', ') }), 155),
+    image: source.backdrop_path ? `https://image.tmdb.org/t/p/w1280${source.backdrop_path}` : '',
+    head: jsonLd(itemList) + jsonLd(breadcrumbs(origin, [[name, langPath(lang, entry.path)], [h1, ownPath]], lang)),
+    hero: `<h1 class="home-title mood-title">${escapeHtml(h1)}</h1>
+    <p class="home-subtitle mood-intro">${escapeHtml(intro)}</p>
+    <a class="like-source" href="${langPath(lang, entry.path)}">
+      ${source.poster_path ? `<img src="${TMDB_CARD_URL}${source.poster_path}" alt="${escapeHtml(name)} ${tr(lang, 'poster')}" width="48" height="72">` : ''}
+      <span class="like-source-text">
+        <strong>${escapeHtml(name)}</strong>
+        <span class="like-source-meta">${[year, rating && `★ ${rating}`].filter(Boolean).join(' · ')}</span>
+        <span class="like-source-link">${escapeHtml(tr(lang, 'like_where', { name }))} →</span>
+      </span>
+    </a>`,
+    main: `<section class="results-section">
+      <div class="movies-grid">
+      ${picks.map(item => movieCard(item, lang, item.path)).join('\n      ')}
+      </div>
+    </section>
+    ${moreLists.length ? `
+    <section class="mood-more">
+      <h2 class="mood-section-title">${escapeHtml(tr(lang, 'like_more'))}</h2>
+      <div class="mood-chips">
+      ${moreLists.map(item => `<a class="mood-chip" href="${langPath(lang, likePath(item.path))}">${escapeHtml(tr(lang, `like_h1_${item.path.startsWith('/tv/') ? 'tv' : 'movie'}`, { name: pickName(item) }))}</a>`).join('\n      ')}
+      </div>
+    </section>` : ''}
+
+    <section class="mood-more">
+      <h2 class="mood-section-title">${escapeHtml(tr(lang, 'browse_by_mood'))}</h2>
+      ${moodChips(lang)}
     </section>`
   });
 }
@@ -1000,7 +1129,10 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   ${video ? jsonLd(video) : ''}
   ${jsonLd(breadcrumbs(origin, [[name, ownPath]], lang))}`;
 
+  // "Movies like Inception": the list built around this title, when there is one
+  const like = likeEntry(type, id);
   const moodsSection = `<section class="mood-more movie-moods">
+    ${like ? `<a class="like-cta" href="${langPath(lang, likePath(like.path))}">${escapeHtml(tr(lang, `like_h1_${type}`, { name }))} →</a>` : ''}
     <h2 class="mood-section-title">${escapeHtml(tr(lang, 'browse_by_mood'))}</h2>
     ${moodChips(lang)}
   </section>
@@ -1140,7 +1272,8 @@ async function renderSitemap(origin) {
           .map(item => titlePath(item, type)))
         .catch(() => []))));
   const titlePaths = [...new Set([...moodMovies.flat().map(m => titlePath(m)), ...lists.flat()])];
-  const paths = ['/', '/moods', ...MOODS.map(m => `/moods/${m.slug}`), ...titlePaths];
+  const likePaths = Object.values(LIKE_DATA).map(entry => likePath(entry.path));
+  const paths = ['/', '/moods', ...MOODS.map(m => `/moods/${m.slug}`), ...likePaths, ...titlePaths];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${LANGS.flatMap(lang => paths.map(path => `  <url><loc>${escapeHtml(origin + langPath(lang, path))}</loc></url>`)).join('\n')}
@@ -1228,6 +1361,18 @@ export default async function handler(req, res) {
         res.setHeader('Location', `/movie.html?id=${id}&type=${type}&ssr=0${fallbackLang}`);
         return res.status(302).end();
       }
+    }
+
+    if (kind === 'like') {
+      const type = query.type === 'tv' ? 'tv' : 'movie';
+      const segment = String(query.id || '');
+      const id = parseInt(segment, 10);
+      const page = id ? await renderLikePage(type, id, origin, `${prefix}${LIKE_PREFIXES[type]}/${segment}`, lang).catch(error => {
+        if (error.message === 'TMDB 404') return null;
+        throw error;
+      }) : null;
+      if (!page) return send(res, 404, renderNotFound(origin, lang));
+      return sendPage(res, page);
     }
 
     if (kind === 'person') {

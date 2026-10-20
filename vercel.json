@@ -46,6 +46,22 @@
       "destination": "/api/page?kind=person&id=:id&lang=:lang"
     },
     {
+      "source": "/movies-like/:id",
+      "destination": "/api/page?kind=like&type=movie&id=:id"
+    },
+    {
+      "source": "/shows-like/:id",
+      "destination": "/api/page?kind=like&type=tv&id=:id"
+    },
+    {
+      "source": "/:lang(uk|ru|fr|es|de)/movies-like/:id",
+      "destination": "/api/page?kind=like&type=movie&id=:id&lang=:lang"
+    },
+    {
+      "source": "/:lang(uk|ru|fr|es|de)/shows-like/:id",
+      "destination": "/api/page?kind=like&type=tv&id=:id&lang=:lang"
+    },
+    {
       "source": "/sitemap.xml",
       "destination": "/api/page?kind=sitemap"
     },
