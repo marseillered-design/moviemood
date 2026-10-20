@@ -92,7 +92,7 @@
     const code = languageSelect.value;
     try { localStorage.setItem('lang', code); } catch (e) {}
     const version = document.querySelector(`link[rel="alternate"][hreflang="${code}"]`);
-    const prefixed = /^\/(uk|ru|fr|es)(\/|$)/.test(window.location.pathname);
+    const prefixed = /^\/(uk|ru|fr|es|de)(\/|$)/.test(window.location.pathname);
     if (version) window.location.href = version.href + window.location.search;
     else if (prefixed) window.location.href = window.mmLangPath(window.location.pathname, code) + window.location.search;
     else {

@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     // ══════════════════════════════════════════════
     // STEP 1: Check local database first (instant, free)
     // ══════════════════════════════════════════════
-    // Ukrainian / Russian / French / Spanish queries are mapped to English first
+    // Ukrainian / Russian / French / Spanish / German queries are mapped to English first
     const translated = translateQuery(query);
     const lookupText = translated.changed ? translated.text : query;
 
@@ -168,7 +168,7 @@ async function askLikePicks(query, like) {
 
 function buildLikePrompt(query, like) {
   return `A visitor of a movie recommendation site typed: "${query}"
-They want titles similar to "${like.title}" (the title may be written in English, Ukrainian, Russian, French or Spanish).${like.rest ? `
+They want titles similar to "${like.title}" (the title may be written in English, Ukrainian, Russian, French, Spanish or German).${like.rest ? `
 Their other wishes: "${like.rest}".` : ''}
 Return ONLY valid JSON, no markdown:
 {"source": {"title": "original English title", "year": 2010, "type": "movie"},
@@ -245,7 +245,7 @@ company_id for studios/brands (pixar, marvel, dc, ghibli, a24...)
 search_query for directors, actors, franchises, national cinemas
 genres for moods, emotions, situations, descriptors
 Add year_from/year_to when time period is mentioned
-The request can be in any language (English, Ukrainian, Russian, French, Spanish...). Understand it in its own language; the JSON format stays the same. For search_query use the English or original title/name.
+The request can be in any language (English, Ukrainian, Russian, French, Spanish, German...). Understand it in its own language; the JSON format stays the same. For search_query use the English or original title/name.
 EXAMPLES:
 "фильм про шахматиста" → {"genres": [18]}
 "щось як Інтерстеллар" → {"genres": [878, 18]}
@@ -2134,7 +2134,7 @@ const promptsDB = {
 };
 
 // ══════════════════════════════════════════════
-// MULTILINGUAL QUERIES (uk, ru, fr, es → English)
+// MULTILINGUAL QUERIES (uk, ru, fr, es, de → English)
 // Mood/genre words are mapped to the English vocabulary of promptsDB,
 // so "уютный дождливый вечер" is looked up as "cozy rainy evening".
 // "*" at the end of a word = any ending (уютн* → уютный, уютное, ...).
@@ -2310,6 +2310,7 @@ function normalizeForMatch(text) {
     .toLowerCase()
     .normalize('NFD')
     .replace(/\p{M}/gu, '')
+    .replace(/ß/g, 'ss')
     .replace(/[’ʼ`]/g, "'")
     .replace(/(?<=\p{Script=Cyrillic})'(?=\p{Script=Cyrillic})/gu, '')
     .replace(/\s+/g, ' ')
@@ -2319,8 +2320,165 @@ function normalizeForMatch(text) {
 const escapeRegExp = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // Longest patterns first, so "сегодня вечером" wins over "вечер*"
-const I18N_RULES = Object.entries(I18N_TERMS)
+// German, apart from the rest: compound words ("Horrorfilme", "Weihnachtsfilm") need their own
+// forms, and short words shared with English ("die", "was", "will") are left out on purpose.
+// Umlauts are written without dots and ß as "ss" (see normalizeForMatch).
+const I18N_TERMS_DE = {
+  // content type
+  "movie": ["filme", "filmen", "spielfilm*", "kinofilm*"],
+  "series": ["serien", "fernsehserie*", "tv-serie*", "miniserie*"],
+  "cartoon": ["zeichentrick*", "trickfilm*", "animationsfilm*"],
+  "anime": ["animefilm*", "animeserie*"],
+  "documentary": ["dokumentarfilm*", "doku", "dokus", "dokumentation*", "dokuserie*"],
+
+  // genres
+  "comedy": ["komodie*", "komodien"],
+  "funny": ["lustig*", "witzig*", "humorvoll*"],
+  "laugh": ["lachen", "zum lachen"],
+  "horror": ["horrorfilm*", "gruselfilm*", "horrorserie*"],
+  "scary": ["gruselig*", "unheimlich*", "zum gruseln", "beangstigend*"],
+  "action": ["actionfilm*", "actionreich*"],
+  "thriller": ["thrillerserie*"],
+  "crime": ["krimi", "krimis", "krimiserie*", "kriminalfilm*"],
+  "mystery": ["ratselhaft*", "mysterios*"],
+  "drama": ["dramen", "dramaserie*"],
+  "romantic": ["romantisch*"],
+  "romance": ["liebesfilm*", "liebesgeschicht*", "liebeskomodie*", "liebe"],
+  "fantasy": ["fantasyfilm*", "fantasyserie*"],
+  "sci-fi": ["science-fiction-film*", "sci-fi-film*", "zukunftsfilm*"],
+  "adventure": ["abenteuer*"],
+  "family": ["familienfilm*", "familienabend*", "familie", "familien", "mit der familie", "fur die familie"],
+  "with kids": ["mit kindern", "mit den kindern", "fur kinder", "kinderfilm*", "kinder"],
+  "historical": ["historisch*", "historienfilm*"],
+  "war": ["kriegsfilm*", "krieg"],
+  "western": ["westernfilm*"],
+  "gangster": ["gangsterfilm*"],
+  "superhero": ["superheld*", "superheldenfilm*"],
+  "zombie": ["zombiefilm*"],
+  "vampire": ["vampir", "vampirfilm*"],
+  "space": ["weltraum*", "weltall", "im all"],
+  "based on true story": ["wahre geschichte*", "wahren geschichte*", "wahre begebenheit*", "wahren begebenheit*"],
+  "time travel": ["zeitreise*"],
+  "suspense": ["spannend*", "spannung*"],
+  "psychological thriller": ["psychothriller*", "psychologisch* thriller*"],
+
+  // moods
+  "cozy": ["gemutlich*", "kuschelig*", "zum kuscheln"],
+  "chill": ["entspann*", "ruhig*", "zum abschalten"],
+  "something light": ["leicht*", "locker*", "seicht*"],
+  "dark": ["dunkl*", "dunkel*", "duster*"],
+  "sad": ["traurig*"],
+  "want to cry": ["weinen", "zum weinen", "heulen", "zum heulen"],
+  "feel good": ["gute laune", "gut gelaunt", "fur gute laune", "aufmunternd*", "wohlfuhlfilm*"],
+  "uplifting": ["beruhrend*", "ruhrend*", "herzerwarmend*", "herzlich*"],
+  "inspiring": ["inspirierend*", "motivierend*", "motivation*"],
+  "mind bending": ["mindfuck*", "kopfkino", "verwirrend*", "mit twist", "plot-twist*", "uberraschend* ende*"],
+  "bored": ["langeweile", "mir ist langweilig"],
+  "boring": ["langweilig*"],
+  "lonely": ["einsam*"],
+  "alone": ["allein*"],
+  "tired": ["mude*", "erschopft*"],
+  "after hard day": ["nach der arbeit", "nach feierabend", "zum feierabend", "nach einem harten tag", "nach einem langen tag"],
+  "broken heart": ["liebeskummer", "trennung*", "gebrochen* herz*"],
+  "epic": ["episch*"],
+
+  // time, season, company
+  "tonight": ["heute abend", "heute nacht", "fur heute abend"],
+  "evening": ["abend*", "abends"],
+  "late night": ["nacht", "nachts", "spat in der nacht"],
+  "rainy day": ["regen", "regentag*", "regenwetter", "verregnet*", "regnerisch*"],
+  "winter evening": ["winterabend*", "im winter"],
+  "cozy autumn": ["herbst*"],
+  "summer vibes": ["sommer*"],
+  "christmas": ["weihnacht*", "advent*"],
+  "weekend": ["wochenende*"],
+  "sunday": ["sonntag*"],
+  "date night": ["date-abend*", "dateabend*", "zu zweit", "fur ein date", "parchenabend*", "fur paare", "mit meiner freundin", "mit meinem freund", "mit der freundin", "mit dem freund", "mit meiner frau", "mit meinem mann"],
+  "with friends": ["mit freunden", "mit freundinnen", "mit kumpels", "mit den jungs", "mit den madels"],
+
+  // topics (see TOPIC_WORDS)
+  "ghost": ["geist", "geister*", "gespenst*", "spuk*"],
+  "witch": ["hexe", "hexen*"],
+  "magic": ["magie", "magisch*", "zauber*"],
+  "dragon": ["drache", "drachen*"],
+  "heist": ["raub", "raububerfall*", "bankraub*", "uberfall*", "coup"],
+  "alien": ["ausserirdisch*"],
+  "robot": ["roboter*"],
+  "prison": ["gefangnis*", "knast"],
+  "survival": ["uberleben*"],
+  "revenge": ["rache*"],
+  "spy": ["spion*", "agentenfilm*", "geheimagent*"],
+  "serial killer": ["serienkiller*", "serienmorder*"],
+  "dog": ["hund", "hunde", "hunden", "hundefilm*"],
+  "cat": ["katze", "katzen*"],
+  "dinosaur": ["dinosaurier*", "dino", "dinos"],
+  "shark": ["hai", "haie", "haifisch*", "haifilm*"],
+  "pirate": ["pirat", "piraten*"],
+  "wedding": ["hochzeit*"],
+  "high school": ["schule", "schulfilm*", "highschool*"],
+  "teen": ["teenager*", "teenie*", "jugendlich*"],
+  "sports": ["sportfilm*"],
+  "football": ["fussball*"],
+  "boxing": ["boxen", "boxfilm*"],
+  "dance": ["tanz*"],
+  "music": ["musik*"],
+  "cooking": ["kochen", "kochfilm*"],
+  "world war ii": ["zweiter weltkrieg", "zweiten weltkrieg"],
+  "biography": ["biografie*", "biopic*"],
+  "demon": ["damon*"],
+  "end of the world": ["weltuntergang*", "ende der welt"],
+  "apocalypse": ["apokalyps*"],
+  "post apocalyptic": ["postapokalyp*"],
+  "dystopia": ["dystopisch*"],
+  "friendship": ["freundschaft*"],
+  "fairy tale": ["marchen*"],
+  "police": ["polizei*"],
+  "doctor": ["arzt*", "arzte*", "krankenhaus*"],
+  "lawyer": ["anwalt*", "anwalte*", "gerichtsfilm*"],
+  "martial arts": ["kampfsport*", "kampfkunst*"],
+  "princess": ["prinzessin*"],
+  "road trip": ["roadmovie*", "road-movie*", "roadtrip*"],
+  "coming of age": ["erwachsenwerden"],
+  "treasure": ["schatz*", "schatzsuche*"],
+
+  // decades in words ("90er" is handled in translateQuery)
+  "70s": ["siebziger*"],
+  "80s": ["achtziger*"],
+  "90s": ["neunziger*"],
+
+  // origin
+  "korean": ["koreanisch*"],
+  "japanese": ["japanisch*"],
+  "french": ["franzosisch*"],
+  "spanish": ["spanisch*"],
+  "german": ["deutsch*"],
+  "indian": ["indisch*", "bollywood*"],
+  "chinese": ["chinesisch*"],
+  "ukrainian": ["ukrainisch*"],
+  "turkish": ["turkisch*"],
+
+  // negations: "nicht zu blutig" → "not too gory", "keine Zeichentrickfilme" → "not cartoon"
+  "not": ["nicht", "kein*"],
+  "without": ["ohne"],
+  "too": ["zu", "allzu"],
+  "gory": ["blutig*"],
+  "violence": ["gewalt*", "gewalttatig*"],
+  "long": ["lang", "lange", "langer", "langen"],
+
+  // glue words
+  "best": ["beste*", "die besten", "die beste"],
+  "new": ["neu", "neue*", "neuer*", "neuste*", "neueste*"],
+  "classic": ["klassiker*", "klassisch*"],
+  "old": ["alte", "alten"],
+  "something": ["etwas", "irgendwas", "irgendetwas"],
+  "for": ["fur"],
+  "watch": ["anschauen", "anzuschauen", "schauen", "gucken", "ansehen"],
+  "": ["der", "das", "den", "dem", "ein", "eine", "einen", "einem", "einer", "eines", "und", "mit", "zum", "zur", "ich", "mir", "mich", "uns", "mochte", "mochten", "suche", "such", "zeig", "zeige", "bitte", "empfiehl*", "empfehl*", "gute", "guten", "guter", "gutes", "schone*", "heute", "einfach", "sehr", "richtig", "mal", "irgendein*", "stimmung", "lust auf", "hab lust auf", "habe lust auf", "ich habe lust auf", "was soll ich", "aus den", "aber", "oder", "im", "am", "vom", "von", "auf"]
+};
+
+const I18N_RULES = [...Object.entries(I18N_TERMS), ...Object.entries(I18N_TERMS_DE)]
   .flatMap(([en, patterns]) => patterns.map(p => ({ en, source: normalizeForMatch(p) })))
+  .filter((rule, i, all) => all.findIndex(other => other.source === rule.source) === i)
   .sort((a, b) => b.source.length - a.source.length)
   .map(({ en, source }) => {
     const body = source
@@ -2341,6 +2499,8 @@ function translateQuery(query) {
   let text = original
     // "90-х", "1980-ые", "80-ті"
     .replace(/(?<![\p{L}\p{N}])(?:19|20)?(\d0)\s*-?\s*(?:х|ых|ые|е|их|тих|ті)(?![\p{L}\p{N}])/gu, (_, d) => ` ${DECADE_LABEL(d)} `)
+    // "90er", "80er-Jahre", "aus den 2000ern"
+    .replace(/(?<![\p{L}\p{N}])(?:19|20)?(\d0)er(?:n|\s*-?\s*jahre\p{L}*)?(?![\p{L}\p{N}])/gu, (_, d) => ` ${DECADE_LABEL(d)} `)
     // "années 90", "años 80", "de los 90"
     .replace(/(?<![\p{L}\p{N}])(?:annees|anos|los)\s+(?:19|20)?(\d0)(?![\p{L}\p{N}])/gu, (_, d) => ` ${DECADE_LABEL(d)} `);
 
@@ -2726,10 +2886,11 @@ const LIKE_MARKERS = [
   /(?:^|\s)(?:похож\p{L}*|схож\p{L}*|подобн\p{L}*)\s+на\s+(.+)$/u,
   /(?:^|\s)(?:фильм\p{L}*|кино|сериал\p{L}*|мульт\p{L}*|фільм\p{L}*|серіал\p{L}*|что-то|что то|щось)\s+(?:как|як|типа|в стиле|у стилі)\s+(.+)$/u,
   /(?:^|\s)(?:comme|du genre|dans le style de|similaires? [aà])\s+(.+)$/u,
-  /(?:^|\s)(?:como|parecid\p{L}*\s+a|similares?\s+a|al estilo de)\s+(.+)$/u
+  /(?:^|\s)(?:como|parecid\p{L}*\s+a|similares?\s+a|al estilo de)\s+(.+)$/u,
+  /(?:^|\s)(?:wie|[äa]hnlich(?:e|en)?\s+wie|im stil von)\s+(.+)$/u
 ];
 // "like Interstellar but darker": the comparison ends where the extra wishes start
-const LIKE_TAIL = /\s+(?:but|only|except|and|но|але|только|тільки|mais|pero|sauf|excepto)\s+.*$/u;
+const LIKE_TAIL = /\s+(?:but|only|except|and|но|але|только|тільки|mais|pero|sauf|excepto|aber|nur|au(?:ß|ss)er)\s+.*$/u;
 
 // { title, rest } or null. rest is the query without the comparison ("dark sci-fi").
 function extractLikeTitle(query) {
@@ -2739,7 +2900,7 @@ function extractLikeTitle(query) {
     if (!match) continue;
     const title = match[1]
       .replace(LIKE_TAIL, '')
-      .replace(/^(?:the\s+)?(?:movie|film|series|show|фильм|фільм|сериал|серіал)\s+/u, '')
+      .replace(/^(?:the\s+)?(?:movie|film|series|show|фильм|фільм|сериал|серіал|serie)\s+/u, '')
       .replace(/^[\s"'«»“”„]+|[\s"'«»“”„.,!?]+$/gu, '');
     if (title.length < 2 || title.length > 60 || title.split(' ').length > 8) continue;
 

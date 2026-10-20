@@ -22,27 +22,27 @@
       "destination": "/api/page?kind=person&id=:id"
     },
     {
-      "source": "/:lang(uk|ru|fr|es)",
+      "source": "/:lang(uk|ru|fr|es|de)",
       "destination": "/api/page?kind=home&lang=:lang"
     },
     {
-      "source": "/:lang(uk|ru|fr|es)/moods",
+      "source": "/:lang(uk|ru|fr|es|de)/moods",
       "destination": "/api/page?kind=moods&lang=:lang"
     },
     {
-      "source": "/:lang(uk|ru|fr|es)/moods/:slug",
+      "source": "/:lang(uk|ru|fr|es|de)/moods/:slug",
       "destination": "/api/page?kind=mood&slug=:slug&lang=:lang"
     },
     {
-      "source": "/:lang(uk|ru|fr|es)/movie/:id",
+      "source": "/:lang(uk|ru|fr|es|de)/movie/:id",
       "destination": "/api/page?kind=title&type=movie&id=:id&lang=:lang"
     },
     {
-      "source": "/:lang(uk|ru|fr|es)/tv/:id",
+      "source": "/:lang(uk|ru|fr|es|de)/tv/:id",
       "destination": "/api/page?kind=title&type=tv&id=:id&lang=:lang"
     },
     {
-      "source": "/:lang(uk|ru|fr|es)/person/:id",
+      "source": "/:lang(uk|ru|fr|es|de)/person/:id",
       "destination": "/api/page?kind=person&id=:id&lang=:lang"
     },
     {

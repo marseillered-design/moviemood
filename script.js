@@ -95,7 +95,8 @@ function initSearchPromptCarousel(inputEl) {
     uk: { focus: 'Опишіть свій настрій...', prompts: ["жахи 90-х", "затишний фільм на дощовий вечір", "щось смішне з друзями", "фантастика про космос", "фільм після важкого дня"] },
     ru: { focus: 'Опишите своё настроение...', prompts: ["ужасы 90-х", "уютный фильм на дождливый вечер", "что-то смешное с друзьями", "фантастика про космос", "фильм после тяжёлого дня"] },
     fr: { focus: 'Décrivez votre humeur...', prompts: ["film d'horreur des années 90", "film romantique pour ce soir", "comédie drôle entre amis", "science-fiction dans l'espace", "quelque chose de léger après le travail"] },
-    es: { focus: 'Describe tu estado de ánimo...', prompts: ["películas de terror de los 90", "película romántica para esta noche", "comedia divertida con amigos", "ciencia ficción en el espacio", "algo ligero después del trabajo"] }
+    es: { focus: 'Describe tu estado de ánimo...', prompts: ["películas de terror de los 90", "película romántica para esta noche", "comedia divertida con amigos", "ciencia ficción en el espacio", "algo ligero después del trabajo"] },
+    de: { focus: 'Beschreib deine Stimmung...', prompts: ["Horrorfilme der 90er", "romantischer Film für heute Abend", "lustige Komödie mit Freunden", "Science-Fiction im Weltraum", "etwas Leichtes nach der Arbeit"] }
   };
   const browserLang = window.MM_LANG || 'en';
   const { focus: focusPlaceholder, prompts } = promptsByLang[browserLang] || promptsByLang.en;

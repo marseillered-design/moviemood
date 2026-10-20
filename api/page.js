@@ -3,7 +3,7 @@
 //   /moods/:slug        → one collection ("Movies for a Rainy Day")
 //   /movie/:id, /tv/:id → movie.html with real <title>, description and content filled in
 //   /person/:id         → person.html, the same way
-//   /uk, /ru, /fr, /es  → the home page in that language; the pages above also exist under
+//   /uk, /ru, /fr, /es, /de  → the home page in that language; the pages above also exist under
 //                         these prefixes (/uk/moods/cozy-movies, /fr/movie/218-the-terminator)
 //   /sitemap.xml, /robots.txt
 
@@ -162,12 +162,12 @@ const MOODS = [
 // /ru/movie/218-the-terminator. The slug stays English in every language, so one film has the
 // same address apart from the prefix.
 // ══════════════════════════════════════════════
-const LANGS = ['en', 'uk', 'ru', 'fr', 'es'];
-const TMDB_LOCALES = { en: 'en-US', uk: 'uk-UA', ru: 'ru-RU', fr: 'fr-FR', es: 'es-ES' };
-const OG_LOCALES = { en: 'en_US', uk: 'uk_UA', ru: 'ru_RU', fr: 'fr_FR', es: 'es_ES' };
+const LANGS = ['en', 'uk', 'ru', 'fr', 'es', 'de'];
+const TMDB_LOCALES = { en: 'en-US', uk: 'uk-UA', ru: 'ru-RU', fr: 'fr-FR', es: 'es-ES', de: 'de-DE' };
+const OG_LOCALES = { en: 'en_US', uk: 'uk_UA', ru: 'ru_RU', fr: 'fr_FR', es: 'es_ES', de: 'de_DE' };
 // "Where to watch" in the page's text and description: the country most readers of each
 // language version are in (the browser then shows the visitor's own country)
-const WATCH_COUNTRIES = { en: 'US', uk: 'UA', ru: 'KZ', fr: 'FR', es: 'ES' };
+const WATCH_COUNTRIES = { en: 'US', uk: 'UA', ru: 'KZ', fr: 'FR', es: 'ES', de: 'DE' };
 
 // [title, intro] of each collection in the other languages
 const MOOD_TEXT = {
@@ -175,227 +175,260 @@ const MOOD_TEXT = {
     uk: ['Фільми для дощового дня', 'Сіре небо, плед і жодних справ. Теплі, смішні й трохи сумні фільми, що пасують до шуму дощу за вікном: у них легко пірнути і важко вимкнути.'],
     ru: ['Фильмы для дождливого дня', 'Серое небо, плед и никаких дел. Тёплые, смешные и немного грустные фильмы под шум дождя за окном: в них легко погрузиться и трудно выключить.'],
     fr: ['Films pour un jour de pluie', 'Ciel gris, plaid et nulle part où aller. Des films chaleureux, drôles et un brin doux-amers qui vont bien avec la pluie contre la vitre : on s’y plonge facilement et on a du mal à arrêter.'],
-    es: ['Películas para un día de lluvia', 'Cielo gris, una manta y ningún plan. Películas cálidas, divertidas y un poco agridulces que combinan con la lluvia en la ventana: fáciles de disfrutar y difíciles de apagar.']
+    es: ['Películas para un día de lluvia', 'Cielo gris, una manta y ningún plan. Películas cálidas, divertidas y un poco agridulces que combinan con la lluvia en la ventana: fáciles de disfrutar y difíciles de apagar.'],
+    de: ['Filme für einen Regentag', 'Grauer Himmel, eine Decke und nichts vor. Warme, witzige und ein bisschen bittersüße Filme, die zum Regen am Fenster passen – leicht einzutauchen und schwer auszuschalten.']
   },
   'feel-good-movies': {
     uk: ['Фільми для гарного настрою', 'Добрі, світлі фільми, після яких стає легше на душі. Без важких поворотів і похмурих фіналів — просто приємна компанія на пару годин.'],
     ru: ['Фильмы для хорошего настроения', 'Добрые, светлые фильмы, после которых становится легче на душе. Без тяжёлых поворотов и мрачных финалов — просто приятная компания на пару часов.'],
     fr: ['Films feel-good', 'Des films pleins d’espoir et de chaleur qui vous laissent plus léger qu’avant. Pas de rebondissements pesants ni de fins sombres : juste une bonne compagnie pour quelques heures.'],
-    es: ['Películas para levantar el ánimo', 'Películas optimistas y entrañables que te dejan más ligero de lo que estabas. Sin giros pesados ni finales tristes: solo buena compañía para un par de horas.']
+    es: ['Películas para levantar el ánimo', 'Películas optimistas y entrañables que te dejan más ligero de lo que estabas. Sin giros pesados ni finales tristes: solo buena compañía para un par de horas.'],
+    de: ['Feel-Good-Filme', 'Hoffnungsvolle, herzliche Filme, nach denen man sich leichter fühlt. Keine harten Wendungen, kein düsteres Ende – einfach gute Gesellschaft für ein paar Stunden.']
   },
   'movies-to-cry-to': {
     uk: ['Фільми, щоб поплакати', 'Іноді треба як слід виплакатися. Ці історії кохання та драми чесно заслуговують на кожну сльозу — тримайте серветки поруч.'],
     ru: ['Фильмы, чтобы поплакать', 'Иногда нужно как следует выплакаться. Эти истории любви и драмы честно заслуживают каждой слезы — держите салфетки под рукой.'],
     fr: ['Films pour pleurer', 'Parfois, on a besoin d’une bonne crise de larmes. Ces histoires d’amour et ces drames les méritent honnêtement : gardez les mouchoirs à portée de main.'],
-    es: ['Películas para llorar', 'A veces hace falta llorar a gusto. Estas historias de amor y dramas se ganan cada lágrima con honestidad: ten los pañuelos a mano.']
+    es: ['Películas para llorar', 'A veces hace falta llorar a gusto. Estas historias de amor y dramas se ganan cada lágrima con honestidad: ten los pañuelos a mano.'],
+    de: ['Filme zum Weinen', 'Manchmal muss man einfach richtig weinen. Diese Liebesgeschichten und Dramen verdienen ihre Tränen ehrlich – die Taschentücher besser griffbereit halten.']
   },
   'date-night-movies': {
     uk: ['Фільми для побачення', 'Історії кохання, які сподобаються вам обом: справжня хімія, трохи сміху й кілька зітхань. Перевірені улюблені фільми, а не випадкові новинки.'],
     ru: ['Фильмы для свидания', 'Истории любви, которые понравятся вам обоим: настоящая химия, немного смеха и пара вздохов. Проверенные любимые фильмы, а не случайные новинки.'],
     fr: ['Films pour une soirée en amoureux', 'Des histoires d’amour qui plairont à tous les deux : une vraie alchimie, quelques rires et quelques soupirs. Des valeurs sûres, pas des nouveautés au hasard.'],
-    es: ['Películas para una cita', 'Historias de amor que os gustarán a los dos: química de verdad, algunas risas y algún suspiro. Favoritas de siempre, no estrenos al azar.']
+    es: ['Películas para una cita', 'Historias de amor que os gustarán a los dos: química de verdad, algunas risas y algún suspiro. Favoritas de siempre, no estrenos al azar.'],
+    de: ['Filme für den Date-Abend', 'Liebesgeschichten, auf die ihr euch beide einigen könnt: echte Chemie, ein paar Lacher und ein paar Seufzer. Beliebte Klassiker statt zufälliger Neuerscheinungen.']
   },
   'cozy-movies': {
     uk: ['Затишні фільми', 'Ніжні, смішні й рідні фільми, наче тепла кімната взимку. Без насильства й різких лякалок — ідеально з чаєм і чимось солодким.'],
     ru: ['Уютные фильмы', 'Нежные, смешные и родные фильмы, как тёплая комната зимой. Без насилия и внезапных пугалок — идеально с чаем и чем-нибудь сладким.'],
     fr: ['Films cocooning', 'Des films doux, drôles et familiers, comme une pièce bien chaude en hiver. Pas de violence ni de sursauts : parfaits avec un thé et une douceur.'],
-    es: ['Películas acogedoras', 'Películas tiernas, divertidas y familiares, como una habitación caldeada en invierno. Sin violencia ni sustos: perfectas con un té y algo dulce.']
+    es: ['Películas acogedoras', 'Películas tiernas, divertidas y familiares, como una habitación caldeada en invierno. Sin violencia ni sustos: perfectas con un té y algo dulce.'],
+    de: ['Gemütliche Filme', 'Sanfte, lustige und vertraute Filme, die sich anfühlen wie ein warmes Zimmer im Winter. Keine Gewalt, keine Schockmomente – perfekt mit Tee und etwas Süßem.']
   },
   'mind-bending-movies': {
     uk: ['Фільми, що ламають мозок', 'Головоломки, які грають із часом, пам’яттю та реальністю. Про фінал захочеться поговорити — або одразу переглянути.'],
     ru: ['Фильмы, которые взрывают мозг', 'Головоломки, которые играют со временем, памятью и реальностью. О финале захочется поговорить — или сразу пересмотреть.'],
     fr: ['Films qui retournent le cerveau', 'Des casse-tête qui jouent avec le temps, la mémoire et la réalité. Vous voudrez parler de la fin, ou revoir le film tout de suite.'],
-    es: ['Películas que te vuelan la cabeza', 'Rompecabezas que juegan con el tiempo, la memoria y la realidad. Querrás hablar del final, o volver a verla enseguida.']
+    es: ['Películas que te vuelan la cabeza', 'Rompecabezas que juegan con el tiempo, la memoria y la realidad. Querrás hablar del final, o volver a verla enseguida.'],
+    de: ['Mindfuck-Filme', 'Rätsel, die mit Zeit, Erinnerung und Wirklichkeit spielen. Über das Ende willst du reden – oder den Film gleich noch einmal sehen.']
   },
   'plot-twist-movies': {
     uk: ['Фільми з несподіваним фіналом', 'Трилери, де ніщо не є тим, чим здається. Дивіться, знаючи якомога менше, і не дозволяйте нікому зіпсувати фінал спойлером.'],
     ru: ['Фильмы с неожиданной концовкой', 'Триллеры, где ничто не то, чем кажется. Смотрите, зная как можно меньше, и не позволяйте никому проспойлерить финал.'],
     fr: ['Films avec un twist final', 'Des thrillers où rien n’est vraiment ce qu’il paraît. Lancez-vous en en sachant le moins possible et ne laissez personne vous gâcher le dernier acte.'],
-    es: ['Películas con giro final', 'Thrillers donde nada es lo que parece. Entra sabiendo lo menos posible y no dejes que nadie te destripe el último acto.']
+    es: ['Películas con giro final', 'Thrillers donde nada es lo que parece. Entra sabiendo lo menos posible y no dejes que nadie te destripe el último acto.'],
+    de: ['Filme mit Plot-Twist', 'Thriller, in denen nichts ist, wie es scheint. So wenig wie möglich vorher wissen und sich das Finale von niemandem spoilern lassen.']
   },
   'halloween-movies': {
     uk: ['Фільми на Хелловін', 'Будинки з привидами, незнайомці в масках і та єдина ніч на рік, коли все це доречно. Жахи для темного жовтневого вечора.'],
     ru: ['Фильмы на Хэллоуин', 'Дома с привидениями, незнакомцы в масках и та единственная ночь в году, когда всё это к месту. Ужасы для тёмного октябрьского вечера.'],
     fr: ['Films d’Halloween', 'Maisons hantées, inconnus masqués et la seule nuit de l’année où tout cela a du sens. Des films d’horreur pour une sombre soirée d’octobre.'],
-    es: ['Películas de Halloween', 'Casas encantadas, desconocidos con máscara y la única noche del año en que todo encaja. Terror para una oscura noche de octubre.']
+    es: ['Películas de Halloween', 'Casas encantadas, desconocidos con máscara y la única noche del año en que todo encaja. Terror para una oscura noche de octubre.'],
+    de: ['Halloween-Filme', 'Spukhäuser, maskierte Fremde und die eine Nacht im Jahr, in der alles einen Sinn ergibt. Horrorfilme für einen dunklen Oktoberabend.']
   },
   'family-movie-night': {
     uk: ['Фільми для сімейного вечора', 'Анімаційні фільми для будь-якого віку на дивані: яскраві для дітей і достатньо розумні, щоб дорослі не заснули.'],
     ru: ['Фильмы для семейного вечера', 'Анимационные фильмы для любого возраста на диване: яркие для детей и достаточно умные, чтобы взрослые не заснули.'],
     fr: ['Films pour une soirée en famille', 'Des films d’animation pour tous les âges sur le canapé : assez colorés pour les enfants, assez malins pour que les adultes restent éveillés.'],
-    es: ['Películas para ver en familia', 'Películas de animación para todas las edades del sofá: vistosas para los niños y lo bastante listas para que los adultos no se duerman.']
+    es: ['Películas para ver en familia', 'Películas de animación para todas las edades del sofá: vistosas para los niños y lo bastante listas para que los adultos no se duerman.'],
+    de: ['Filme für den Familienabend', 'Animationsfilme für jedes Alter auf dem Sofa – bunt genug für Kinder, klug genug, dass die Erwachsenen wach bleiben.']
   },
   'motivational-movies': {
     uk: ['Мотивуючі фільми', 'Аутсайдери, повернення і люди, які відмовилися здаватися. Увімкніть, коли потрібен поштовх, щоб почати щось складне.'],
     ru: ['Мотивирующие фильмы', 'Аутсайдеры, возвращения и люди, которые отказались сдаваться. Включите, когда нужен толчок, чтобы начать что-то трудное.'],
     fr: ['Films motivants', 'Des outsiders, des retours en force et des gens qui ont refusé d’abandonner. À regarder quand il vous faut un coup de pouce pour vous lancer.'],
-    es: ['Películas motivadoras', 'Desvalidos, remontadas y gente que se negó a rendirse. Pon una cuando necesites un empujón para empezar algo difícil.']
+    es: ['Películas motivadoras', 'Desvalidos, remontadas y gente que se negó a rendirse. Pon una cuando necesites un empujón para empezar algo difícil.'],
+    de: ['Motivierende Filme', 'Außenseiter, Comebacks und Menschen, die nicht aufgeben wollten. Für die Momente, in denen du einen Schubs brauchst, um etwas Schweres anzufangen.']
   },
   'christmas-movies': {
     uk: ['Різдвяні фільми', 'Сніг, вогники й другий шанс. Улюблені святкові фільми, старі й нові, для тижнів, коли вдома стоїть ялинка.'],
     ru: ['Рождественские фильмы', 'Снег, огоньки и второй шанс. Любимые праздничные фильмы, старые и новые, для недель, когда дома стоит ёлка.'],
     fr: ['Films de Noël', 'De la neige, des guirlandes et des secondes chances. Les classiques des fêtes, anciens et récents, pour les semaines où le sapin est installé.'],
-    es: ['Películas de Navidad', 'Nieve, luces y segundas oportunidades. Clásicos navideños antiguos y recientes para las semanas en que el árbol está puesto.']
+    es: ['Películas de Navidad', 'Nieve, luces y segundas oportunidades. Clásicos navideños antiguos y recientes para las semanas en que el árbol está puesto.'],
+    de: ['Weihnachtsfilme', 'Schnee, Lichter und zweite Chancen. Alte und neue Weihnachtslieblinge für die Wochen, in denen der Baum steht.']
   },
   'movies-to-watch-with-friends': {
     uk: ['Фільми для перегляду з друзями', 'Гучні, динамічні й смішні бойовики-комедії, які не зіпсуєш розмовами під час перегляду. Створені для піци та повного дивана.'],
     ru: ['Фильмы для просмотра с друзьями', 'Громкие, динамичные и смешные боевики-комедии, которые не испортишь разговорами во время просмотра. Созданы для пиццы и полного дивана.'],
     fr: ['Films à regarder entre amis', 'Des comédies d’action bruyantes, rapides et drôles qui résistent aux bavardages. Faites pour une pizza et un canapé plein.'],
-    es: ['Películas para ver con amigos', 'Comedias de acción ruidosas, rápidas y divertidas que aguantan que todo el mundo hable encima. Hechas para pizza y un sofá lleno.']
+    es: ['Películas para ver con amigos', 'Comedias de acción ruidosas, rápidas y divertidas que aguantan que todo el mundo hable encima. Hechas para pizza y un sofá lleno.'],
+    de: ['Filme für einen Abend mit Freunden', 'Laute, schnelle und lustige Actionkomödien, die es aushalten, wenn alle dazwischenreden. Gemacht für Pizza und ein volles Sofa.']
   },
   'late-night-thrillers': {
     uk: ['Трилери на ніч', 'Кримінальні трилери для тих годин, коли вдома тихо, а спати ще не хочеться. Напружені, темні й найкращі з вимкненим світлом.'],
     ru: ['Триллеры на ночь', 'Криминальные триллеры для часов, когда дома тихо, а спать ещё не хочется. Напряжённые, мрачные и лучше всего с выключенным светом.'],
     fr: ['Thrillers pour la nuit', 'Des thrillers policiers pour quand la maison est silencieuse et que vous n’avez pas encore sommeil. Tendus, sombres, à regarder lumières éteintes.'],
-    es: ['Thrillers para la noche', 'Thrillers criminales para cuando la casa está en silencio y aún no tienes sueño. Tensos, oscuros y mejor con la luz apagada.']
+    es: ['Thrillers para la noche', 'Thrillers criminales para cuando la casa está en silencio y aún no tienes sueño. Tensos, oscuros y mejor con la luz apagada.'],
+    de: ['Thriller für späte Abende', 'Krimithriller für die Stunden, in denen das Haus still ist und du noch nicht schlafen willst. Spannend, düster und am besten bei ausgeschaltetem Licht.']
   },
   'true-story-movies': {
     uk: ['Фільми, засновані на реальних подіях', 'Справжні люди, справжні події і дивне відчуття, коли потім шукаєш усе в інтернеті. Драми, взяті з життя.'],
     ru: ['Фильмы, основанные на реальных событиях', 'Настоящие люди, настоящие события и странное чувство, когда потом ищешь всё в интернете. Драмы, взятые из жизни.'],
     fr: ['Films tirés d’une histoire vraie', 'De vraies personnes, de vrais événements et cette drôle d’envie de tout vérifier après coup. Des drames inspirés de la vie.'],
-    es: ['Películas basadas en hechos reales', 'Personas reales, hechos reales y esa extraña sensación de buscarlo todo después. Dramas sacados de la vida.']
+    es: ['Películas basadas en hechos reales', 'Personas reales, hechos reales y esa extraña sensación de buscarlo todo después. Dramas sacados de la vida.'],
+    de: ['Filme nach wahren Begebenheiten', 'Echte Menschen, echte Ereignisse und das seltsame Gefühl, danach alles nachzulesen. Dramen, die das Leben schrieb.']
   },
   'heist-movies': {
     uk: ['Фільми про пограбування', 'Команда, план і мить, коли все йде не так. Хитромудрі афери й пограбування банків, де половина задоволення — дивитися, як усе складається докупи.'],
     ru: ['Фильмы про ограбления', 'Команда, план и момент, когда всё идёт не так. Хитроумные аферы и ограбления банков, где половина удовольствия — смотреть, как всё складывается.'],
     fr: ['Films de braquage', 'Une équipe, un plan et le moment où tout dérape. Des casses ingénieux où le plaisir est de voir chaque pièce s’emboîter.'],
-    es: ['Películas de atracos', 'Una banda, un plan y el momento en que todo se tuerce. Golpes ingeniosos donde la mitad de la gracia es ver cómo encajan las piezas.']
+    es: ['Películas de atracos', 'Una banda, un plan y el momento en que todo se tuerce. Golpes ingeniosos donde la mitad de la gracia es ver cómo encajan las piezas.'],
+    de: ['Heist-Filme', 'Eine Crew, ein Plan und der Moment, in dem alles schiefgeht. Clevere Coups und Banküberfälle, bei denen die halbe Freude darin liegt, wie die Teile ineinandergreifen.']
   },
   'time-travel-movies': {
     uk: ['Фільми про подорожі в часі', 'Петлі, парадокси й друга спроба змінити минуле. Від легких пригод до історій, що зав’язують мозок у вузол.'],
     ru: ['Фильмы про путешествия во времени', 'Петли, парадоксы и вторая попытка изменить прошлое. От лёгких приключений до историй, которые завязывают мозг в узел.'],
     fr: ['Films de voyage dans le temps', 'Boucles, paradoxes et secondes chances dans le passé. Des aventures légères aux histoires qui vous font des nœuds au cerveau.'],
-    es: ['Películas de viajes en el tiempo', 'Bucles, paradojas y segundas oportunidades en el pasado. Desde aventuras ligeras hasta historias que te hacen un nudo en la cabeza.']
+    es: ['Películas de viajes en el tiempo', 'Bucles, paradojas y segundas oportunidades en el pasado. Desde aventuras ligeras hasta historias que te hacen un nudo en la cabeza.'],
+    de: ['Zeitreise-Filme', 'Zeitschleifen, Paradoxien und zweite Versuche mit der Vergangenheit. Von leichten Abenteuern bis zu Geschichten, die dir einen Knoten ins Hirn machen.']
   },
   'coming-of-age-movies': {
     uk: ['Фільми про дорослішання', 'Перше кохання, останнє літо і рік, коли все змінилося. Фільми про дорослішання, які зачіпають навіть тих, хто вже давно дорослий.'],
     ru: ['Фильмы о взрослении', 'Первая любовь, последнее лето и год, когда всё изменилось. Фильмы о взрослении, которые трогают даже тех, кто давно вырос.'],
     fr: ['Films sur le passage à l’âge adulte', 'Premiers amours, derniers étés et l’année où tout a changé. Des films sur le fait de grandir qui touchent même quand on a déjà grandi.'],
-    es: ['Películas sobre crecer', 'Primeros amores, últimos veranos y el año en que todo cambió. Películas sobre hacerse mayor que siguen llegando aunque ya lo seas.']
+    es: ['Películas sobre crecer', 'Primeros amores, últimos veranos y el año en que todo cambió. Películas sobre hacerse mayor que siguen llegando aunque ya lo seas.'],
+    de: ['Coming-of-Age-Filme', 'Erste Liebe, letzte Sommer und das Jahr, in dem sich alles änderte. Filme übers Erwachsenwerden, die auch dann noch treffen, wenn man es längst ist.']
   },
   'road-trip-movies': {
     uk: ['Роуд-муві: фільми про подорожі', 'Відкрита дорога, погані мотелі й попутники, які поступово стають друзями. Для тих вечорів, коли хочеться втекти, не встаючи з дивана.'],
     ru: ['Роуд-муви: фильмы о путешествиях', 'Открытая дорога, плохие мотели и попутчики, которые постепенно становятся друзьями. Для вечеров, когда хочется сбежать, не вставая с дивана.'],
     fr: ['Road movies', 'Des routes à perte de vue, des motels douteux et des compagnons de voyage qui deviennent peu à peu des amis. Pour partir sans quitter le canapé.'],
-    es: ['Road movies: películas de carretera', 'Carreteras abiertas, moteles de mala muerte y compañeros de viaje que poco a poco se vuelven amigos. Para escaparte sin salir del sofá.']
+    es: ['Road movies: películas de carretera', 'Carreteras abiertas, moteles de mala muerte y compañeros de viaje que poco a poco se vuelven amigos. Para escaparte sin salir del sofá.'],
+    de: ['Roadmovies', 'Offene Straßen, schäbige Motels und Reisegefährten, die langsam zu Freunden werden. Für alle, die wegwollen, ohne das Sofa zu verlassen.']
   },
   'space-movies': {
     uk: ['Фільми про космос', 'Тиша, відстані й зовсім маленькі люди. Наукова фантастика серед зірок: від напружених історій виживання до масштабних видовищ.'],
     ru: ['Фильмы про космос', 'Тишина, расстояния и совсем маленькие люди. Научная фантастика среди звёзд: от напряжённых историй выживания до масштабных зрелищ.'],
     fr: ['Films sur l’espace', 'Le silence, la distance et des humains minuscules. De la science-fiction parmi les étoiles, des récits de survie haletants aux grands spectacles.'],
-    es: ['Películas del espacio', 'Silencio, distancia y humanos muy pequeños. Ciencia ficción entre las estrellas, desde tensas historias de supervivencia hasta grandes espectáculos.']
+    es: ['Películas del espacio', 'Silencio, distancia y humanos muy pequeños. Ciencia ficción entre las estrellas, desde tensas historias de supervivencia hasta grandes espectáculos.'],
+    de: ['Weltraumfilme', 'Stille, Entfernung und sehr kleine Menschen. Science-Fiction zwischen den Sternen, von spannenden Überlebensgeschichten bis zum großen Kinospektakel.']
   },
   'dystopian-movies': {
     uk: ['Антиутопії: найкращі фільми', 'Майбутнє, яке пішло не так, і люди, що чинять опір. Похмурі й стильні світи, які говорять більше про сьогодення, ніж про завтра.'],
     ru: ['Антиутопии: лучшие фильмы', 'Будущее, которое пошло не так, и люди, которые сопротивляются. Мрачные и стильные миры, которые говорят больше о сегодняшнем дне, чем о завтрашнем.'],
     fr: ['Films dystopiques', 'Des futurs qui ont mal tourné et ceux qui résistent. Des mondes sombres et stylés qui en disent plus sur aujourd’hui que sur demain.'],
-    es: ['Películas distópicas', 'Futuros que salieron mal y la gente que se rebela. Mundos oscuros y con estilo que hablan más del presente que del mañana.']
+    es: ['Películas distópicas', 'Futuros que salieron mal y la gente que se rebela. Mundos oscuros y con estilo que hablan más del presente que del mañana.'],
+    de: ['Dystopische Filme', 'Zukünfte, die schiefgelaufen sind, und Menschen, die sich wehren. Düstere, stilvolle Welten, die mehr über heute als über morgen erzählen.']
   },
   'high-school-movies': {
     uk: ['Фільми про школу', 'Шафки, шкільні компанії й катастрофи на випускному. Підліткові комедії, які легко цитувати й ще легше переглядати.'],
     ru: ['Фильмы про школу', 'Шкафчики, школьные компании и катастрофы на выпускном. Подростковые комедии, которые легко цитировать и ещё легче пересматривать.'],
     fr: ['Films de lycée', 'Casiers, bandes rivales et bals de promo catastrophiques. Des comédies ados faciles à citer et encore plus à revoir.'],
-    es: ['Películas de instituto', 'Taquillas, grupitos y bailes de graduación desastrosos. Comedias adolescentes fáciles de citar y aún más fáciles de volver a ver.']
+    es: ['Películas de instituto', 'Taquillas, grupitos y bailes de graduación desastrosos. Comedias adolescentes fáciles de citar y aún más fáciles de volver a ver.'],
+    de: ['Highschool-Filme', 'Spinde, Cliquen und Abschlussball-Katastrophen. Teeniekomödien, die man leicht zitiert und noch leichter wieder anschaut.']
   },
   'serial-killer-thrillers': {
     uk: ['Трилери про маніяків', 'Детективи, одержимість і розслідування, що поволі затягує петлю. Похмурі психологічні трилери для глядачів із міцними нервами.'],
     ru: ['Триллеры про маньяков', 'Детективы, одержимость и расследование, которое медленно затягивает петлю. Мрачные психологические триллеры для зрителей с крепкими нервами.'],
     fr: ['Thrillers de tueurs en série', 'Des enquêteurs, l’obsession et une enquête qui se resserre lentement. Des thrillers psychologiques sombres pour les spectateurs aux nerfs solides.'],
-    es: ['Thrillers de asesinos en serie', 'Detectives, obsesión y un caso que se cierra poco a poco. Thrillers psicológicos oscuros para espectadores con nervios de acero.']
+    es: ['Thrillers de asesinos en serie', 'Detectives, obsesión y un caso que se cierra poco a poco. Thrillers psicológicos oscuros para espectadores con nervios de acero.'],
+    de: ['Serienkiller-Thriller', 'Ermittler, Besessenheit und ein Fall, der sich langsam zuzieht. Düstere Psychothriller für Zuschauer mit starken Nerven.']
   },
   'best-90s-movies': {
     uk: ['Найкращі фільми 90-х', 'Десятиліття відеопрокатів і аншлагів у п’ятницю ввечері. Найвище оцінені фільми 1990-х, які й досі не застаріли.'],
     ru: ['Лучшие фильмы 90-х', 'Десятилетие видеопрокатов и аншлагов в пятницу вечером. Самые высоко оценённые фильмы 1990-х, которые до сих пор не устарели.'],
     fr: ['Meilleurs films des années 90', 'La décennie des vidéoclubs et des vendredis soir à guichets fermés. Les films les mieux notés des années 1990, qui n’ont pas pris une ride.'],
-    es: ['Mejores películas de los 90', 'La década de los videoclubes y los viernes con las salas llenas. Las películas mejor valoradas de los años 90, que siguen aguantando.']
+    es: ['Mejores películas de los 90', 'La década de los videoclubes y los viernes con las salas llenas. Las películas mejor valoradas de los años 90, que siguen aguantando.'],
+    de: ['Die besten Filme der 90er', 'Das Jahrzehnt der Videotheken und ausverkauften Freitagabende. Die bestbewerteten Filme der 1990er, die alle noch heute bestehen.']
   },
   'best-anime-movies': {
     uk: ['Найкращі аніме-фільми', 'Від Studio Ghibli до Макото Сінкая: найулюбленіші повнометражні аніме, які зачаровують і дітей, і дорослих.'],
     ru: ['Лучшие аниме-фильмы', 'От Studio Ghibli до Макото Синкая: самые любимые полнометражные аниме, которые очаровывают и детей, и взрослых.'],
     fr: ['Meilleurs films d’anime', 'Du studio Ghibli à Makoto Shinkai : les films d’anime les plus aimés, qui enchantent petits et grands.'],
-    es: ['Mejores películas de anime', 'Del Studio Ghibli a Makoto Shinkai: las películas de anime más queridas, que encantan a pequeños y mayores.']
+    es: ['Mejores películas de anime', 'Del Studio Ghibli a Makoto Shinkai: las películas de anime más queridas, que encantan a pequeños y mayores.'],
+    de: ['Die besten Anime-Filme', 'Von Studio Ghibli bis Makoto Shinkai: die beliebtesten Anime-Filme, die Kinder und Erwachsene gleichermaßen verzaubern.']
   },
   'best-documentaries': {
     uk: ['Найкращі документальні фільми', 'Справжні історії, розказані краще за вигадку: документальні фільми про природу, спорт, музику та злочини, які всі радять.'],
     ru: ['Лучшие документальные фильмы', 'Настоящие истории, рассказанные лучше вымысла: документальные фильмы о природе, спорте, музыке и преступлениях, которые все советуют.'],
     fr: ['Meilleurs documentaires', 'Des histoires vraies mieux racontées que la fiction : nature, sport, musique et faits divers, les documentaires que tout le monde recommande.'],
-    es: ['Mejores documentales', 'Historias reales contadas mejor que la ficción: documentales de naturaleza, deporte, música y crímenes que todos recomiendan.']
+    es: ['Mejores documentales', 'Historias reales contadas mejor que la ficción: documentales de naturaleza, deporte, música y crímenes que todos recomiendan.'],
+    de: ['Die besten Dokumentarfilme', 'Wahre Geschichten, besser erzählt als jede Fiktion: Dokus über Natur, Sport, Musik und Verbrechen, die alle weiterempfehlen.']
   },
   'best-80s-movies': {
     uk: ['Найкращі фільми 80-х', 'Синтезатори, практичні ефекти й герої з крилатими фразами. Найулюбленіші фільми 1980-х для по-справжньому ностальгійного вечора.'],
     ru: ['Лучшие фильмы 80-х', 'Синтезаторы, практические эффекты и герои с крылатыми фразами. Самые любимые фильмы 1980-х для по-настоящему ностальгического вечера.'],
     fr: ['Meilleurs films des années 80', 'Des synthés, des effets spéciaux à l’ancienne et des héros aux répliques cultes. Les films préférés des années 1980 pour une vraie soirée nostalgie.'],
-    es: ['Mejores películas de los 80', 'Sintetizadores, efectos artesanales y héroes con frases míticas. Las películas más queridas de los años 80 para una noche de pura nostalgia.']
+    es: ['Mejores películas de los 80', 'Sintetizadores, efectos artesanales y héroes con frases míticas. Las películas más queridas de los años 80 para una noche de pura nostalgia.'],
+    de: ['Die besten Filme der 80er', 'Synthesizer, handgemachte Effekte und Helden mit coolen Sprüchen. Die beliebtesten Filme der 1980er für einen richtig nostalgischen Abend.']
   }
 };
 
 const TEXT = {
-  moods: { en: 'Moods', uk: 'Настрої', ru: 'Настроения', fr: 'Humeurs', es: 'Ánimos' },
-  trailers: { en: 'Trailers', uk: 'Трейлери', ru: 'Трейлеры', fr: 'Bandes-annonces', es: 'Tráilers' },
-  favorites: { en: 'Favorites', uk: 'Обране', ru: 'Избранное', fr: 'Favoris', es: 'Favoritos' },
+  moods: { en: 'Moods', uk: 'Настрої', ru: 'Настроения', fr: 'Humeurs', es: 'Ánimos', de: 'Stimmungen' },
+  trailers: { en: 'Trailers', uk: 'Трейлери', ru: 'Трейлеры', fr: 'Bandes-annonces', es: 'Tráilers', de: 'Trailer' },
+  favorites: { en: 'Favorites', uk: 'Обране', ru: 'Избранное', fr: 'Favoris', es: 'Favoritos', de: 'Favoriten' },
   footer: {
     en: 'This product uses the TMDB API but is not endorsed or certified by TMDB.',
     uk: 'Цей продукт використовує TMDB API, але не схвалений і не сертифікований TMDB.',
     ru: 'Этот продукт использует TMDB API, но не одобрен и не сертифицирован TMDB.',
     fr: 'Ce produit utilise l’API TMDB mais n’est ni approuvé ni certifié par TMDB.',
-    es: 'Este producto utiliza la API de TMDB, pero no está respaldado ni certificado por TMDB.'
+    es: 'Este producto utiliza la API de TMDB, pero no está respaldado ni certificado por TMDB.',
+    de: 'Dieses Produkt nutzt die TMDB-API, wird aber nicht von TMDB unterstützt oder zertifiziert.'
   },
-  poster: { en: 'poster', uk: 'постер', ru: 'постер', fr: 'affiche', es: 'póster' },
+  poster: { en: 'poster', uk: 'постер', ru: 'постер', fr: 'affiche', es: 'póster', de: 'Poster' },
 
   mood_page_title: {
     en: '{title}: {n} Picks to Watch Tonight',
     uk: '{title}: {n} фільмів на вечір',
     ru: '{title}: {n} фильмов на вечер',
     fr: '{title} : {n} films à voir ce soir',
-    es: '{title}: {n} películas para esta noche'
+    es: '{title}: {n} películas para esta noche',
+    de: '{title}: {n} Filme für heute Abend'
   },
-  not_your_mood: { en: 'Not quite your mood?', uk: 'Не зовсім ваш настрій?', ru: 'Не совсем ваше настроение?', fr: 'Pas tout à fait votre humeur ?', es: '¿No es justo tu estado de ánimo?' },
-  find_more: { en: 'Find more like this', uk: 'Знайти ще схожі', ru: 'Найти ещё похожие', fr: 'Trouver d’autres films de ce genre', es: 'Encontrar más como estas' },
-  own_mood: { en: 'Describe your own mood', uk: 'Опишіть свій настрій', ru: 'Опишите своё настроение', fr: 'Décrivez votre humeur', es: 'Describe tu estado de ánimo' },
-  more_moods: { en: 'More moods', uk: 'Інші настрої', ru: 'Другие настроения', fr: 'Autres humeurs', es: 'Más estados de ánimo' },
-  browse_by_mood: { en: 'Browse by mood', uk: 'Фільми за настроєм', ru: 'Фильмы по настроению', fr: 'Films par humeur', es: 'Películas por estado de ánimo' },
+  not_your_mood: { en: 'Not quite your mood?', uk: 'Не зовсім ваш настрій?', ru: 'Не совсем ваше настроение?', fr: 'Pas tout à fait votre humeur ?', es: '¿No es justo tu estado de ánimo?', de: 'Nicht ganz deine Stimmung?' },
+  find_more: { en: 'Find more like this', uk: 'Знайти ще схожі', ru: 'Найти ещё похожие', fr: 'Trouver d’autres films de ce genre', es: 'Encontrar más como estas', de: 'Mehr davon finden' },
+  own_mood: { en: 'Describe your own mood', uk: 'Опишіть свій настрій', ru: 'Опишите своё настроение', fr: 'Décrivez votre humeur', es: 'Describe tu estado de ánimo', de: 'Beschreib deine eigene Stimmung' },
+  more_moods: { en: 'More moods', uk: 'Інші настрої', ru: 'Другие настроения', fr: 'Autres humeurs', es: 'Más estados de ánimo', de: 'Weitere Stimmungen' },
+  browse_by_mood: { en: 'Browse by mood', uk: 'Фільми за настроєм', ru: 'Фильмы по настроению', fr: 'Films par humeur', es: 'Películas por estado de ánimo', de: 'Filme nach Stimmung' },
 
   index_title: {
     en: 'Movies by Mood: Find What to Watch Tonight',
     uk: 'Фільми за настроєм: що подивитися сьогодні',
     ru: 'Фильмы по настроению: что посмотреть сегодня',
     fr: 'Films selon votre humeur : que regarder ce soir',
-    es: 'Películas según tu estado de ánimo: qué ver esta noche'
+    es: 'Películas según tu estado de ánimo: qué ver esta noche',
+    de: 'Filme nach Stimmung: Was soll ich heute schauen?'
   },
   index_desc: {
     en: 'Pick a mood — cozy, sad, mind-bending, date night — and get a hand-tuned list of films that fit it.',
     uk: 'Оберіть настрій — затишний, сумний, із закрученим сюжетом, для побачення — і отримайте добірку фільмів, що йому пасують.',
     ru: 'Выберите настроение — уютное, грустное, с закрученным сюжетом, для свидания — и получите подборку фильмов под него.',
     fr: 'Choisissez une humeur — cocooning, triste, à retourner le cerveau, en amoureux — et obtenez une sélection de films qui lui correspond.',
-    es: 'Elige un estado de ánimo — acogedor, triste, para volarte la cabeza, para una cita — y obtén una selección de películas que encaje.'
+    es: 'Elige un estado de ánimo — acogedor, triste, para volarte la cabeza, para una cita — y obtén una selección de películas que encaje.',
+    de: 'Wähl eine Stimmung – gemütlich, traurig, Mindfuck, Date-Abend – und erhalte eine handverlesene Liste passender Filme.'
   },
-  index_h1: { en: 'Movies by', uk: 'Фільми за', ru: 'Фильмы по', fr: 'Films selon votre', es: 'Películas según tu' },
-  index_h1_accent: { en: 'Mood', uk: 'настроєм', ru: 'настроению', fr: 'humeur', es: 'ánimo' },
+  index_h1: { en: 'Movies by', uk: 'Фільми за', ru: 'Фильмы по', fr: 'Films selon votre', es: 'Películas según tu', de: 'Filme nach' },
+  index_h1_accent: { en: 'Mood', uk: 'настроєм', ru: 'настроению', fr: 'humeur', es: 'ánimo', de: 'Stimmung' },
   index_intro: {
     en: 'Pick how you feel and get a list of films that fit. Or describe your own mood on the {link}.',
     uk: 'Оберіть, що відчуваєте, і отримайте список фільмів під настрій. Або опишіть свій настрій на {link}.',
     ru: 'Выберите, что чувствуете, и получите список фильмов под настроение. Или опишите своё настроение на {link}.',
     fr: 'Choisissez ce que vous ressentez et obtenez une liste de films adaptés. Ou décrivez votre propre humeur sur la {link}.',
-    es: 'Elige cómo te sientes y obtén una lista de películas a juego. O describe tu propio estado de ánimo en la {link}.'
+    es: 'Elige cómo te sientes y obtén una lista de películas a juego. O describe tu propio estado de ánimo en la {link}.',
+    de: 'Wähl, wie du dich fühlst, und erhalte eine Liste passender Filme. Oder beschreib deine eigene Stimmung auf der {link}.'
   },
-  home_link: { en: 'home page', uk: 'головній сторінці', ru: 'главной странице', fr: 'page d’accueil', es: 'página principal' },
+  home_link: { en: 'home page', uk: 'головній сторінці', ru: 'главной странице', fr: 'page d’accueil', es: 'página principal', de: 'Startseite' },
 
-  not_found_title: { en: 'Page not found', uk: 'Сторінку не знайдено', ru: 'Страница не найдена', fr: 'Page introuvable', es: 'Página no encontrada' },
+  not_found_title: { en: 'Page not found', uk: 'Сторінку не знайдено', ru: 'Страница не найдена', fr: 'Page introuvable', es: 'Página no encontrada', de: 'Seite nicht gefunden' },
   not_found_desc: {
     en: 'This page does not exist. Browse movies by mood instead.',
     uk: 'Такої сторінки немає. Перегляньте фільми за настроєм.',
     ru: 'Такой страницы нет. Посмотрите фильмы по настроению.',
     fr: 'Cette page n’existe pas. Découvrez plutôt des films selon votre humeur.',
-    es: 'Esta página no existe. Explora películas según tu estado de ánimo.'
+    es: 'Esta página no existe. Explora películas según tu estado de ánimo.',
+    de: 'Diese Seite gibt es nicht. Entdecke stattdessen Filme nach Stimmung.'
   },
-  not_found_h1: { en: 'Nothing', uk: 'Тут', ru: 'Здесь', fr: 'Rien', es: 'Aquí no hay' },
-  not_found_h1_accent: { en: 'here', uk: 'порожньо', ru: 'пусто', fr: 'ici', es: 'nada' },
+  not_found_h1: { en: 'Nothing', uk: 'Тут', ru: 'Здесь', fr: 'Rien', es: 'Aquí no hay', de: 'Hier ist' },
+  not_found_h1_accent: { en: 'here', uk: 'порожньо', ru: 'пусто', fr: 'ici', es: 'nada', de: 'nichts' },
   not_found_intro: {
     en: 'That page does not exist. Try one of these moods instead.',
     uk: 'Такої сторінки не існує. Спробуйте один із цих настроїв.',
     ru: 'Такой страницы не существует. Попробуйте одно из этих настроений.',
     fr: 'Cette page n’existe pas. Essayez plutôt l’une de ces humeurs.',
-    es: 'Esa página no existe. Prueba uno de estos estados de ánimo.'
+    es: 'Esa página no existe. Prueba uno de estos estados de ánimo.',
+    de: 'Diese Seite gibt es nicht. Probier stattdessen eine dieser Stimmungen.'
   },
 
   // {name} already carries the year: "The Terminator (1984)"
@@ -404,17 +437,19 @@ const TEXT = {
     uk: '{name}: де дивитися онлайн',
     ru: '{name}: где смотреть онлайн',
     fr: '{name} : où regarder en streaming',
-    es: '{name}: dónde ver online'
+    es: '{name}: dónde ver online',
+    de: '{name} im Stream: wo online schauen'
   },
   // the same, shorter, for long film names (see fitTitle)
-  title_page_short: { en: '{name}: Where to Watch', uk: '{name}: де дивитися', ru: '{name}: где смотреть', fr: '{name} : où regarder', es: '{name}: dónde ver' },
+  title_page_short: { en: '{name}: Where to Watch', uk: '{name}: де дивитися', ru: '{name}: где смотреть', fr: '{name} : où regarder', es: '{name}: dónde ver', de: '{name} im Stream' },
   // "Where to watch Inception: Netflix, Apple TV." — first words of the description in search results
   title_page_where: {
     en: 'Where to watch {name}: {services}.',
     uk: 'Де дивитися {name}: {services}.',
     ru: 'Где смотреть {name}: {services}.',
     fr: 'Où regarder {name} : {services}.',
-    es: 'Dónde ver {name}: {services}.'
+    es: 'Dónde ver {name}: {services}.',
+    de: 'Wo kann man {name} schauen? {services}.'
   },
   // visible on the page before the browser draws the full list for the visitor's own country
   title_page_where_in: {
@@ -422,39 +457,44 @@ const TEXT = {
     uk: 'Де дивитися ({country}):',
     ru: 'Где смотреть ({country}):',
     fr: 'Où regarder ({country}) :',
-    es: 'Dónde ver ({country}):'
+    es: 'Dónde ver ({country}):',
+    de: 'Wo schauen ({country}):'
   },
-  watch_stream: { en: 'stream', uk: 'підписка', ru: 'подписка', fr: 'abonnement', es: 'suscripción' },
-  watch_rent: { en: 'rent', uk: 'оренда', ru: 'аренда', fr: 'location', es: 'alquiler' },
-  watch_buy: { en: 'buy', uk: 'купівля', ru: 'покупка', fr: 'achat', es: 'compra' },
-  trailer: { en: 'Official Trailer', uk: 'Офіційний трейлер', ru: 'Официальный трейлер', fr: 'Bande-annonce officielle', es: 'Tráiler oficial' },
+  watch_stream: { en: 'stream', uk: 'підписка', ru: 'подписка', fr: 'abonnement', es: 'suscripción', de: 'Abo' },
+  watch_rent: { en: 'rent', uk: 'оренда', ru: 'аренда', fr: 'location', es: 'alquiler', de: 'leihen' },
+  watch_buy: { en: 'buy', uk: 'купівля', ru: 'покупка', fr: 'achat', es: 'compra', de: 'kaufen' },
+  trailer: { en: 'Official Trailer', uk: 'Офіційний трейлер', ru: 'Официальный трейлер', fr: 'Bande-annonce officielle', es: 'Tráiler oficial', de: 'Offizieller Trailer' },
   title_page_desc: {
     en: 'Where to watch {name}, trailer, cast and similar titles.',
     uk: 'Де дивитися {name} онлайн: трейлер, актори та схожі фільми.',
     ru: 'Где смотреть {name} онлайн: трейлер, актёры и похожие фильмы.',
     fr: 'Où regarder {name} en streaming : bande-annonce, casting et titres similaires.',
-    es: 'Dónde ver {name} online: tráiler, reparto y títulos similares.'
+    es: 'Dónde ver {name} online: tráiler, reparto y títulos similares.',
+    de: '{name} online schauen: Stream, Trailer, Besetzung und ähnliche Titel.'
   },
   person_page_title: {
     en: '{name}: Movies and TV Shows to Watch',
     uk: '{name}: фільми та серіали',
     ru: '{name}: фильмы и сериалы',
     fr: '{name} : films et séries',
-    es: '{name}: películas y series'
+    es: '{name}: películas y series',
+    de: '{name}: Filme und Serien'
   },
   person_page_desc: {
     en: '{name} movies and TV shows: {known} and more. Where to watch, trailers and similar films.',
     uk: '{name}: фільми та серіали — {known} та інші. Де дивитися, трейлери й схожі фільми.',
     ru: '{name}: фильмы и сериалы — {known} и другие. Где смотреть, трейлеры и похожие фильмы.',
     fr: 'Films et séries avec {name} : {known} et plus encore. Où les regarder, bandes-annonces et films similaires.',
-    es: 'Películas y series de {name}: {known} y más. Dónde verlas, tráilers y películas similares.'
+    es: 'Películas y series de {name}: {known} y más. Dónde verlas, tráilers y películas similares.',
+    de: 'Filme und Serien mit {name}: {known} und mehr. Wo schauen, Trailer und ähnliche Filme.'
   },
   person_page_desc_short: {
     en: '{name}: movies and TV shows, where to watch them and similar films.',
     uk: '{name}: фільми та серіали, де їх дивитися і схожі фільми.',
     ru: '{name}: фильмы и сериалы, где их смотреть и похожие фильмы.',
     fr: '{name} : films et séries, où les regarder et films similaires.',
-    es: '{name}: películas y series, dónde verlas y películas similares.'
+    es: '{name}: películas y series, dónde verlas y películas similares.',
+    de: '{name}: Filme und Serien, wo man sie schauen kann, und ähnliche Filme.'
   },
 
   // Same as home.page_title in i18n.js, which sets the title again in the browser
@@ -463,36 +503,39 @@ const TEXT = {
     uk: 'MovieMood: фільм під ваш настрій',
     ru: 'MovieMood: фильм под ваше настроение',
     fr: 'MovieMood : un film selon votre humeur',
-    es: 'MovieMood: una película para tu estado de ánimo'
+    es: 'MovieMood: una película para tu estado de ánimo',
+    de: 'MovieMood: der passende Film für deine Stimmung'
   },
   home_desc: {
     en: 'Describe how you feel in any words and get well-loved movies and series to match: trailers, where to watch them and mood collections for every evening.',
     uk: 'Опишіть настрій будь-якими словами й отримайте улюблені глядачами фільми та серіали: трейлери, де дивитися і добірки на кожен вечір.',
     ru: 'Опишите настроение любыми словами и получите любимые зрителями фильмы и сериалы: трейлеры, где смотреть и подборки на каждый вечер.',
     fr: 'Décrivez votre humeur avec vos propres mots et obtenez des films et séries appréciés : bandes-annonces, où les regarder et sélections pour chaque soirée.',
-    es: 'Describe cómo te sientes con tus palabras y obtén películas y series muy valoradas: tráilers, dónde verlas y selecciones para cada noche.'
+    es: 'Describe cómo te sientes con tus palabras y obtén películas y series muy valoradas: tráilers, dónde verlas y selecciones para cada noche.',
+    de: 'Beschreib mit eigenen Worten, wie du dich fühlst, und erhalte beliebte Filme und Serien dazu: Trailer, wo man sie schauen kann, und Listen für jeden Abend.'
   },
   // home.title, home.title_accent and home.subtitle in i18n.js
-  home_h1: { en: 'What’s your', uk: 'Який у вас', ru: 'Какое у вас', fr: 'Quelle est votre', es: '¿Cómo te' },
-  home_h1_accent: { en: 'mood?', uk: 'настрій?', ru: 'настроение?', fr: 'humeur ?', es: 'sientes?' },
+  home_h1: { en: 'What’s your', uk: 'Який у вас', ru: 'Какое у вас', fr: 'Quelle est votre', es: '¿Cómo te', de: 'Wie ist deine' },
+  home_h1_accent: { en: 'mood?', uk: 'настрій?', ru: 'настроение?', fr: 'humeur ?', es: 'sientes?', de: 'Stimmung?' },
   home_subtitle: {
     en: 'Tell us how you feel - we’ll find the perfect film.',
     uk: 'Розкажіть, що на душі, — ми підберемо фільм.',
     ru: 'Расскажите, что на душе, — мы подберём фильм.',
     fr: 'Dites-nous comment vous vous sentez, nous trouvons le film.',
-    es: 'Cuéntanos cómo te sientes y encontramos la película.'
+    es: 'Cuéntanos cómo te sientes y encontramos la película.',
+    de: 'Sag uns, wie du dich fühlst – wir finden den passenden Film.'
   },
   // labels of the mood buttons under the search (quick.* in i18n.js)
   quick: {
-    rainy: { en: 'Rainy day', uk: 'Дощовий день', ru: 'Дождливый день', fr: 'Jour de pluie', es: 'Día de lluvia' },
-    cozy: { en: 'Cozy', uk: 'Затишні', ru: 'Уютные', fr: 'Cocooning', es: 'Acogedoras' },
-    feel_good: { en: 'Feel-good', uk: 'Гарний настрій', ru: 'Хорошее настроение', fr: 'Feel-good', es: 'Para animarse' },
-    cry: { en: 'To cry to', uk: 'Поплакати', ru: 'Поплакать', fr: 'Pour pleurer', es: 'Para llorar' },
-    date: { en: 'Date night', uk: 'Побачення', ru: 'Свидание', fr: 'En amoureux', es: 'Para una cita' },
-    mind: { en: 'Mind-bending', uk: 'Ламають мозок', ru: 'Взрыв мозга', fr: 'Casse-tête', es: 'Para pensar' },
-    family: { en: 'Family', uk: 'Для сім’ї', ru: 'Для семьи', fr: 'En famille', es: 'En familia' },
-    nineties: { en: '90s', uk: '90-ті', ru: '90-е', fr: 'Années 90', es: 'Años 90' },
-    all: { en: 'All moods', uk: 'Усі настрої', ru: 'Все настроения', fr: 'Toutes les humeurs', es: 'Todos los ánimos' }
+    rainy: { en: 'Rainy day', uk: 'Дощовий день', ru: 'Дождливый день', fr: 'Jour de pluie', es: 'Día de lluvia', de: 'Regentag' },
+    cozy: { en: 'Cozy', uk: 'Затишні', ru: 'Уютные', fr: 'Cocooning', es: 'Acogedoras', de: 'Gemütlich' },
+    feel_good: { en: 'Feel-good', uk: 'Гарний настрій', ru: 'Хорошее настроение', fr: 'Feel-good', es: 'Para animarse', de: 'Gute Laune' },
+    cry: { en: 'To cry to', uk: 'Поплакати', ru: 'Поплакать', fr: 'Pour pleurer', es: 'Para llorar', de: 'Zum Weinen' },
+    date: { en: 'Date night', uk: 'Побачення', ru: 'Свидание', fr: 'En amoureux', es: 'Para una cita', de: 'Date-Abend' },
+    mind: { en: 'Mind-bending', uk: 'Ламають мозок', ru: 'Взрыв мозга', fr: 'Casse-tête', es: 'Para pensar', de: 'Kopfkino' },
+    family: { en: 'Family', uk: 'Для сім’ї', ru: 'Для семьи', fr: 'En famille', es: 'En familia', de: 'Familie' },
+    nineties: { en: '90s', uk: '90-ті', ru: '90-е', fr: 'Années 90', es: 'Años 90', de: '90er' },
+    all: { en: 'All moods', uk: 'Усі настрої', ru: 'Все настроения', fr: 'Toutes les humeurs', es: 'Todos los ánimos', de: 'Alle Stimmungen' }
   }
 };
 
