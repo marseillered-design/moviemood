@@ -12,7 +12,7 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 // posters in the card grids: sharp at card size, half the weight of w500
 const TMDB_CARD_URL = 'https://image.tmdb.org/t/p/w342';
-const ASSET_VERSION = '20261020b';
+const ASSET_VERSION = '20261020c';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only

@@ -5,6 +5,15 @@ export default async function handler(req, res) {
     const debug = req.body.debug === true;
     const reply = (body, aiStatus) => res.status(200).json(debug ? { ...body, _ai: aiStatus } : body);
 
+    // The lists behind the "movies like X" pages are built once from here (scripts/build_like.py):
+    // { like_of: { title, year, type } } gives the AI's picks for exactly that title
+    const likeOf = req.body.like_of;
+    if (likeOf && typeof likeOf.title === 'string' && likeOf.title.trim()) {
+      const name = `${likeOf.title.trim().slice(0, 100)}${Number.isInteger(likeOf.year) ? ` (${likeOf.year})` : ''}`;
+      const picks = await askLikePicks(`${likeOf.type === 'tv' ? 'shows' : 'movies'} like ${name}`, { title: name, rest: '' }, 8000);
+      return reply(picks.data || {}, picks.status);
+    }
+
     if (!query) {
       return res.status(200).json({ genres: [18, 28], fallback: true });
     }
@@ -149,11 +158,11 @@ const AI_PROVIDERS = [
 
 // "movies like Inception": the AI names the source title and 20 titles its fans also love.
 // The client looks each of them up on TMDB. Returns { data: { like_source, like_picks } | null, status }.
-async function askLikePicks(query, like) {
+async function askLikePicks(query, like, budgetMs = AI_TIME_BUDGET_MS) {
   const providers = AI_PROVIDERS.filter(provider => provider.key());
   if (!providers.length) return { data: null, status: 'no_key' };
 
-  const deadline = Date.now() + AI_TIME_BUDGET_MS;
+  const deadline = Date.now() + budgetMs;
   const statuses = [];
   for (const provider of providers) {
     const timeLeft = deadline - Date.now();
