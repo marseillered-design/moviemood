@@ -2,6 +2,14 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/tmdb/:path*",
+      "destination": "https://api.themoviedb.org/3/:path*"
+    },
+    {
+      "source": "/tmdb-img/:path*",
+      "destination": "https://image.tmdb.org/t/p/:path*"
+    },
+    {
       "source": "/moods",
       "destination": "/api/page?kind=moods"
     },

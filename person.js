@@ -60,7 +60,7 @@ async function loadPerson() {
     photoEl.src = `${TMDB_PROFILE_URL}${details.profile_path}`;
 
     document.getElementById('personHeroBlur').style.backgroundImage =
-      `url(${TMDB_PROFILE_URL}${details.profile_path})`;
+      `url(${mmImg(`${TMDB_PROFILE_URL}${details.profile_path}`)})`;
   }
 
   document.getElementById('personName').textContent = details.name;

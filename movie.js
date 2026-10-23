@@ -104,7 +104,7 @@ async function loadMovie() {
   if (!serverPage) document.title = `${title} - MovieMood`;
 
   if (details.backdrop_path) {
-    document.getElementById('heroBackdrop').style.backgroundImage = `url(${TMDB_BACKDROP_URL}${details.backdrop_path})`;
+    document.getElementById('heroBackdrop').style.backgroundImage = `url(${mmImg(`${TMDB_BACKDROP_URL}${details.backdrop_path}`)})`;
   }
 
   document.getElementById('movieTitle').textContent = title;

@@ -201,7 +201,7 @@ function createReel(item, index) {
   `;
 
   if (image) {
-    reel.querySelector('.reel-backdrop').style.backgroundImage = `url(${TMDB_POSTER_URL}${image})`;
+    reel.querySelector('.reel-backdrop').style.backgroundImage = `url(${mmImg(`${TMDB_POSTER_URL}${image}`)})`;
     reel.querySelector('.reel-poster').src = `${TMDB_POSTER_URL}${image}`;
   }
   reel.querySelector('.reel-title').textContent = title;
