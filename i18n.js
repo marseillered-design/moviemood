@@ -83,6 +83,7 @@
     'quick.family': { en: 'Family', uk: 'Для сім’ї', ru: 'Для семьи', fr: 'En famille', es: 'En familia', de: 'Familie' },
     'quick.nineties': { en: '90s', uk: '90-ті', ru: '90-е', fr: 'Années 90', es: 'Años 90', de: '90er' },
     'quick.all': { en: 'All moods', uk: 'Усі настрої', ru: 'Все настроения', fr: 'Toutes les humeurs', es: 'Todos los ánimos', de: 'Alle Stimmungen' },
+    'footer.premiero': { en: 'Movie, series & game release calendar:', uk: 'Календар прем’єр кіно, серіалів та ігор:', ru: 'Календарь премьер кино, сериалов и игр:', fr: 'Calendrier des sorties films, séries et jeux :', es: 'Calendario de estrenos de cine, series y videojuegos:', de: 'Kalender für Film-, Serien- und Spielestarts:' },
     'footer.tmdb': { en: 'This product uses the TMDB API but is not endorsed or certified by TMDB.', uk: 'Сайт використовує TMDB API, але не схвалений і не сертифікований TMDB.', ru: 'Сайт использует TMDB API, но не одобрен и не сертифицирован TMDB.', fr: "Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB.", es: 'Este producto usa la API de TMDB, pero no está avalado ni certificado por TMDB.', de: 'Dieses Produkt nutzt die TMDB-API, wird aber nicht von TMDB unterstützt oder zertifiziert.' },
     'discover': { en: 'Discover Movies', uk: 'Шукати фільми', ru: 'Искать фильмы', fr: 'Découvrir des films', es: 'Descubrir películas', de: 'Filme entdecken' },
 
@@ -332,6 +333,10 @@
 
     // Short labels marked in the page itself (the mood buttons under the search)
     document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+
+    // The release calendar in the same language
+    const premiero = { en: 'https://thepremiero.com/en/us', uk: 'https://thepremiero.com/uk/ua', ru: 'https://thepremiero.com/ru/kz', fr: 'https://thepremiero.com/fr/fr', es: 'https://thepremiero.com/es/es', de: 'https://thepremiero.com/de/de' };
+    document.querySelectorAll('a[data-premiero]').forEach(a => { a.href = premiero[lang]; });
 
     // Pages whose footer is a single plain line
     document.querySelectorAll('.home-footer p').forEach(p => {

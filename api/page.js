@@ -15,7 +15,7 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 // posters in the card grids: sharp at card size, half the weight of w500
 const TMDB_CARD_URL = 'https://image.tmdb.org/t/p/w342';
-const ASSET_VERSION = '20261023b';
+const ASSET_VERSION = '20261023c';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -170,6 +170,9 @@ const TMDB_LOCALES = { en: 'en-US', uk: 'uk-UA', ru: 'ru-RU', fr: 'fr-FR', es: '
 const OG_LOCALES = { en: 'en_US', uk: 'uk_UA', ru: 'ru_RU', fr: 'fr_FR', es: 'es_ES', de: 'de_DE' };
 // "Where to watch" in the page's text and description: the country most readers of each
 // language version are in (the browser then shows the visitor's own country)
+// Premiero in the same language and, where it has one, the same country as "where to watch"
+const PREMIERO_URLS = { en: 'https://thepremiero.com/en/us', uk: 'https://thepremiero.com/uk/ua', ru: 'https://thepremiero.com/ru/kz', fr: 'https://thepremiero.com/fr/fr', es: 'https://thepremiero.com/es/es', de: 'https://thepremiero.com/de/de' };
+const premieroLine = lang => `<p class="footer-premiero"><span data-i18n="footer.premiero">${escapeHtml(tr(lang, 'premiero'))}</span> <a href="${PREMIERO_URLS[lang]}" data-premiero>Premiero</a></p>`;
 const WATCH_COUNTRIES = { en: 'US', uk: 'UA', ru: 'KZ', fr: 'FR', es: 'ES', de: 'DE' };
 
 // [title, intro] of each collection in the other languages
@@ -370,6 +373,8 @@ const TEXT = {
     es: 'Este producto utiliza la API de TMDB, pero no está respaldado ni certificado por TMDB.',
     de: 'Dieses Produkt nutzt die TMDB-API, wird aber nicht von TMDB unterstützt oder zertifiziert.'
   },
+  // the release calendar, our sister site: one line in every footer
+  premiero: { en: 'Movie, series & game release calendar:', uk: 'Календар прем’єр кіно, серіалів та ігор:', ru: 'Календарь премьер кино, сериалов и игр:', fr: 'Calendrier des sorties films, séries et jeux :', es: 'Calendario de estrenos de cine, series y videojuegos:', de: 'Kalender für Film-, Serien- und Spielestarts:' },
   poster: { en: 'poster', uk: 'постер', ru: 'постер', fr: 'affiche', es: 'póster', de: 'Poster' },
 
   mood_page_title: {
@@ -760,6 +765,7 @@ function layout({ lang = 'en', origin, path, title, description, image, head = '
 
   <footer class="home-footer">
     <p>${escapeHtml(tr(lang, 'footer'))}</p>
+    ${premieroLine(lang)}
   </footer>
 
   <script>
@@ -1002,6 +1008,7 @@ async function renderHomePage(origin, lang) {
     .replace(/<h1 class="home-title">[\s\S]*?<\/h1>/, () => `<h1 class="home-title">${escapeHtml(tr(lang, 'home_h1'))} <span class="title-accent">${escapeHtml(tr(lang, 'home_h1_accent'))}</span></h1>`)
     .replace(/<p class="home-subtitle">[^<]*<\/p>/, () => `<p class="home-subtitle">${escapeHtml(tr(lang, 'home_subtitle'))}</p>`)
     .replace(/<span data-i18n="quick\.(\w+)">[^<]*<\/span>/g, (all, key) => `<span data-i18n="quick.${key}">${escapeHtml(TEXT.quick[key]?.[lang] ?? '')}</span>`)
+    .replace(/<p class="footer-premiero">[\s\S]*?<\/p>/, () => premieroLine(lang))
     .replace(/href="\/moods(\/[^"]*)?"/g, (all, rest = '') => `href="${langPath(lang, `/moods${rest}`)}"`);
   // the structured data names this page, in its language, at its own address
   html = html.replace(
@@ -1151,7 +1158,12 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
     .replace('id="movieOverview"></p>', () => `id="movieOverview">${escapeHtml(details.overview)}</p>`)
     .replace('<div class="hero-providers" id="watchProviders"></div>', () => `<div class="hero-providers" id="watchProviders">${providersHtml}</div>`)
     .replace('id="moviePoster" src="" alt="Movie Poster"', () => `id="moviePoster" src="${escapeHtml(poster)}" alt="${escapeHtml(name)} ${tr(lang, 'poster')}"`)
-    .replace('<div class="trailer-modal"', () => `${moodsSection}<div class="trailer-modal"`)
+    .replace('<div class="trailer-modal"', () => `${moodsSection}<footer class="home-footer">
+    <p>${escapeHtml(tr(lang, 'footer'))}</p>
+    ${premieroLine(lang)}
+  </footer>
+
+  <div class="trailer-modal"`)
     .replace('<script src="movie.js', () => `<script>window.__MM_PAGE = ${JSON.stringify({ id: String(id), type }).replace(/</g, '\\u003c')};</script>\n  <script src="movie.js`);
 }
 
@@ -1228,6 +1240,7 @@ async function renderPersonPage(id, origin, requestedPath, lang = 'en') {
   // Function replacements: names and biographies may contain "$", which String.replace would interpret
   return template
     .replace(/<html lang="[^"]*"/, () => `<html lang="${lang}"`)
+    .replace(/<p class="footer-premiero">[\s\S]*?<\/p>/, () => premieroLine(lang))
     .replace('<head>', () => '<head>\n  <base href="/">')
     // the template is kept out of the index; this address is the indexable one
     .replace('<meta name="robots" content="noindex, follow">', '')
