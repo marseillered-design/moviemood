@@ -15,7 +15,7 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 // posters in the card grids: sharp at card size, half the weight of w500
 const TMDB_CARD_URL = 'https://image.tmdb.org/t/p/w342';
-const ASSET_VERSION = '20261023c';
+const ASSET_VERSION = '20261023d';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -374,7 +374,7 @@ const TEXT = {
     de: 'Dieses Produkt nutzt die TMDB-API, wird aber nicht von TMDB unterstützt oder zertifiziert.'
   },
   // the release calendar, our sister site: one line in every footer
-  premiero: { en: 'Movie, series & game release calendar:', uk: 'Календар прем’єр кіно, серіалів та ігор:', ru: 'Календарь премьер кино, сериалов и игр:', fr: 'Calendrier des sorties films, séries et jeux :', es: 'Calendario de estrenos de cine, series y videojuegos:', de: 'Kalender für Film-, Serien- und Spielestarts:' },
+  premiero: { en: 'What’s coming out this week? Movie, series & game premieres —', uk: 'Що виходить цього тижня? Календар прем’єр кіно, серіалів та ігор —', ru: 'Что выходит на этой неделе? Календарь премьер кино, сериалов и игр —', fr: 'Qu’est-ce qui sort cette semaine ? Calendrier des sorties films, séries et jeux —', es: '¿Qué se estrena esta semana? Calendario de estrenos de cine, series y videojuegos —', de: 'Was startet diese Woche? Kalender für Film-, Serien- und Spielestarts —' },
   poster: { en: 'poster', uk: 'постер', ru: 'постер', fr: 'affiche', es: 'póster', de: 'Poster' },
 
   mood_page_title: {
