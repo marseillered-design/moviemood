@@ -1314,7 +1314,7 @@ export default async function handler(req, res) {
     }
 
     if (kind === 'robots') {
-      return send(res, 200, `User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ${origin}/sitemap.xml\n`, { type: 'text/plain; charset=utf-8' });
+      return send(res, 200, `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /tmdb/\nDisallow: /tmdb-img/\n\nSitemap: ${origin}/sitemap.xml\n`, { type: 'text/plain; charset=utf-8' });
     }
 
     if (kind === 'sitemap') {
