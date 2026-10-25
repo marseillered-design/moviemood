@@ -533,7 +533,15 @@ const TEXT = {
     es: '¿Te gustó {name}? Estas {n} series tienen el mismo espíritu: son las favoritas de sus fans. Abre cualquiera para ver el tráiler y dónde verla.',
     de: 'Dir hat {name} gefallen? Diese {n} Serien haben dasselbe Gefühl: die Favoriten ihrer Fans. Öffne eine davon für den Trailer und wo du sie schauen kannst.'
   },
-  like_where: { en: 'Where to watch {name}', uk: 'Де дивитися «{name}»', ru: 'Где смотреть «{name}»', fr: 'Où regarder {name}', es: 'Dónde ver {name}', de: 'Wo {name} schauen' },
+  // movie and person pages: the same words as movie.* and person.* in i18n.js, which redraws them
+  director: { en: 'Director', uk: 'Режисер', ru: 'Режиссёр', fr: 'Réalisation', es: 'Dirección', de: 'Regie' },
+  cast: { en: 'Cast', uk: 'У ролях', ru: 'В ролях', fr: 'Distribution', es: 'Reparto', de: 'Besetzung' },
+  genres: { en: 'Genres', uk: 'Жанри', ru: 'Жанры', fr: 'Genres', es: 'Géneros', de: 'Genres' },
+  rating: { en: 'Rating', uk: 'Рейтинг', ru: 'Рейтинг', fr: 'Note', es: 'Puntuación', de: 'Bewertung' },
+  similar: { en: 'More Like This', uk: 'Схожі', ru: 'Похожие', fr: 'Dans le même genre', es: 'Títulos similares', de: 'Ähnliche Titel' },
+  minutes: { en: '{n} min', uk: '{n} хв', ru: '{n} мин', fr: '{n} min', es: '{n} min', de: '{n} Min.' },
+  filmography: { en: 'Films & Series with {name}', uk: 'Фільми й серіали: {name}', ru: 'Фильмы и сериалы: {name}', fr: 'Films et séries : {name}', es: 'Películas y series: {name}', de: 'Filme & Serien mit {name}' },
+  like_where: { en: 'Where to watch {name}',uk: 'Де дивитися «{name}»', ru: 'Где смотреть «{name}»', fr: 'Où regarder {name}', es: 'Dónde ver {name}', de: 'Wo {name} schauen' },
   like_more: { en: 'More lists like this', uk: 'Ще схожі добірки', ru: 'Ещё похожие подборки', fr: 'Autres listes du même genre', es: 'Más listas parecidas', de: 'Weitere ähnliche Listen' },
 
   // Same as home.page_title in i18n.js, which sets the title again in the browser
@@ -1030,9 +1038,10 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   const detailsUrl = locale => `${TMDB_BASE_URL}/${type}/${id}?api_key=${TMDB_API_KEY}&language=${locale}`;
   const [templateRes, details, english] = await Promise.all([
     fetch(`${origin}/movie.html`),
-    fetchJson(`${detailsUrl(TMDB_LOCALES[lang])}&append_to_response=videos,watch/providers&include_video_language=en,${lang}`),
-    // the address is built from the English title in every language
-    lang === 'en' ? null : fetchJson(detailsUrl('en-US'))
+    fetchJson(`${detailsUrl(TMDB_LOCALES[lang])}&append_to_response=videos,watch/providers,credits,recommendations,similar&include_video_language=en,${lang}`),
+    // the address is built from the English title in every language; so are the addresses of
+    // the similar titles linked from the page
+    lang === 'en' ? null : fetchJson(`${detailsUrl('en-US')}&append_to_response=credits,recommendations,similar`)
   ]);
   const basePath = titlePath(english || details, type);
   const ownPath = langPath(lang, basePath);
@@ -1137,6 +1146,50 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   ${video ? jsonLd(video) : ''}
   ${jsonLd(breadcrumbs(origin, [[name, ownPath]], lang))}`;
 
+  // What movie.js draws in the browser, already in the page: search engines get the cast, genres
+  // and similar titles as text and links instead of an almost empty page
+  const overview = details.overview || english?.overview || '';
+  const genres = details.genres || [];
+  const rating = details.vote_average ? details.vote_average.toFixed(1) : '';
+  const metaHtml = [year, details.runtime ? tr(lang, 'minutes', { n: details.runtime }) : '', rating ? `${tr(lang, 'rating')} ${rating}` : '']
+    .filter(Boolean).map(part => `<span>${escapeHtml(part)}</span>`).join(' · ');
+  const crew = details.credits?.crew || [];
+  const director = crew.find(p => p.job === 'Director') || crew.find(p => p.department === 'Directing');
+  // people's addresses carry the Latin name, as on their own pages (Кіану Рівз → keanu-reeves)
+  const englishNames = new Map([...(english?.credits?.cast || []), ...(english?.credits?.crew || [])].map(p => [p.id, p.name]));
+  const personLink = person => langPath(lang, personPath({ id: person.id, name: englishNames.get(person.id) || person.name }));
+  const directorHtml = director ? `<a class="person-chip" href="${personLink(director)}">
+        ${director.profile_path ? `<img src="https://image.tmdb.org/t/p/w185${director.profile_path}" alt="${escapeHtml(director.name)}">` : ''}
+        ${escapeHtml(director.name)}
+      </a>` : '';
+  const castHtml = (details.credits?.cast || []).slice(0, 8).map(actor => `<a class="actor-card" href="${personLink(actor)}">
+      ${actor.profile_path ? `<img src="https://image.tmdb.org/t/p/w185${actor.profile_path}" alt="${escapeHtml(actor.name)}" loading="lazy">` : ''}
+      <span class="actor-name">${escapeHtml(actor.name)}</span>
+      <span class="actor-char">${escapeHtml(actor.character)}</span>
+    </a>`).join('');
+  // recommendations first, then similar titles, as pickSimilar() in movie.js
+  const englishTitles = new Map([...(english?.recommendations?.results || []), ...(english?.similar?.results || [])]
+    .map(item => [item.id, item.title || item.name]));
+  const seen = new Set([id]);
+  const similarItems = [...(details.recommendations?.results || []), ...(details.similar?.results || [])]
+    .filter(item => item.poster_path && item.vote_count >= 50 && !seen.has(item.id) && seen.add(item.id))
+    .slice(0, 12);
+  const similarHtml = similarItems.map(item => {
+    const itemName = item.title || item.name;
+    const itemRating = item.vote_average ? item.vote_average.toFixed(1) : '';
+    const path = titlePath(lang === 'en' ? item : { ...item, slug_title: englishTitles.get(item.id) || (item.original_language === 'en' ? item.original_title || item.original_name : '') }, type);
+    return `<a class="similar-card" href="${langPath(lang, path)}">
+          <div class="similar-poster-wrap">
+            <img src="${TMDB_CARD_URL}${item.poster_path}" loading="lazy" alt="${escapeHtml(itemName)}">
+            ${itemRating ? `<span class="tmdb-mini-score card-score">${itemRating}</span>` : ''}
+          </div>
+          <span>${escapeHtml(itemName)}</span>
+        </a>`;
+  }).join('');
+  // A version in another language with no description of its own repeats the English page:
+  // kept out of the index (its links are still followed), the English page stands for it
+  const noindex = lang !== 'en' && !details.overview;
+
   // "Movies like Inception": the list built around this title, when there is one
   const like = likeEntry(type, id);
   const moodsSection = `<section class="mood-more movie-moods">
@@ -1151,11 +1204,24 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   return template
     .replace(/<html lang="[^"]*"/, () => `<html lang="${lang}"`)
     .replace('<head>', () => '<head>\n  <base href="/">')
-    // the template is kept out of the index; this address is the indexable one
-    .replace('<meta name="robots" content="noindex, follow">', '')
+    // the template is kept out of the index; this address is the indexable one (see noindex above)
+    .replace('<meta name="robots" content="noindex, follow">', noindex ? '<meta name="robots" content="noindex, follow">' : '')
     .replace(/<title>[^<]*<\/title>/, () => head)
+    .replace('id="heroBadges"></div>', () => `id="heroBadges">${genres.slice(0, 3).map(g => `<span class="badge">${escapeHtml(g.name)}</span>`).join('')}</div>`)
     .replace('id="movieTitle"></h1>', () => `id="movieTitle">${escapeHtml(name)}</h1>`)
-    .replace('id="movieOverview"></p>', () => `id="movieOverview">${escapeHtml(details.overview)}</p>`)
+    .replace('id="heroMeta"></div>', () => `id="heroMeta">${metaHtml}</div>`)
+    .replace('id="movieOverview"></p>', () => `id="movieOverview">${escapeHtml(overview)}</p>`)
+    .replace(/<span class="info-label">Director<\/span>/, () => `<span class="info-label">${escapeHtml(tr(lang, 'director'))}</span>`)
+    .replace(/<span class="info-label">Cast<\/span>/, () => `<span class="info-label">${escapeHtml(tr(lang, 'cast'))}</span>`)
+    .replace(/<span class="info-label">Genres<\/span>/, () => `<span class="info-label">${escapeHtml(tr(lang, 'genres'))}</span>`)
+    .replace(/<span class="info-label">Rating<\/span>/, () => `<span class="info-label">${escapeHtml(tr(lang, 'rating'))}</span>`)
+    .replace('id="movieDirector"></div>', () => `id="movieDirector">${directorHtml}</div>`)
+    .replace('id="movieCast"></div>', () => `id="movieCast">${castHtml}</div>`)
+    .replace('id="movieGenres"></div>', () => `id="movieGenres">${genres.map(g => `<span class="genre-tag">${escapeHtml(g.name)}</span>`).join('')}</div>`)
+    .replace('id="tmdbRating"></span>', () => `id="tmdbRating">${rating}</span>`)
+    .replace('id="similarSection" style="display: none;"', () => similarHtml ? 'id="similarSection"' : 'id="similarSection" style="display: none;"')
+    .replace('<h2 class="section-title">More Like This</h2>', () => `<h2 class="section-title">${escapeHtml(tr(lang, 'similar'))}</h2>`)
+    .replace('id="similarGrid"></div>', () => `id="similarGrid">${similarHtml}</div>`)
     .replace('<div class="hero-providers" id="watchProviders"></div>', () => `<div class="hero-providers" id="watchProviders">${providersHtml}</div>`)
     .replace('id="moviePoster" src="" alt="Movie Poster"', () => `id="moviePoster" src="${escapeHtml(poster)}" alt="${escapeHtml(name)} ${tr(lang, 'poster')}"`)
     .replace('<div class="trailer-modal"', () => `${moodsSection}<footer class="home-footer">
@@ -1179,8 +1245,9 @@ async function renderPersonPage(id, origin, requestedPath, lang = 'en') {
   const [templateRes, person, english, credits] = await Promise.all([
     fetch(`${origin}/person.html`),
     fetchJson(personUrl(TMDB_LOCALES[lang])),
-    // TMDB translates names too (Киану Ривз); the address keeps the Latin one in every language
-    lang === 'en' ? null : fetchJson(personUrl('en-US')),
+    // TMDB translates names too (Киану Ривз); the address keeps the Latin one in every language,
+    // and the films linked from the page keep their English addresses
+    lang === 'en' ? null : fetchJson(`${personUrl('en-US')}&append_to_response=combined_credits`),
     fetchJson(`${TMDB_BASE_URL}/person/${id}/combined_credits?api_key=${TMDB_API_KEY}&language=${TMDB_LOCALES[lang]}`).catch(() => ({}))
   ]);
   const basePath = personPath(english || person);
@@ -1194,12 +1261,23 @@ async function renderPersonPage(id, origin, requestedPath, lang = 'en') {
   const canonical = `${origin}${ownPath}`;
   // Best-known work first: it goes into the description, which shows up in search results
   // (talk shows and other guest appearances left out, as in person.js)
-  const known = [...(credits.cast || []), ...(credits.crew || [])]
+  const work = [...(credits.cast || []), ...(credits.crew || [])]
     .filter(item => !(item.genre_ids || []).some(g => [10767, 10763, 10764].includes(g)) && !/^(self|himself|herself)\b/i.test(item.character || ''))
     .filter((item, i, all) => (item.title || item.name) && all.findIndex(x => x.id === item.id) === i)
-    .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))
-    .slice(0, 3)
-    .map(item => item.title || item.name);
+    .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
+  const known = work.slice(0, 3).map(item => item.title || item.name);
+  // The filmography person.js draws, already in the page as links to the films
+  const englishCredits = english?.combined_credits;
+  const englishTitles = new Map([...(englishCredits?.cast || []), ...(englishCredits?.crew || [])]
+    .map(item => [`${item.media_type}/${item.id}`, item.title || item.name]));
+  const filmographyHtml = work.filter(item => item.poster_path).slice(0, 24).map(item => {
+    const itemType = item.media_type === 'tv' ? 'tv' : 'movie';
+    const path = titlePath(lang === 'en' ? item : { ...item, slug_title: englishTitles.get(`${itemType}/${item.id}`) || '' }, itemType);
+    return movieCard(item, lang, path);
+  }).join('\n      ');
+  // A version in another language with no biography of its own is a list of posters and little
+  // else: kept out of the index, while its links to the films are still followed
+  const noindex = lang !== 'en' && !person.biography;
   const pageTitle = fitTitle(`${tr(lang, 'person_page_title', { name })} | MovieMood`, tr(lang, 'person_page_title', { name }));
   const description = truncate(
     known.length
@@ -1242,11 +1320,13 @@ async function renderPersonPage(id, origin, requestedPath, lang = 'en') {
     .replace(/<html lang="[^"]*"/, () => `<html lang="${lang}"`)
     .replace(/<p class="footer-premiero">[\s\S]*?<\/p>/, () => premieroLine(lang))
     .replace('<head>', () => '<head>\n  <base href="/">')
-    // the template is kept out of the index; this address is the indexable one
-    .replace('<meta name="robots" content="noindex, follow">', '')
+    // the template is kept out of the index; this address is the indexable one (see noindex above)
+    .replace('<meta name="robots" content="noindex, follow">', noindex ? '<meta name="robots" content="noindex, follow">' : '')
     .replace(/<title>[^<]*<\/title>/, () => head)
     .replace('id="personName"></h1>', () => `id="personName">${escapeHtml(name)}</h1>`)
     .replace('id="personBio"></p>', () => `id="personBio">${escapeHtml(person.biography || '')}</p>`)
+    .replace('id="personMoviesTitle"></h2>', () => `id="personMoviesTitle">${escapeHtml(tr(lang, 'filmography', { name }))}</h2>`)
+    .replace('id="moviesGrid"></div>', () => `id="moviesGrid">${filmographyHtml}</div>`)
     .replace('id="personPhoto" src="" alt=""', () => `id="personPhoto" src="${escapeHtml(photo)}" alt="${escapeHtml(name)}"`)
     .replace('<script src="person.js', () => `<script>window.__MM_PAGE = ${JSON.stringify({ id: String(id) }).replace(/</g, '\\u003c')};</script>\n  <script src="person.js`);
 }
