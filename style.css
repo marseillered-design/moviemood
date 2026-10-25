@@ -608,6 +608,9 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 }
 .mood-cta-btn { text-decoration: none; display: inline-flex; align-items: center; }
 .mood-more { margin-top: 50px; text-align: center; }
+/* groups of a large collection (Christmas): family, romantic, for grown-ups */
+.mood-group-title { text-align: center; margin-top: 10px; }
+.mood-note { color: var(--text-dim); font-size: 0.95rem; }
 .movie-moods { padding: 0 24px 60px; }
 .mood-section-title {
   font-family: 'Cormorant Garamond', Georgia, serif;

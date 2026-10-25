@@ -15,7 +15,7 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 // posters in the card grids: sharp at card size, half the weight of w500
 const TMDB_CARD_URL = 'https://image.tmdb.org/t/p/w342';
-const ASSET_VERSION = '20261023d';
+const ASSET_VERSION = '20261025a';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -78,8 +78,20 @@ const MOODS = [
   },
   {
     slug: 'christmas-movies', emoji: '🎄', title: 'Christmas Movies', query: 'christmas',
-    discover: 'with_keywords=207317&with_genres=10751|35&vote_average.gte=6&vote_count.gte=800',
-    intro: 'Snow, lights and second chances. Holiday favourites old and new for the weeks when the tree is up.'
+    // The season's big page: three pages of the best-known films with TMDB's "christmas" tag,
+    // plus classics that lack the tag (Die Hard, The Muppet Christmas Carol, Miracle on 34th Street),
+    // in three groups. Horror only when it is a comedy too (Gremlins, Krampus).
+    discover: 'with_keywords=207317&sort_by=vote_count.desc&vote_count.gte=400&vote_average.gte=6',
+    pages: 3,
+    pin: [562, 10437, 11881],
+    keep: movie => !movie.genre_ids.includes(27) || movie.genre_ids.includes(35),
+    sections: [
+      ['xmas_family', movie => movie.genre_ids.includes(10751) || movie.genre_ids.includes(16)],
+      ['xmas_romance', movie => movie.genre_ids.includes(10749)],
+      ['xmas_grownup', () => true]
+    ],
+    intro: 'Snow, lights and second chances. Holiday favourites old and new for the weeks when the tree is up: family films and cartoons, love stories, and comedies and action for after the kids are in bed.',
+    more: 'How we picked: every film here is set at Christmas or built around it, and has been rated by hundreds or thousands of viewers on TMDB, so you will not find random TV movies. Classics like Home Alone, It’s a Wonderful Life and Die Hard sit next to newer favourites such as Klaus and The Holdovers. Each title links to its trailer and to where you can stream, rent or buy it.'
   },
   {
     slug: 'movies-to-watch-with-friends', emoji: '🍕', title: 'Movies to Watch with Friends', query: 'with friends',
@@ -247,12 +259,18 @@ const MOOD_TEXT = {
     es: ['Películas motivadoras', 'Desvalidos, remontadas y gente que se negó a rendirse. Pon una cuando necesites un empujón para empezar algo difícil.'],
     de: ['Motivierende Filme', 'Außenseiter, Comebacks und Menschen, die nicht aufgeben wollten. Für die Momente, in denen du einen Schubs brauchst, um etwas Schweres anzufangen.']
   },
+  // in Ukrainian and Russian the season is New Year first: that is what people search for
   'christmas-movies': {
-    uk: ['Різдвяні фільми', 'Сніг, вогники й другий шанс. Улюблені святкові фільми, старі й нові, для тижнів, коли вдома стоїть ялинка.'],
-    ru: ['Рождественские фильмы', 'Снег, огоньки и второй шанс. Любимые праздничные фильмы, старые и новые, для недель, когда дома стоит ёлка.'],
-    fr: ['Films de Noël', 'De la neige, des guirlandes et des secondes chances. Les classiques des fêtes, anciens et récents, pour les semaines où le sapin est installé.'],
-    es: ['Películas de Navidad', 'Nieve, luces y segundas oportunidades. Clásicos navideños antiguos y recientes para las semanas en que el árbol está puesto.'],
-    de: ['Weihnachtsfilme', 'Schnee, Lichter und zweite Chancen. Alte und neue Weihnachtslieblinge für die Wochen, in denen der Baum steht.']
+    uk: ['Новорічні та різдвяні фільми', 'Сніг, вогники й другий шанс. Улюблені святкові фільми, старі й нові, для тижнів, коли вдома стоїть ялинка: сімейні фільми й мультфільми, історії кохання, а ще комедії та бойовики на вечір, коли діти вже сплять.',
+      'Як ми обирали: кожен фільм тут відбувається на Різдво чи Новий рік або побудований навколо свят, і його оцінили сотні чи тисячі глядачів на TMDB, тож випадкових телефільмів тут немає. Класика на кшталт «Сам удома», «Це прекрасне життя» і «Міцний горішок» стоїть поруч із новішими улюбленцями, як-от «Клаус». На сторінці кожного фільму є трейлер і де його подивитися, взяти в оренду чи купити.'],
+    ru: ['Новогодние и рождественские фильмы', 'Снег, огоньки и второй шанс. Любимые праздничные фильмы, старые и новые, для недель, когда дома стоит ёлка: семейные фильмы и мультфильмы, истории любви, а ещё комедии и боевики на вечер, когда дети уже спят.',
+      'Как мы выбирали: каждый фильм здесь происходит на Рождество или Новый год либо построен вокруг праздников, и его оценили сотни или тысячи зрителей на TMDB, так что случайных телефильмов тут нет. Классика вроде «Один дома», «Эта замечательная жизнь» и «Крепкий орешек» стоит рядом с более новыми любимцами, например «Клаусом». На странице каждого фильма есть трейлер и где его посмотреть, взять в аренду или купить.'],
+    fr: ['Films de Noël', 'De la neige, des guirlandes et des secondes chances. Les classiques des fêtes, anciens et récents, pour les semaines où le sapin est installé : films en famille et dessins animés, histoires d’amour, comédies et action pour quand les enfants sont couchés.',
+      'Notre sélection : chaque film se déroule à Noël ou tourne autour des fêtes, et a été noté par des centaines ou des milliers de spectateurs sur TMDB, donc pas de téléfilms au hasard. Des classiques comme Maman, j’ai raté l’avion, La vie est belle et Piège de cristal côtoient des favoris plus récents comme La Légende de Klaus. Chaque titre mène à sa bande-annonce et aux plateformes où le voir, le louer ou l’acheter.'],
+    es: ['Películas de Navidad', 'Nieve, luces y segundas oportunidades. Clásicos navideños antiguos y recientes para las semanas en que el árbol está puesto: películas familiares y de animación, historias de amor, y comedias y acción para cuando los niños ya duermen.',
+      'Cómo elegimos: cada película transcurre en Navidad o gira en torno a las fiestas, y la han valorado cientos o miles de espectadores en TMDB, así que no hay telefilmes al azar. Clásicos como Solo en casa, ¡Qué bello es vivir! y Jungla de cristal conviven con favoritas más recientes como Klaus. Cada título lleva a su tráiler y a dónde verlo, alquilarlo o comprarlo.'],
+    de: ['Weihnachtsfilme', 'Schnee, Lichter und zweite Chancen. Alte und neue Weihnachtslieblinge für die Wochen, in denen der Baum steht: Familienfilme und Animation, Liebesgeschichten sowie Komödien und Action für den Abend, wenn die Kinder schlafen.',
+      'So haben wir ausgewählt: Jeder Film spielt an Weihnachten oder dreht sich um die Feiertage und wurde auf TMDB von Hunderten oder Tausenden Zuschauern bewertet – zufällige TV-Filme gibt es hier nicht. Klassiker wie Kevin – Allein zu Haus, Ist das Leben nicht schön? und Stirb langsam stehen neben neueren Lieblingen wie Klaus. Jeder Titel führt zum Trailer und dazu, wo man ihn streamen, leihen oder kaufen kann.']
   },
   'movies-to-watch-with-friends': {
     uk: ['Фільми для перегляду з друзями', 'Гучні, динамічні й смішні бойовики-комедії, які не зіпсуєш розмовами під час перегляду. Створені для піци та повного дивана.'],
@@ -541,7 +559,11 @@ const TEXT = {
   similar: { en: 'More Like This', uk: 'Схожі', ru: 'Похожие', fr: 'Dans le même genre', es: 'Títulos similares', de: 'Ähnliche Titel' },
   minutes: { en: '{n} min', uk: '{n} хв', ru: '{n} мин', fr: '{n} min', es: '{n} min', de: '{n} Min.' },
   filmography: { en: 'Films & Series with {name}', uk: 'Фільми й серіали: {name}', ru: 'Фильмы и сериалы: {name}', fr: 'Films et séries : {name}', es: 'Películas y series: {name}', de: 'Filme & Serien mit {name}' },
-  like_where: { en: 'Where to watch {name}',uk: 'Де дивитися «{name}»', ru: 'Где смотреть «{name}»', fr: 'Où regarder {name}', es: 'Dónde ver {name}', de: 'Wo {name} schauen' },
+  // the groups of the Christmas collection
+  xmas_family: { en: 'Family & Animated Christmas Movies', uk: 'Сімейні та анімаційні новорічні фільми', ru: 'Семейные и анимационные новогодние фильмы', fr: 'Films de Noël en famille et d’animation', es: 'Películas navideñas familiares y de animación', de: 'Weihnachtsfilme für die ganze Familie' },
+  xmas_romance: { en: 'Romantic Christmas Movies', uk: 'Романтичні різдвяні фільми', ru: 'Романтические рождественские фильмы', fr: 'Films de Noël romantiques', es: 'Películas navideñas románticas', de: 'Romantische Weihnachtsfilme' },
+  xmas_grownup: { en: 'Christmas Comedies, Action & Classics', uk: 'Святкові комедії, бойовики й класика', ru: 'Праздничные комедии, боевики и классика', fr: 'Comédies, action et classiques de Noël', es: 'Comedias, acción y clásicos navideños', de: 'Weihnachtskomödien, Action und Klassiker' },
+  like_where: { en: 'Where to watch {name}', uk: 'Де дивитися «{name}»', ru: 'Где смотреть «{name}»', fr: 'Où regarder {name}', es: 'Dónde ver {name}', de: 'Wo {name} schauen' },
   like_more: { en: 'More lists like this', uk: 'Ще схожі добірки', ru: 'Ещё похожие подборки', fr: 'Autres listes du même genre', es: 'Más listas parecidas', de: 'Weitere ähnliche Listen' },
 
   // Same as home.page_title in i18n.js, which sets the title again in the browser
@@ -598,6 +620,17 @@ const tr = (lang, key, vars) => {
 
 const moodTitle = (mood, lang) => MOOD_TEXT[mood.slug]?.[lang]?.[0] || mood.title;
 const moodIntro = (mood, lang) => MOOD_TEXT[mood.slug]?.[lang]?.[1] || mood.intro;
+// a longer note under the list, where a collection has one
+const moodMore = (mood, lang) => MOOD_TEXT[mood.slug]?.[lang]?.[2] || mood.more || '';
+
+// The season's collection goes first in every list of moods: Halloween in October,
+// Christmas from November to the first week of January
+function moodsInSeasonOrder(date = new Date()) {
+  const month = date.getUTCMonth();
+  const season = month === 9 ? 'halloween-movies'
+    : month >= 10 || (month === 0 && date.getUTCDate() <= 7) ? 'christmas-movies' : '';
+  return [...MOODS].sort((a, b) => (b.slug === season) - (a.slug === season));
+}
 
 // "/moods" → "/uk/moods", "/" → "/uk"
 const langPath = (lang, path) => lang === 'en' ? path : `/${lang}${path === '/' ? '' : path}`;
@@ -669,15 +702,33 @@ async function fetchJson(url) {
   return res.json();
 }
 
+// One collection's films in one language: its discover pages (mood.pages, one by default) and the
+// films it pins by id, most-rated first when there are pins
+async function fetchMoodList(mood, locale) {
+  const pages = Array.from({ length: mood.pages || 1 }, (_, i) => i + 1);
+  const lists = await Promise.all([
+    ...pages.map(page => fetchJson(`${buildDiscoverUrl(mood, locale)}&page=${page}`)
+      .then(data => data.results || [])
+      // the first page is the collection; the further ones only add to it
+      .catch(error => { if (page === 1) throw error; return []; })),
+    ...(mood.pin || []).map(id => fetchJson(`${TMDB_BASE_URL}/movie/${id}?api_key=${TMDB_API_KEY}&language=${locale}`)
+      .then(movie => [{ ...movie, genre_ids: (movie.genres || []).map(g => g.id) }])
+      .catch(() => []))
+  ]);
+  const seen = new Set();
+  const movies = lists.flat().filter(m => !seen.has(m.id) && seen.add(m.id));
+  return mood.pin ? movies.sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0)) : movies;
+}
+
 // Titles in the page's language; addresses still need the English ones, fetched alongside
 async function fetchMoodMovies(mood, lang = 'en') {
   const [local, english] = await Promise.all([
-    fetchJson(buildDiscoverUrl(mood, TMDB_LOCALES[lang])),
-    lang === 'en' ? null : fetchJson(buildDiscoverUrl(mood)).catch(() => null)
+    fetchMoodList(mood, TMDB_LOCALES[lang]),
+    lang === 'en' ? null : fetchMoodList(mood, 'en-US').catch(() => null)
   ]);
-  const englishTitles = new Map((english?.results || []).map(m => [m.id, m.title]));
-  return (local.results || [])
-    .filter(m => m.poster_path)
+  const englishTitles = new Map((english || []).map(m => [m.id, m.title]));
+  return local
+    .filter(m => m.poster_path && (!mood.keep || mood.keep(m)))
     .map(m => lang === 'en' ? m : {
       ...m,
       // unknown → no slug, and the movie page adds it with a redirect
@@ -792,7 +843,7 @@ function layout({ lang = 'en', origin, path, title, description, image, head = '
 }
 
 const moodChips = (lang, exceptSlug = '') => `<div class="mood-chips">
-      ${MOODS.filter(m => m.slug !== exceptSlug).map(m => `<a class="mood-chip" href="${langPath(lang, `/moods/${m.slug}`)}">${m.emoji} ${escapeHtml(moodTitle(m, lang))}</a>`).join('\n      ')}
+      ${moodsInSeasonOrder().filter(m => m.slug !== exceptSlug).map(m => `<a class="mood-chip" href="${langPath(lang, `/moods/${m.slug}`)}">${m.emoji} ${escapeHtml(moodTitle(m, lang))}</a>`).join('\n      ')}
     </div>`;
 
 function movieCard(movie, lang, path = titlePath(movie)) {
@@ -815,6 +866,23 @@ function renderMoodPage(mood, movies, origin, lang) {
   const name = moodTitle(mood, lang);
   const intro = moodIntro(mood, lang);
   const path = `/moods/${mood.slug}`;
+  const grid = list => `<div class="movies-grid">
+      ${list.map(m => movieCard(m, lang)).join('\n      ')}
+      </div>`;
+  // A collection with groups shows each under its own heading (searches like "romantic christmas
+  // movies" land on them); a film goes to the first group it fits
+  let results = `<section class="results-section">
+      ${grid(movies)}
+    </section>`;
+  if (mood.sections) {
+    const groups = mood.sections.map(([key]) => ({ key, movies: [] }));
+    for (const m of movies) groups[mood.sections.findIndex(([, fits]) => fits(m))].movies.push(m);
+    results = groups.filter(group => group.movies.length).map(group => `<section class="results-section">
+      <h2 class="mood-section-title mood-group-title">${escapeHtml(tr(lang, group.key))}</h2>
+      ${grid(group.movies)}
+    </section>`).join('\n\n    ');
+  }
+  const more = moodMore(mood, lang);
   const itemList = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
@@ -843,11 +911,9 @@ function renderMoodPage(mood, movies, origin, lang) {
     head: jsonLd(itemList) + jsonLd(breadcrumbs(origin, [[tr(lang, 'moods'), langPath(lang, '/moods')], [name, langPath(lang, path)]], lang)),
     hero: `<h1 class="home-title mood-title">${escapeHtml(name)}</h1>
     <p class="home-subtitle mood-intro">${escapeHtml(intro)}</p>`,
-    main: `<section class="results-section">
-      <div class="movies-grid">
-      ${movies.map(m => movieCard(m, lang)).join('\n      ')}
-      </div>
-    </section>
+    main: `${results}${more ? `
+
+    <section class="mood-more"><p class="mood-intro mood-note">${escapeHtml(more)}</p></section>` : ''}
 
     <section class="mood-cta">
       <p>${escapeHtml(tr(lang, 'not_your_mood'))}</p>
@@ -969,7 +1035,7 @@ function renderMoodIndex(origin, lang) {
     hero: `<h1 class="home-title mood-title">${escapeHtml(tr(lang, 'index_h1'))} <span class="title-accent">${escapeHtml(tr(lang, 'index_h1_accent'))}</span></h1>
     <p class="home-subtitle mood-intro">${escapeHtml(tr(lang, 'index_intro')).replace('{link}', homeLink)}</p>`,
     main: `<section class="mood-list">
-      ${MOODS.map(m => `<a class="mood-tile" href="${langPath(lang, `/moods/${m.slug}`)}">
+      ${moodsInSeasonOrder().map(m => `<a class="mood-tile"href="${langPath(lang, `/moods/${m.slug}`)}">
         <span class="mood-tile-emoji">${m.emoji}</span>
         <h2 class="mood-tile-title">${escapeHtml(moodTitle(m, lang))}</h2>
         <p class="mood-tile-text">${escapeHtml(truncate(moodIntro(m, lang), 110))}</p>
