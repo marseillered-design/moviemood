@@ -1,0 +1,14 @@
+# Not part of the published site on Cloudflare (wrangler.jsonc serves this folder as assets)
+.git
+.gitignore
+.vercelignore
+.assetsignore
+.claude/
+.wrangler/
+node_modules/
+api/
+scripts/
+promo/
+worker.js
+wrangler.jsonc
+vercel.json

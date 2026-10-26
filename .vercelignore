@@ -1,2 +1,6 @@
 # tools that build data for the site, not part of it
 scripts/
+# Cloudflare Workers files (the site runs there since 2026-10-26)
+worker.js
+wrangler.jsonc
+.assetsignore

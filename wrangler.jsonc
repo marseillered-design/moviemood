@@ -1,0 +1,16 @@
+// MovieMood on Cloudflare Workers (see worker.js). Deploy: npx wrangler deploy
+{
+  "name": "moviemood",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-01",
+  // process.env in api/page.js and api/mood.js (TMDB_API_KEY, GROQ_API_KEY, GROQ_MODEL)
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    // files are served at their own names (/feed.html stays /feed.html); the rest goes to worker.js
+    "html_handling": "none",
+    "not_found_handling": "none"
+  },
+  "observability": { "enabled": true }
+}

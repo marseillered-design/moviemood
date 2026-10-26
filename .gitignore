@@ -1,3 +1,7 @@
 # local preview settings, not part of the site
 .claude/
 promo/
+# Cloudflare: local build files and local secrets (never commit)
+.wrangler/
+.dev.vars
+node_modules/
