@@ -12,5 +12,12 @@
     "html_handling": "none",
     "not_found_handling": "none"
   },
+  // the test address moviemood.moviemood.workers.dev stays on
+  "workers_dev": true,
+  // both addresses answer from this Worker; the bare one redirects to www (worker.js)
+  "routes": [
+    { "pattern": "www.themoviemood.com", "custom_domain": true },
+    { "pattern": "themoviemood.com", "custom_domain": true }
+  ],
   "observability": { "enabled": true }
 }

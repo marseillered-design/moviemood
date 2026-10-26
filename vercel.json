@@ -74,6 +74,10 @@
       "destination": "/api/page?kind=sitemap"
     },
     {
+      "source": "/sitemap/:part.xml",
+      "destination": "/api/page?kind=sitemap&part=:part"
+    },
+    {
       "source": "/robots.txt",
       "destination": "/api/page?kind=robots"
     }

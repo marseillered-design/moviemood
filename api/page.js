@@ -1407,37 +1407,57 @@ function sendPage(res, page) {
   return send(res, 200, page);
 }
 
-// Every page in every language; the pages themselves point to their other-language versions
 // Every page in every language; the pages themselves point to their other-language versions.
 // Besides the films of the collections: what is popular, new, trending and best rated, films
 // and series — the titles people search "where to watch" for.
+// /sitemap.xml lists the parts: /sitemap/moods.xml (collections and their films, "movies like"
+// pages) and /sitemap/lists-1.xml, lists-2.xml (the lists below). Each part asks TMDB at most
+// about 30 times: Cloudflare's free plan allows 50 requests out of one request.
 const SITEMAP_LISTS = [
-  ['movie', 'movie/popular', 5], ['movie', 'movie/top_rated', 10], ['movie', 'movie/now_playing', 3],
-  ['movie', 'movie/upcoming', 2], ['movie', 'trending/movie/week', 5],
-  ['tv', 'tv/popular', 5], ['tv', 'tv/top_rated', 5], ['tv', 'trending/tv/week', 3],
-  // anime and documentaries rarely make the general lists
-  ['movie', 'discover/movie?with_genres=16&with_keywords=210024&sort_by=vote_count.desc', 5],
-  ['tv', 'discover/tv?with_genres=16&with_keywords=210024&sort_by=vote_count.desc', 5],
-  ['movie', 'discover/movie?with_genres=99&sort_by=vote_count.desc', 5],
-  ['tv', 'discover/tv?with_genres=99&sort_by=vote_count.desc', 3]
+  [
+    ['movie', 'movie/popular', 5], ['movie', 'movie/top_rated', 10], ['movie', 'movie/now_playing', 3],
+    ['movie', 'movie/upcoming', 2], ['movie', 'trending/movie/week', 5], ['tv', 'tv/popular', 5]
+  ],
+  [
+    ['tv', 'tv/top_rated', 5], ['tv', 'trending/tv/week', 3],
+    // anime and documentaries rarely make the general lists
+    ['movie', 'discover/movie?with_genres=16&with_keywords=210024&sort_by=vote_count.desc', 5],
+    ['tv', 'discover/tv?with_genres=16&with_keywords=210024&sort_by=vote_count.desc', 5],
+    ['movie', 'discover/movie?with_genres=99&sort_by=vote_count.desc', 5],
+    ['tv', 'discover/tv?with_genres=99&sort_by=vote_count.desc', 3]
+  ]
 ];
+const SITEMAP_PARTS = ['moods', ...SITEMAP_LISTS.map((_, i) => `lists-${i + 1}`)];
 
-async function renderSitemap(origin) {
-  const moodMovies = await Promise.all(MOODS.map(mood => fetchMoodMovies(mood).catch(() => [])));
-  const lists = await Promise.all(SITEMAP_LISTS.flatMap(([type, list, pages]) =>
+const urlset = (origin, paths) => `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${LANGS.flatMap(lang => paths.map(path => `  <url><loc>${escapeHtml(origin + langPath(lang, path))}</loc></url>`)).join('\n')}
+</urlset>`;
+
+// part: '' for the index, or one of SITEMAP_PARTS; null for an unknown part
+async function renderSitemap(origin, part = '') {
+  if (!part) {
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${SITEMAP_PARTS.map(name => `  <sitemap><loc>${escapeHtml(`${origin}/sitemap/${name}.xml`)}</loc></sitemap>`).join('\n')}
+</sitemapindex>`;
+  }
+  if (part === 'moods') {
+    const moodMovies = await Promise.all(MOODS.map(mood => fetchMoodMovies(mood).catch(() => [])));
+    const titlePaths = [...new Set(moodMovies.flat().map(m => titlePath(m)))];
+    const likePaths = Object.values(LIKE_DATA).map(entry => likePath(entry.path));
+    return urlset(origin, ['/', '/moods', ...MOODS.map(m => `/moods/${m.slug}`), ...likePaths, ...titlePaths]);
+  }
+  const lists = SITEMAP_LISTS[SITEMAP_PARTS.indexOf(part) - 1];
+  if (!lists) return null;
+  const found = await Promise.all(lists.flatMap(([type, list, pages]) =>
     Array.from({ length: pages }, (_, i) =>
       fetchJson(`${TMDB_BASE_URL}/${list}${list.includes('?') ? '&' : '?'}api_key=${TMDB_API_KEY}&language=en-US&page=${i + 1}`)
         .then(data => (data.results || [])
           .filter(item => !item.adult && item.poster_path && (item.vote_count || 0) >= 20)
           .map(item => titlePath(item, type)))
         .catch(() => []))));
-  const titlePaths = [...new Set([...moodMovies.flat().map(m => titlePath(m)), ...lists.flat()])];
-  const likePaths = Object.values(LIKE_DATA).map(entry => likePath(entry.path));
-  const paths = ['/', '/moods', ...MOODS.map(m => `/moods/${m.slug}`), ...likePaths, ...titlePaths];
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${LANGS.flatMap(lang => paths.map(path => `  <url><loc>${escapeHtml(origin + langPath(lang, path))}</loc></url>`)).join('\n')}
-</urlset>`;
+  return urlset(origin, [...new Set(found.flat())]);
 }
 
 // ══════════════════════════════════════════════
@@ -1477,7 +1497,9 @@ export default async function handler(req, res) {
     }
 
     if (kind === 'sitemap') {
-      return send(res, 200, await renderSitemap(origin), { type: 'application/xml; charset=utf-8' });
+      const xml = await renderSitemap(origin, String(query.part || ''));
+      if (!xml) return send(res, 404, renderNotFound(origin, lang));
+      return send(res, 200, xml, { type: 'application/xml; charset=utf-8' });
     }
 
     if (kind === 'home') {

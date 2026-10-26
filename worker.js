@@ -15,6 +15,7 @@ const PAGE_ROUTES = [
   [new RegExp(`^${LANG}/(movies|shows)-like/([^/]+)$`), m => ({ kind: 'like', lang: m[1], type: m[2] === 'shows' ? 'tv' : 'movie', id: m[3] })],
   [/^\/(uk|ru|fr|es|de)$/, m => ({ kind: 'home', lang: m[1] })],
   [/^\/sitemap\.xml$/, () => ({ kind: 'sitemap' })],
+  [/^\/sitemap\/([a-z0-9-]+)\.xml$/, m => ({ kind: 'sitemap', part: m[1] })],
   [/^\/robots\.txt$/, () => ({ kind: 'robots' })]
 ];
 
@@ -100,6 +101,10 @@ export default {
     const path = url.pathname;
     const params = Object.fromEntries(url.searchParams);
 
+    // the site lives at www, as on Vercel: the bare domain sends visitors there
+    if (url.hostname === 'themoviemood.com') {
+      return Response.redirect(`https://www.themoviemood.com${path}${url.search}`, 308);
+    }
     // vercel.json: "trailingSlash": false
     if (path.length > 1 && path.endsWith('/')) {
       return Response.redirect(`${url.origin}${path.replace(/\/+$/, '')}${url.search}`, 308);
