@@ -94,8 +94,15 @@ async function proxy(request, target, ttl) {
   return response;
 }
 
+// Crawlers that collect sites to train AI models (what the Vercel Firewall rule blocked): they
+// bring no visitors. Search engines and AI search (Googlebot, Bingbot, OAI-SearchBot) get through.
+const AI_TRAINING = /GPTBot|ClaudeBot|anthropic-ai|CCBot|Bytespider|meta-externalagent|Amazonbot|cohere-ai|Diffbot|img2dataset/i;
+
 export default {
   async fetch(request, env, ctx) {
+    if (AI_TRAINING.test(request.headers.get('user-agent') || '')) {
+      return new Response('Forbidden', { status: 403 });
+    }
     assets = env.ASSETS;
     const url = new URL(request.url);
     const path = url.pathname;
