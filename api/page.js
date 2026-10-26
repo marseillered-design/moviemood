@@ -779,9 +779,8 @@ function layout({ lang = 'en', origin, path, title, description, image, head = '
   <link rel="icon" href="/icon-192.png?v=2" type="image/png" sizes="192x192">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
   <link rel="manifest" href="/site.webmanifest">
-  <!-- Vercel Web Analytics -->
-  <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
-  <script defer src="/_vercel/insights/script.js"></script>
+  <!-- Cloudflare Web Analytics (Cloudflare → Analytics & Logs → Web Analytics) -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "7bdb18122f374e60984fb2931f067490"}'></script>
   <meta name="theme-color" content="#120c09">
   ${head}
   <script>
