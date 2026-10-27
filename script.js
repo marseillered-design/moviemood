@@ -1118,7 +1118,8 @@ function displayMovies(movies, append = false) {
   const watched = new Set(getWatchedList().map(w => `${normalizeMediaType(w.media_type)}:${w.id}`));
   movies
     .filter(movie => movie.title_match || !watched.has(`${normalizeMediaType(movie.media_type || currentType)}:${movie.id}`))
-    .forEach(movie => moviesGrid.appendChild(createCard(movie)));
+    // the first row is on screen at once: those posters load straight away, the rest when scrolled to
+    .forEach((movie, i) => moviesGrid.appendChild(createCard(movie, !append && i < 4)));
 }
 
 function addLoadMoreBtn() {
@@ -1209,7 +1210,7 @@ function setCardButton(button, active, icons, labels) {
   button.setAttribute('aria-label', button.title);
 }
 
-function createCard(movie) {
+function createCard(movie, eager = false) {
   // A real link: opens in the same tab, and "open in new tab" still works for those who want it
   const card = document.createElement('a');
   const poster = movie.poster_path ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}` : '';
@@ -1226,7 +1227,7 @@ function createCard(movie) {
 
   card.innerHTML = `
     <div class="card-poster-wrapper">
-      <img src="${poster}" class="movie-poster" loading="lazy" alt="">
+      <img src="${poster}" class="movie-poster" loading="${eager ? 'eager' : 'lazy'}"${eager ? ' fetchpriority="high"' : ''} alt="">
       ${rating ? `<span class="tmdb-mini-score card-score">${rating}</span>` : ''}
       <div class="card-overlay"></div>
     </div>

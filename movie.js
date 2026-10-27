@@ -129,13 +129,21 @@ async function loadMovie() {
   trailerCandidates = orderTrailers(videos.results || []);
   if (trailerCandidates.length) {
     trailerKey = trailerCandidates[0];
-    // The YouTube player is heavy: start it once the page itself has loaded,
-    // so the title, description and poster show up first (page speed counts for search)
+    // The YouTube player weighs about a megabyte: it starts when the visitor first scrolls, taps or
+    // moves the mouse, or 6 seconds after the page has loaded, so the picture and the text arrive
+    // first (on a phone it used to take the line away from the picture; page speed counts for search)
     const startTrailer = () => {
       if (!document.getElementById('heroIframe') && !heroTrailerFailed) startHeroVideo(trailerKey);
     };
-    if (document.readyState === 'complete') startTrailer();
-    else window.addEventListener('load', startTrailer, { once: true });
+    const wakeEvents = ['pointerdown', 'touchstart', 'keydown', 'scroll', 'mousemove'];
+    const wake = () => {
+      wakeEvents.forEach(type => window.removeEventListener(type, wake));
+      startTrailer();
+    };
+    wakeEvents.forEach(type => window.addEventListener(type, wake, { passive: true }));
+    const later = () => setTimeout(wake, 6000);
+    if (document.readyState === 'complete') later();
+    else window.addEventListener('load', later, { once: true });
   }
 
   document.getElementById('btnPlayTrailer').addEventListener('click', () => {

@@ -15,7 +15,7 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 // posters in the card grids: sharp at card size, half the weight of w500
 const TMDB_CARD_URL = 'https://image.tmdb.org/t/p/w342';
-const ASSET_VERSION = '20261025a';
+const ASSET_VERSION = '20261027a';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -773,7 +773,7 @@ function layout({ lang = 'en', origin, path, title, description, image, head = '
   <meta property="og:url" content="${escapeHtml(canonical)}">
   <meta property="og:image" content="${escapeHtml(image || `${origin}/og-image.png`)}">
   <link rel="stylesheet" href="/style.css?v=${ASSET_VERSION}">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,700&family=Inter:wght@300;400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,700&family=Inter:wght@300;400;500;600&display=swap"></noscript>
   <link rel="icon" href="/favicon.ico?v=2" sizes="16x16 32x32 48x48">
   <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
   <link rel="icon" href="/icon-192.png?v=2" type="image/png" sizes="192x192">
@@ -1196,6 +1196,14 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
     } : undefined
   };
 
+  // The big picture at the top is the page's largest element: the browser gets it from the HTML at
+  // once (the same sizes movie.js asks for: w780 on phones, w1280 wider), instead of after the
+  // scripts have asked TMDB about the film
+  const backdrop = size => `https://image.tmdb.org/t/p/${size}${details.backdrop_path}`;
+  const backdropHead = details.backdrop_path ? `<link rel="preload" as="image" href="${backdrop('w780')}" media="(max-width: 600px)" fetchpriority="high">
+  <link rel="preload" as="image" href="${backdrop('w1280')}" media="(min-width: 601px)" fetchpriority="high">
+  <style>#heroBackdrop{background-image:url(${backdrop('w780')})}@media (min-width:601px){#heroBackdrop{background-image:url(${backdrop('w1280')})}}</style>` : '';
+
   const head = `<title>${escapeHtml(pageTitle)}</title>
   <meta name="description" content="${escapeHtml(description)}">
   <link rel="canonical" href="${escapeHtml(canonical)}">
@@ -1207,6 +1215,7 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${escapeHtml(canonical)}">
   ${details.backdrop_path ? `<meta property="og:image" content="https://image.tmdb.org/t/p/w1280${details.backdrop_path}">\n  <meta name="twitter:card" content="summary_large_image">` : ''}
+  ${backdropHead}
   ${jsonLd(schema)}
   ${video ? jsonLd(video) : ''}
   ${jsonLd(breadcrumbs(origin, [[name, ownPath]], lang))}`;

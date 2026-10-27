@@ -27,8 +27,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://api.themoviedb.org">
   <link rel="preconnect" href="https://image.tmdb.org">
-  <link rel="stylesheet" href="style.css?v=20261023d">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=20261027a">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,700&family=Inter:wght@300;400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,700&family=Inter:wght@300;400;500;600&display=swap"></noscript>
   <link rel="icon" href="/favicon.ico?v=2" sizes="16x16 32x32 48x48">
   <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
   <link rel="icon" href="/icon-192.png?v=2" type="image/png" sizes="192x192">
@@ -143,9 +143,19 @@
       <h2 class="results-heading" id="resultsHeading" hidden></h2>
       <div class="understood-row" id="understoodRow" hidden></div>
       <div class="movies-grid" id="moviesGrid">
-        <div class="welcome-message">
-          <p class="example-text">Try: "horrors of 90s" &#x00B7; "80s action" &#x00B7; "dark sci-fi like Interstellar"</p>
-        </div>
+        <!-- placeholders until script.js shows the trending films (it always does on load): the grid keeps its height, nothing jumps -->
+        <div class="movie-card skeleton"><div class="skeleton-poster"></div><div class="skeleton-title"></div></div>
+        <div class="movie-card skeleton"><div class="skeleton-poster"></div><div class="skeleton-title"></div></div>
+        <div class="movie-card skeleton"><div class="skeleton-poster"></div><div class="skeleton-title"></div></div>
+        <div class="movie-card skeleton"><div class="skeleton-poster"></div><div class="skeleton-title"></div></div>
+        <div class="movie-card skeleton"><div class="skeleton-poster"></div><div class="skeleton-title"></div></div>
+        <div class="movie-card skeleton"><div class="skeleton-poster"></div><div class="skeleton-title"></div></div>
+        <div class="movie-card skeleton"><div class="skeleton-poster"></div><div class="skeleton-title"></div></div>
+        <div class="movie-card skeleton"><div class="skeleton-poster"></div><div class="skeleton-title"></div></div>
+        <div class="movie-card skeleton"><div class="skeleton-poster"></div><div class="skeleton-title"></div></div>
+        <div class="movie-card skeleton"><div class="skeleton-poster"></div><div class="skeleton-title"></div></div>
+        <div class="movie-card skeleton"><div class="skeleton-poster"></div><div class="skeleton-title"></div></div>
+        <div class="movie-card skeleton"><div class="skeleton-poster"></div><div class="skeleton-title"></div></div>
       </div>
       <button class="load-more-btn" id="loadMoreBtn" style="display: none;">Load More</button>
     </section>
@@ -187,10 +197,10 @@
     themeToggle?.addEventListener('click', window.__mmToggleTheme);
   })();
   </script>
-  <script src="i18n.js?v=20261023d"></script>
-  <script src="/urls.js?v=20261023d"></script>
-  <script src="nav.js?v=20261023d"></script>
-  <script src="script.js?v=20261023d"></script>
+  <script defer src="i18n.js?v=20261027a"></script>
+  <script defer src="/urls.js?v=20261027a"></script>
+  <script defer src="nav.js?v=20261027a"></script>
+  <script defer src="script.js?v=20261027a"></script>
 </body>
 </html>
 
