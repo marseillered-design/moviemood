@@ -1491,8 +1491,12 @@ export default async function handler(req, res) {
       return res.status(200).send(JSON.stringify({ country: String(req.headers['x-vercel-ip-country'] || '') }));
     }
 
+    // Crawlers that collect sites for AI models are kept out (PerplexityBot made 2–3 requests a
+    // second, nearly all of the site's traffic); search engines and AI search stay welcome. Those
+    // that ignore robots.txt are stopped by the "Block AI crawlers" rule in Cloudflare WAF.
     if (kind === 'robots') {
-      return send(res, 200, `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /tmdb/\nDisallow: /tmdb-img/\n\nSitemap: ${origin}/sitemap.xml\n`, { type: 'text/plain; charset=utf-8' });
+      const aiBots = ['PerplexityBot', 'GPTBot', 'ClaudeBot', 'anthropic-ai', 'CCBot', 'Google-Extended', 'Applebot-Extended', 'Bytespider', 'meta-externalagent', 'Amazonbot', 'cohere-ai', 'Diffbot', 'img2dataset'];
+      return send(res, 200, `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /tmdb/\nDisallow: /tmdb-img/\n\n${aiBots.map(bot => `User-agent: ${bot}`).join('\n')}\nDisallow: /\n\nSitemap: ${origin}/sitemap.xml\n`, { type: 'text/plain; charset=utf-8' });
     }
 
     if (kind === 'sitemap') {
