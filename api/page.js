@@ -15,7 +15,7 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 // posters in the card grids: sharp at card size, half the weight of w500
 const TMDB_CARD_URL = 'https://image.tmdb.org/t/p/w342';
-const ASSET_VERSION = '20261027a';
+const ASSET_VERSION = '20261028a';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -594,6 +594,18 @@ const TEXT = {
     es: 'Cuéntanos cómo te sientes y encontramos la película.',
     de: 'Sag uns, wie du dich fühlst – wir finden den passenden Film.'
   },
+  // "How MovieMood works" on the home page (about.* in i18n.js)
+  about: {
+    title: { en: 'How MovieMood works', uk: 'Як працює MovieMood', ru: 'Как работает MovieMood', fr: 'Comment fonctionne MovieMood', es: 'Cómo funciona MovieMood', de: 'So funktioniert MovieMood' },
+    q1: { en: 'Describe your mood in your own words', uk: 'Опишіть настрій своїми словами', ru: 'Опишите настроение своими словами', fr: 'Décrivez votre humeur avec vos mots', es: 'Describe tu estado de ánimo con tus palabras', de: 'Beschreib deine Stimmung mit eigenen Worten' },
+    a1: { en: 'Type how you feel: “rainy Sunday”, “something light after work”, “dark sci-fi like Interstellar”. MovieMood reads the mood, genre, decade and favourite films in your words and picks well-loved titles to match.', uk: 'Напишіть, що відчуваєте: «дощова неділя», «щось легке після роботи», «похмура фантастика як Інтерстеллар». MovieMood розуміє настрій, жанр, десятиліття й улюблені фільми у ваших словах і підбирає фільми, які люблять глядачі.', ru: 'Напишите, что чувствуете: «дождливое воскресенье», «что-то лёгкое после работы», «мрачная фантастика как Интерстеллар». MovieMood понимает настроение, жанр, десятилетие и любимые фильмы в ваших словах и подбирает фильмы, которые любят зрители.', fr: 'Écrivez ce que vous ressentez : « dimanche pluvieux », « quelque chose de léger après le travail », « SF sombre comme Interstellar ». MovieMood comprend l’humeur, le genre, la décennie et les films préférés dans vos mots et choisit des titres très appréciés qui y correspondent.', es: 'Escribe cómo te sientes: «domingo lluvioso», «algo ligero después del trabajo», «ciencia ficción oscura como Interstellar». MovieMood entiende el ánimo, el género, la década y las películas favoritas en tus palabras y elige títulos muy queridos que encajan.', de: 'Schreib, wie du dich fühlst: „verregneter Sonntag“, „etwas Leichtes nach der Arbeit“, „düstere Sci-Fi wie Interstellar“. MovieMood versteht Stimmung, Genre, Jahrzehnt und Lieblingsfilme in deinen Worten und wählt beliebte Titel, die dazu passen.' },
+    q2: { en: 'Where can I watch it?', uk: 'Де це подивитися?', ru: 'Где это посмотреть?', fr: 'Où le regarder ?', es: '¿Dónde puedo verla?', de: 'Wo kann ich das schauen?' },
+    a2: { en: 'Every film and series page lists the streaming services, rentals and purchases in your country, with the trailer, the cast and similar titles.', uk: 'На сторінці кожного фільму й серіалу — стримінгові сервіси, оренда та купівля у вашій країні, а ще трейлер, актори й схожі фільми.', ru: 'На странице каждого фильма и сериала — стриминговые сервисы, аренда и покупка в вашей стране, а ещё трейлер, актёры и похожие фильмы.', fr: 'Chaque page de film et de série indique les plateformes de streaming, la location et l’achat dans votre pays, avec la bande-annonce, le casting et des titres similaires.', es: 'Cada página de película y serie muestra las plataformas de streaming, el alquiler y la compra en tu país, con el tráiler, el reparto y títulos similares.', de: 'Jede Film- und Serienseite zeigt Streamingdienste, Leih- und Kaufangebote in deinem Land, dazu Trailer, Besetzung und ähnliche Titel.' },
+    q3: { en: 'Is it free?', uk: 'Це безкоштовно?', ru: 'Это бесплатно?', fr: 'Est-ce gratuit ?', es: '¿Es gratis?', de: 'Ist das kostenlos?' },
+    a3: { en: 'Yes, and there is no sign-up. Favourites and watched titles stay in your browser, so watched films stop showing up in your suggestions.', uk: 'Так, і без реєстрації. Обране й переглянуте зберігаються у вашому браузері, тож переглянуті фільми більше не трапляються в добірках.', ru: 'Да, и без регистрации. Избранное и просмотренное хранятся в вашем браузере, поэтому просмотренные фильмы больше не попадаются в подборках.', fr: 'Oui, et sans inscription. Vos favoris et vos titres vus restent dans votre navigateur : les films déjà vus ne reviennent plus dans vos suggestions.', es: 'Sí, y sin registro. Tus favoritos y lo que ya viste se guardan en tu navegador, así que las películas vistas dejan de aparecer en tus sugerencias.', de: 'Ja, und ohne Anmeldung. Favoriten und gesehene Titel bleiben in deinem Browser, gesehene Filme tauchen deshalb nicht mehr in deinen Vorschlägen auf.' },
+    q4: { en: 'Which languages?', uk: 'Якими мовами?', ru: 'На каких языках?', fr: 'Quelles langues ?', es: '¿En qué idiomas?', de: 'Welche Sprachen?' },
+    a4: { en: 'English, Ukrainian, Russian, French, Spanish and German. The search understands queries in all six.', uk: 'Англійською, українською, російською, французькою, іспанською та німецькою. Пошук розуміє запити всіма шістьма.', ru: 'На английском, украинском, русском, французском, испанском и немецком. Поиск понимает запросы на всех шести.', fr: 'Anglais, ukrainien, russe, français, espagnol et allemand. La recherche comprend les demandes dans ces six langues.', es: 'Inglés, ucraniano, ruso, francés, español y alemán. El buscador entiende búsquedas en los seis.', de: 'Englisch, Ukrainisch, Russisch, Französisch, Spanisch und Deutsch. Die Suche versteht Anfragen in allen sechs.' }
+  },
   // labels of the mood buttons under the search (quick.* in i18n.js)
   quick: {
     rainy: { en: 'Rainy day', uk: 'Дощовий день', ru: 'Дождливый день', fr: 'Jour de pluie', es: 'Día de lluvia', de: 'Regentag' },
@@ -862,6 +874,26 @@ function movieCard(movie, lang, path = titlePath(movie)) {
       </a>`;
 }
 
+// One title of a "movies like X" list with what it is about: the description is what makes
+// each list worth reading (and different from the next one)
+function likeItem(item, lang, position) {
+  const title = item.title || item.name;
+  const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+  const rating = item.vote_average ? item.vote_average.toFixed(1) : '';
+  const genres = (item.genres || []).slice(0, 3).map(g => g.name).join(' · ');
+  const overview = truncate(item.overview, 300);
+  return `<li class="like-item">
+        <a class="like-item-poster" href="${langPath(lang, item.path)}">
+          <img src="${TMDB_CARD_URL}${item.poster_path}" loading="lazy" alt="${escapeHtml(title)}${year ? ` (${year})` : ''} ${tr(lang, 'poster')}" width="120" height="180">
+        </a>
+        <div class="like-item-text">
+          <h2 class="like-item-title"><span class="like-item-number">${position}.</span> <a href="${langPath(lang, item.path)}">${escapeHtml(title)}</a>${year ? ` <span class="like-item-year">(${year})</span>` : ''}</h2>
+          <p class="like-item-meta">${[rating && `★ ${rating}`, genres].filter(Boolean).join(' · ')}</p>
+          ${overview ? `<p class="like-item-overview">${escapeHtml(overview)}</p>` : ''}
+        </div>
+      </li>`;
+}
+
 function renderMoodPage(mood, movies, origin, lang) {
   const name = moodTitle(mood, lang);
   const intro = moodIntro(mood, lang);
@@ -1004,9 +1036,9 @@ async function renderLikePage(type, id, origin, requestedPath, lang) {
       </span>
     </a>`,
     main: `<section class="results-section">
-      <div class="movies-grid">
-      ${picks.map(item => movieCard(item, lang, item.path)).join('\n      ')}
-      </div>
+      <ol class="like-list">
+      ${picks.map((item, i) => likeItem(item, lang, i + 1)).join('\n      ')}
+      </ol>
     </section>
     ${moreLists.length ? `
     <section class="mood-more">
@@ -1081,6 +1113,7 @@ async function renderHomePage(origin, lang) {
     .replace(/<link rel="canonical" href="[^"]*">(\s*<link rel="alternate"[^>]*>)*/, () => `<link rel="canonical" href="${escapeHtml(canonical)}">\n  ${alternates(origin, '/')}\n  ${ogLocales(lang)}`)
     .replace(/<h1 class="home-title">[\s\S]*?<\/h1>/, () => `<h1 class="home-title">${escapeHtml(tr(lang, 'home_h1'))} <span class="title-accent">${escapeHtml(tr(lang, 'home_h1_accent'))}</span></h1>`)
     .replace(/<p class="home-subtitle">[^<]*<\/p>/, () => `<p class="home-subtitle">${escapeHtml(tr(lang, 'home_subtitle'))}</p>`)
+    .replace(/<(h2|h3|p)([^>]*) data-i18n="about\.(\w+)">[^<]*<\/\1>/g, (all, tag, attrs, key) => `<${tag}${attrs} data-i18n="about.${key}">${escapeHtml(TEXT.about[key]?.[lang] ?? '')}</${tag}>`)
     .replace(/<span data-i18n="quick\.(\w+)">[^<]*<\/span>/g, (all, key) => `<span data-i18n="quick.${key}">${escapeHtml(TEXT.quick[key]?.[lang] ?? '')}</span>`)
     .replace(/<p class="footer-premiero">[\s\S]*?<\/p>/, () => premieroLine(lang))
     .replace(/href="\/moods(\/[^"]*)?"/g, (all, rest = '') => `href="${langPath(lang, `/moods${rest}`)}"`);

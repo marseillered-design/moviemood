@@ -1,0 +1,22 @@
+# MovieMood
+
+> MovieMood finds movies and TV series for your mood. Describe how you feel in your own words
+> ("rainy Sunday", "something light after work", "dark sci-fi like Interstellar") and get
+> well-loved titles to match, with trailers and where to watch them in your country.
+
+The site is free and needs no sign-up. It is available in English, Ukrainian, Russian, French,
+Spanish and German (English at the root, the others under /uk, /ru, /fr, /es and /de).
+Film data comes from TMDB; streaming availability from JustWatch via TMDB.
+
+## Main sections
+
+- [Home: search by mood](https://www.themoviemood.com/): free-text mood search and the movies, series and documentaries popular this week
+- [Movies by mood](https://www.themoviemood.com/moods): hand-tuned collections such as cozy movies, movies to cry to, mind-bending movies, date night movies, the best movies of the 80s and 90s, anime and documentaries
+- Movie and series pages, e.g. [Inception](https://www.themoviemood.com/movie/27205-inception): where to watch (streaming, rent, buy), trailer, cast, ratings and similar titles
+- "Movies like" pages, e.g. [Movies like Inception](https://www.themoviemood.com/movies-like/27205-inception) and [Shows like Breaking Bad](https://www.themoviemood.com/shows-like/1396-breaking-bad): titles fans of a film or series love most, each with a short description
+- People pages, e.g. [Leonardo DiCaprio](https://www.themoviemood.com/person/6193-leonardo-dicaprio): filmography with where to watch
+
+## Optional
+
+- [Sitemap](https://www.themoviemood.com/sitemap.xml)
+- [Release calendar: Premiero](https://thepremiero.com/en/us): our sister site with release dates for movies, series and games

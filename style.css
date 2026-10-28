@@ -2379,3 +2379,34 @@ a.person-chip, a.actor-card { color: inherit; text-decoration: none; }
 .home-footer .footer-premiero { margin-top: 8px; }
 .home-footer .footer-premiero a { color: var(--neon); font-weight: 600; text-decoration: none; }
 .home-footer .footer-premiero a:hover { text-decoration: underline; }
+
+/* ── "MOVIES LIKE X": each title with what it is about ── */
+.like-list { list-style: none; max-width: 860px; margin: 0 auto; padding: 0; display: flex; flex-direction: column; gap: 18px; }
+.like-item {
+  display: flex; gap: 20px; padding: 16px; border-radius: 16px;
+  background: var(--card-bg); border: 1px solid var(--border);
+}
+.like-item-poster { flex-shrink: 0; }
+.like-item-poster img { width: 120px; height: 180px; object-fit: cover; border-radius: 10px; display: block; }
+.like-item-text { min-width: 0; }
+.like-item-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.5rem; margin: 2px 0 6px; line-height: 1.2; }
+.like-item-title a { color: var(--text); text-decoration: none; }
+.like-item-title a:hover { color: var(--neon); }
+.like-item-number { color: var(--neon); }
+.like-item-year { color: var(--text-dim); font-size: 1.1rem; font-weight: 400; }
+.like-item-meta { font-size: 0.85rem; color: var(--neon); margin: 0 0 10px; }
+.like-item-overview { font-size: 0.95rem; line-height: 1.6; color: var(--text-dim); margin: 0; }
+@media (max-width: 600px) {
+  .like-item { gap: 14px; padding: 12px; }
+  .like-item-poster img { width: 84px; height: 126px; }
+  .like-item-title { font-size: 1.2rem; }
+  .like-item-overview { font-size: 0.88rem; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+}
+
+/* ── HOME: how it works (text search engines can read) ── */
+.home-about { position: relative; z-index: 2; max-width: 1000px; margin: 60px auto 20px; padding: 0 24px; text-align: center; }
+.home-about-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; text-align: left; }
+.home-about-grid > div { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 18px 20px; }
+.home-about h3 { font-size: 1rem; color: var(--neon); margin: 0 0 8px; }
+.home-about p { font-size: 0.92rem; line-height: 1.6; color: var(--text-dim); margin: 0; }
+@media (max-width: 700px) { .home-about-grid { grid-template-columns: 1fr; } }
