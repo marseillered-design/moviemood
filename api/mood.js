@@ -1,6 +1,7 @@
 export default async function handler(req, res) {
   try {
-    const { query } = req.body;
+    // only text, and not a whole essay: every word goes into the AI request, and the free AI quota is shared
+    const query = typeof req.body?.query === 'string' ? req.body.query.trim().slice(0, 300) : '';
     // { debug: true } in the request adds _ai: what happened with each AI (no key, HTTP error, ok)
     const debug = req.body.debug === true;
     const reply = (body, aiStatus) => res.status(200).json(debug ? { ...body, _ai: aiStatus } : body);
