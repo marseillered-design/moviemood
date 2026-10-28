@@ -60,6 +60,11 @@
   // backgrounds (style.backgroundImage) report no errors: scripts pass their address through this
   window.mmImg = url => (useProxy ? viaProxy(url) : url);
 
+  // Text from TMDB (titles, names, biographies) is edited by anyone there: it goes into the page
+  // as text, never as HTML
+  window.mmEsc = value => String(value ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
   const inLanguage = path => (window.mmLangPath ? window.mmLangPath(path) : path);
 
   // Same rules as slugify() in api/page.js

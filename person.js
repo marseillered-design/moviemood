@@ -67,7 +67,7 @@ async function loadPerson() {
 
   const dept = details.known_for_department || '';
   document.getElementById('personBadges').innerHTML = dept
-    ? `<span class="person-badge">${dept}</span>`
+    ? `<span class="person-badge">${mmEsc(dept)}</span>`
     : '';
 
   const detailParts = [];
@@ -86,16 +86,16 @@ async function loadPerson() {
     detailParts.push(t('person.place', { place: details.place_of_birth }));
   }
   document.getElementById('personDetails').innerHTML = detailParts
-    .map(p => `<span class="person-detail-item">${p}</span>`)
+    .map(p => `<span class="person-detail-item">${mmEsc(p)}</span>`)
     .join('');
 
   const bio = details.biography || '';
   const bioEl = document.getElementById('personBio');
   if (bio.length > 400) {
     const short = bio.slice(0, 400);
-    bioEl.innerHTML = `${short}... <button class="bio-read-more" id="bioBtn">${t('person.read_more')}</button>`;
+    bioEl.innerHTML = `${mmEsc(short)}... <button class="bio-read-more" id="bioBtn">${t('person.read_more')}</button>`;
     document.getElementById('bioBtn').addEventListener('click', () => {
-      bioEl.innerHTML = bio;
+      bioEl.textContent = bio;
     });
   } else {
     bioEl.textContent = bio;
@@ -139,8 +139,8 @@ async function loadPerson() {
         <div class="card-overlay"></div>
       </div>
       <div class="card-info">
-        <h3 class="card-title">${movie.title || movie.name}</h3>
-        <span class="card-year">${role ? role : (movie.release_date || movie.first_air_date || '').slice(0,4)}</span>
+        <h3 class="card-title">${mmEsc(movie.title || movie.name)}</h3>
+        <span class="card-year">${role ? mmEsc(role) : (movie.release_date || movie.first_air_date || '').slice(0,4)}</span>
       </div>
     `;
 

@@ -12,8 +12,9 @@
     "html_handling": "none",
     "not_found_handling": "none"
   },
-  // the test address moviemood.moviemood.workers.dev stays on
-  "workers_dev": true,
+  // no moviemood.moviemood.workers.dev: that address skips the Cloudflare rules for bots
+  // (they belong to the themoviemood.com zone); test locally with wrangler dev instead
+  "workers_dev": false,
   // both addresses answer from this Worker; the bare one redirects to www (worker.js)
   "routes": [
     { "pattern": "www.themoviemood.com", "custom_domain": true },

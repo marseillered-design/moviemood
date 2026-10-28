@@ -115,10 +115,10 @@ async function loadMovie() {
   const metaParts = [year, runtime, rating ? `${t('movie.rating')} ${rating}` : ''].filter(Boolean);
   document.getElementById('heroMeta').innerHTML = metaParts.map(p => `<span>${p}</span>`).join(' · ');
 
-  const badges = details.genres?.slice(0, 3).map(g => `<span class="badge">${g.name}</span>`).join('') || '';
+  const badges = details.genres?.slice(0, 3).map(g => `<span class="badge">${mmEsc(g.name)}</span>`).join('') || '';
   document.getElementById('heroBadges').innerHTML = badges;
 
-  document.getElementById('movieGenres').innerHTML = details.genres?.map(g => `<span class="genre-tag">${g.name}</span>`).join('') || '';
+  document.getElementById('movieGenres').innerHTML = details.genres?.map(g => `<span class="genre-tag">${mmEsc(g.name)}</span>`).join('') || '';
 
   if (details.poster_path) {
     document.getElementById('moviePoster').src = `${TMDB_IMAGE_BASE_URL}${details.poster_path}`;
@@ -162,17 +162,17 @@ async function loadMovie() {
   if (director) {
     document.getElementById('movieDirector').innerHTML =
       `<a class="person-chip" href="${mmPersonUrl(director)}">
-        <img src="${director.profile_path ? 'https://image.tmdb.org/t/p/w185' + director.profile_path : 'https://via.placeholder.com/32x32?text=?'}" alt="${director.name}">
-        ${director.name}
+        <img src="${director.profile_path ? 'https://image.tmdb.org/t/p/w185' + director.profile_path : 'https://via.placeholder.com/32x32?text=?'}" alt="${mmEsc(director.name)}">
+        ${mmEsc(director.name)}
       </a>`;
   }
 
   // Real links, so search engines find the people pages too
   const castHTML = credits.cast?.slice(0, 8).map(a =>
     `<a class="actor-card" href="${mmPersonUrl(a)}">
-      <img src="${a.profile_path ? 'https://image.tmdb.org/t/p/w185' + a.profile_path : 'https://via.placeholder.com/70x100?text=?'}" alt="${a.name}">
-      <span class="actor-name">${a.name}</span>
-      <span class="actor-char">${a.character}</span>
+      <img src="${a.profile_path ? 'https://image.tmdb.org/t/p/w185' + a.profile_path : 'https://via.placeholder.com/70x100?text=?'}" alt="${mmEsc(a.name)}">
+      <span class="actor-name">${mmEsc(a.name)}</span>
+      <span class="actor-char">${mmEsc(a.character)}</span>
     </a>`
   ).join('') || '';
   document.getElementById('movieCast').innerHTML = castHTML;
@@ -195,7 +195,7 @@ async function loadMovie() {
       if (regionData[key]?.length) {
         html += `<div class="provider-group"><span class="provider-label">${label}</span><div class="provider-logos">`;
         // logo and name: not everyone recognises a service by its icon
-        html += regionData[key].map(p => `<a href="${providerLink(p)}" target="_blank" rel="noopener sponsored" class="provider-link" title="${t('movie.provider_hint', { type: label, name: p.provider_name })}"><img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="" class="provider-logo-img"><span class="provider-name">${p.provider_name}</span></a>`).join('');
+        html += regionData[key].map(p => `<a href="${providerLink(p)}" target="_blank" rel="noopener sponsored" class="provider-link" title="${mmEsc(t('movie.provider_hint', { type: label, name: p.provider_name }))}"><img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="" class="provider-logo-img"><span class="provider-name">${mmEsc(p.provider_name)}</span></a>`).join('');
         html += `</div></div>`;
       }
     });
@@ -215,13 +215,13 @@ async function loadMovie() {
       const simRating = m.vote_average ? m.vote_average.toFixed(1) : '';
       const fav = isFavoriteItem(m.id, mediaType) ? '\u2764\uFE0F' : '\uD83E\uDD0D';
       return `
-        <a class="similar-card" href="${mmTitleUrl(m, mediaType)}" data-id="${m.id}" data-type="${normalizeMediaType(mediaType)}" data-title="${(m.title || m.name || '').replace(/"/g, '&quot;')}" data-poster="${m.poster_path || ''}">
+        <a class="similar-card" href="${mmTitleUrl(m, mediaType)}" data-id="${m.id}" data-type="${normalizeMediaType(mediaType)}" data-title="${mmEsc(m.title || m.name || '')}" data-poster="${m.poster_path || ''}">
           <div class="similar-poster-wrap">
-            <img src="${m.poster_path ? TMDB_CARD_URL + m.poster_path : ''}" loading="lazy" alt="${m.title || m.name}">
+            <img src="${m.poster_path ? TMDB_CARD_URL + m.poster_path : ''}" loading="lazy" alt="${mmEsc(m.title || m.name)}">
             ${simRating ? `<span class="tmdb-mini-score card-score">${simRating}</span>` : ''}
             <button class="similar-fav-btn" type="button">${fav}</button>
           </div>
-          <span>${m.title || m.name}</span>
+          <span>${mmEsc(m.title || m.name)}</span>
         </a>
       `;
     }).join('');

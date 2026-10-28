@@ -60,19 +60,19 @@ function createCard(movie) {
 
   card.innerHTML = `
     <div class="fav-card-poster">
-      <img src="${poster}" alt="${movie.title}" loading="lazy">
+      <img src="${poster}" alt="${mmEsc(movie.title)}" loading="lazy">
       <div class="fav-card-overlay">
         <button class="fav-remove-btn" title="${t('card.unfavorite')}">${t('card.remove')}</button>
       </div>
       ${rating ? `<span class="fav-rating">${rating}</span>` : ''}
     </div>
     <div class="fav-card-info">
-      <h3 class="fav-card-title">${movie.title}</h3>
+      <h3 class="fav-card-title">${mmEsc(movie.title)}</h3>
       <div class="fav-card-meta">
         <span class="fav-type">${typeLabel}</span>
         ${year ? `<span class="fav-year">${year}</span>` : ''}
       </div>
-      ${genres ? `<span class="fav-genres">${genres}</span>` : ''}
+      ${genres ? `<span class="fav-genres">${mmEsc(genres)}</span>` : ''}
     </div>
   `;
 

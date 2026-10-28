@@ -71,7 +71,7 @@ function createSeenCard(item) {
 
   card.innerHTML = `
     <div class="fav-card-poster">
-      <img src="${poster}" alt="${item.title}" loading="lazy">
+      <img src="${poster}" alt="${mmEsc(item.title)}" loading="lazy">
       <div class="fav-card-overlay">
         <button class="fav-remove-btn" title="${t('card.remove')}">${t('card.remove')}</button>
       </div>
@@ -79,12 +79,12 @@ function createSeenCard(item) {
       <span class="watched-badge watched-badge-static">${t('card.watched')}</span>
     </div>
     <div class="fav-card-info">
-      <h3 class="fav-card-title">${item.title}</h3>
+      <h3 class="fav-card-title">${mmEsc(item.title)}</h3>
       <div class="fav-card-meta">
         <span class="fav-type">${typeLabel}</span>
         ${year ? `<span class="fav-year">${year}</span>` : ''}
       </div>
-      ${genres ? `<span class="fav-genres">${genres}</span>` : ''}
+      ${genres ? `<span class="fav-genres">${mmEsc(genres)}</span>` : ''}
     </div>
   `;
 
