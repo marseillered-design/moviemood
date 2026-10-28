@@ -636,8 +636,9 @@ function moodsInSeasonOrder(date = new Date()) {
 const langPath = (lang, path) => lang === 'en' ? path : `/${lang}${path === '/' ? '' : path}`;
 
 // The same page in every language, for search engines (hreflang)
-const alternates = (origin, path) => [
-  ...LANGS.map(code => `<link rel="alternate" hreflang="${code}" href="${escapeHtml(origin + langPath(code, path))}">`),
+// langs: the versions that are in the index (a version without a description of its own is not)
+const alternates = (origin, path, langs = LANGS) => [
+  ...langs.map(code => `<link rel="alternate" hreflang="${code}" href="${escapeHtml(origin + langPath(code, path))}">`),
   `<link rel="alternate" hreflang="x-default" href="${escapeHtml(origin + path)}">`
 ].join('\n  ');
 
@@ -1103,7 +1104,7 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   const detailsUrl = locale => `${TMDB_BASE_URL}/${type}/${id}?api_key=${TMDB_API_KEY}&language=${locale}`;
   const [templateRes, details, english] = await Promise.all([
     fetch(`${origin}/movie.html`),
-    fetchJson(`${detailsUrl(TMDB_LOCALES[lang])}&append_to_response=videos,watch/providers,credits,recommendations,similar&include_video_language=en,${lang}`),
+    fetchJson(`${detailsUrl(TMDB_LOCALES[lang])}&append_to_response=videos,watch/providers,credits,recommendations,similar,translations&include_video_language=en,${lang}`),
     // the address is built from the English title in every language; so are the addresses of
     // the similar titles linked from the page
     lang === 'en' ? null : fetchJson(`${detailsUrl('en-US')}&append_to_response=credits,recommendations,similar`)
@@ -1123,9 +1124,17 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
     `${tr(lang, 'title_page_title', { name: nameWithYear })} | MovieMood`,
     tr(lang, 'title_page_title', { name: nameWithYear }),
     tr(lang, 'title_page_short', { name: nameWithYear }),
-    tr(lang, 'title_page_short', { name })
+    tr(lang, 'title_page_short', { name: truncate(name, 45) })
   );
   const poster = details.poster_path ? `${TMDB_IMAGE_BASE_URL}${details.poster_path}` : '';
+
+  // A version in another language with no description of its own repeats the English page:
+  // kept out of the index (its links are still followed), the English page stands for it
+  const noindex = lang !== 'en' && !details.overview;
+  // The language versions search engines are pointed to: the same rule, for every language at once
+  const described = new Set((details.translations?.translations || [])
+    .filter(item => item.data?.overview).map(item => `${item.iso_639_1}-${item.iso_3166_1}`));
+  const indexedLangs = LANGS.filter(code => code === 'en' || described.has(TMDB_LOCALES[code]) || (code === lang && !noindex));
 
   // Streaming services in the country of this language version
   const country = WATCH_COUNTRIES[lang];
@@ -1207,7 +1216,7 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   const head = `<title>${escapeHtml(pageTitle)}</title>
   <meta name="description" content="${escapeHtml(description)}">
   <link rel="canonical" href="${escapeHtml(canonical)}">
-  ${alternates(origin, basePath)}
+  ${noindex ? '' : alternates(origin, basePath, indexedLangs)}
   <meta property="og:type" content="${type === 'tv' ? 'video.tv_show' : 'video.movie'}">
   <meta property="og:site_name" content="MovieMood">
   ${ogLocales(lang)}
@@ -1260,9 +1269,6 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
           <span>${escapeHtml(itemName)}</span>
         </a>`;
   }).join('');
-  // A version in another language with no description of its own repeats the English page:
-  // kept out of the index (its links are still followed), the English page stands for it
-  const noindex = lang !== 'en' && !details.overview;
 
   // "Movies like Inception": the list built around this title, when there is one
   const like = likeEntry(type, id);
@@ -1318,7 +1324,7 @@ async function renderPersonPage(id, origin, requestedPath, lang = 'en') {
   const personUrl = locale => `${TMDB_BASE_URL}/person/${id}?api_key=${TMDB_API_KEY}&language=${locale}`;
   const [templateRes, person, english, credits] = await Promise.all([
     fetch(`${origin}/person.html`),
-    fetchJson(personUrl(TMDB_LOCALES[lang])),
+    fetchJson(`${personUrl(TMDB_LOCALES[lang])}&append_to_response=translations`),
     // TMDB translates names too (Киану Ривз); the address keeps the Latin one in every language,
     // and the films linked from the page keep their English addresses
     lang === 'en' ? null : fetchJson(`${personUrl('en-US')}&append_to_response=combined_credits`),
@@ -1352,6 +1358,9 @@ async function renderPersonPage(id, origin, requestedPath, lang = 'en') {
   // A version in another language with no biography of its own is a list of posters and little
   // else: kept out of the index, while its links to the films are still followed
   const noindex = lang !== 'en' && !person.biography;
+  const described = new Set((person.translations?.translations || [])
+    .filter(item => item.data?.biography).map(item => `${item.iso_639_1}-${item.iso_3166_1}`));
+  const indexedLangs = LANGS.filter(code => code === 'en' || described.has(TMDB_LOCALES[code]) || (code === lang && !noindex));
   const pageTitle = fitTitle(`${tr(lang, 'person_page_title', { name })} | MovieMood`, tr(lang, 'person_page_title', { name }));
   const description = truncate(
     known.length
@@ -1378,7 +1387,7 @@ async function renderPersonPage(id, origin, requestedPath, lang = 'en') {
   const head = `<title>${escapeHtml(pageTitle)}</title>
   <meta name="description" content="${escapeHtml(description)}">
   <link rel="canonical" href="${escapeHtml(canonical)}">
-  ${alternates(origin, basePath)}
+  ${noindex ? '' : alternates(origin, basePath, indexedLangs)}
   <meta property="og:type" content="profile">
   <meta property="og:site_name" content="MovieMood">
   ${ogLocales(lang)}

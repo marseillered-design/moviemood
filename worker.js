@@ -98,8 +98,24 @@ async function proxy(request, target, ttl) {
 // bring no visitors. Search engines and AI search (Googlebot, Bingbot, OAI-SearchBot) get through.
 const AI_TRAINING = /GPTBot|ClaudeBot|anthropic-ai|CCBot|Bytespider|meta-externalagent|Amazonbot|cohere-ai|Diffbot|img2dataset/i;
 
+// Sent with every answer: HTTPS only from now on (HSTS), no guessing of file types, and other sites
+// see only our domain in the referrer
+const SECURITY_HEADERS = {
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin'
+};
+
 export default {
   async fetch(request, env, ctx) {
+    const response = await route(request, env, ctx);
+    const secured = new Response(response.body, response);
+    for (const [name, value] of Object.entries(SECURITY_HEADERS)) secured.headers.set(name, value);
+    return secured;
+  }
+};
+
+async function route(request, env, ctx) {
     if (AI_TRAINING.test(request.headers.get('user-agent') || '')) {
       return new Response('Forbidden', { status: 403 });
     }
@@ -108,8 +124,8 @@ export default {
     const path = url.pathname;
     const params = Object.fromEntries(url.searchParams);
 
-    // the site lives at www, as on Vercel: the bare domain sends visitors there
-    if (url.hostname === 'themoviemood.com') {
+    // the site lives at https://www, as on Vercel: the bare domain and plain http send visitors there
+    if (url.hostname === 'themoviemood.com' || url.protocol === 'http:') {
       return Response.redirect(`https://www.themoviemood.com${path}${url.search}`, 308);
     }
     // vercel.json: "trailingSlash": false
@@ -144,5 +160,4 @@ export default {
 
     // anything else: the site's own "page not found"
     return cachedPage(request, url, { kind: '' }, ctx);
-  }
-};
+}
