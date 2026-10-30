@@ -29,12 +29,12 @@ const MOODS = [
   {
     slug: 'rainy-day-movies', emoji: '🌧️', title: 'Movies for a Rainy Day', query: 'rainy day',
     discover: 'with_genres=35|18|10749&with_keywords=325784|164246|319319|278730|225219|288816&without_genres=28,27,53,80,10752,878,12&sort_by=vote_count.desc&vote_count.gte=300',
-    intro: 'Grey sky, a blanket and nowhere to be. These are warm, funny, slightly bittersweet films that suit the sound of rain on the window — easy to sink into and hard to turn off.'
+    intro: 'For a day you are not leaving the house: Amélie, Notting Hill and other warm, slightly sad films you can watch back to back.'
   },
   {
     slug: 'feel-good-movies', emoji: '😊', title: 'Feel-Good Movies', query: 'feel good',
     discover: 'with_keywords=325824|325782|325832|281585|288816&without_genres=28,27,53,80,10752,878,12,16&sort_by=vote_count.desc&vote_count.gte=300',
-    intro: 'Hopeful, warm-hearted films that leave you lighter than they found you. No heavy twists, no bleak endings — just good company for a couple of hours.'
+    intro: 'Films to watch when the day went badly, from The Intouchables to Silver Linings Playbook. Expect a lot of laughing and, now and then, a lump in the throat.'
   },
   {
     slug: 'movies-to-cry-to', emoji: '😢', title: 'Movies to Cry To', query: 'want to cry',
@@ -44,12 +44,12 @@ const MOODS = [
   {
     slug: 'date-night-movies', emoji: '💕', title: 'Date Night Movies', query: 'date night',
     discover: 'with_genres=10749&with_keywords=324429|9673|288816&without_genres=27,53&sort_by=vote_count.desc&vote_count.gte=300',
-    intro: 'Love stories both of you can agree on: real chemistry, a few laughs and a few sighs. Well-loved picks, not random new releases.'
+    intro: 'Love stories for two: The Notebook if you are feeling sentimental, Crazy, Stupid, Love. if you would both rather laugh, and plenty in between.'
   },
   {
     slug: 'cozy-movies', emoji: '🕯️', title: 'Cozy Movies', query: 'cozy',
     discover: 'with_genres=35|10749|10751&with_keywords=325784|288816|324713|325832&without_genres=28,27,53,80,10752,878,12,16&sort_by=vote_count.desc&vote_count.gte=300',
-    intro: 'Gentle, funny and familiar films that feel like a warm room in winter. No violence, no jump scares — perfect with tea and something sweet.'
+    intro: 'Films many of us have seen ten times and would happily see again, such as Mary Poppins and When Harry Met Sally. Make some tea: nothing here will make you jump.'
   },
   {
     slug: 'mind-bending-movies', emoji: '🌀', title: 'Mind-Bending Movies', query: 'mind bending',
@@ -64,7 +64,7 @@ const MOODS = [
   {
     slug: 'halloween-movies', emoji: '🎃', title: 'Halloween Movies', query: 'halloween',
     discover: 'with_genres=27&with_keywords=3335|3358&vote_average.gte=6&vote_count.gte=800',
-    intro: 'Haunted houses, masked strangers and the one night of the year when it all makes sense. Horror picks for a dark October evening.'
+    intro: 'Classic slashers like Halloween and A Nightmare on Elm Street, plus The Conjuring if you prefer ghosts. If someone on the sofa scares easily, try Coraline or Gremlins.'
   },
   {
     slug: 'family-movie-night', emoji: '👨‍👩‍👧', title: 'Family Movie Night', query: 'family',
@@ -74,7 +74,7 @@ const MOODS = [
   {
     slug: 'motivational-movies', emoji: '💪', title: 'Motivational Movies', query: 'inspiring',
     discover: 'with_genres=18&with_keywords=281585|325824|240&without_genres=53,80,27,9648&sort_by=vote_count.desc&vote_count.gte=300',
-    intro: 'Underdogs, comebacks and people who refused to quit. Put one on when you need a push to start something hard.'
+    intro: 'Rocky gets up one more time, and Walter Mitty finally leaves his desk. Put one of these on when you need a push to start something hard.'
   },
   {
     slug: 'christmas-movies', emoji: '🎄', title: 'Christmas Movies', query: 'christmas',
@@ -90,7 +90,7 @@ const MOODS = [
       ['xmas_romance', movie => movie.genre_ids.includes(10749)],
       ['xmas_grownup', () => true]
     ],
-    intro: 'Snow, lights and second chances. Holiday favourites old and new for the weeks when the tree is up: family films and cartoons, love stories, and comedies and action for after the kids are in bed.',
+    intro: 'Holiday favourites old and new for the weeks when the tree is up: family films and cartoons, love stories, and comedies and action for after the kids are in bed.',
     more: 'How we picked: every film here is set at Christmas or built around it, and has been rated by hundreds or thousands of viewers on TMDB, so you will not find random TV movies. Classics like Home Alone, It’s a Wonderful Life and Die Hard sit next to newer favourites such as Klaus and The Holdovers. Each title links to its trailer and to where you can stream, rent or buy it.'
   },
   {
@@ -106,32 +106,32 @@ const MOODS = [
   {
     slug: 'true-story-movies', emoji: '📰', title: 'Movies Based on a True Story', query: 'based on true story',
     discover: 'with_keywords=9672&with_genres=18&vote_average.gte=7',
-    intro: 'Real people, real events, and the strange feeling of looking it all up afterwards. Dramas drawn from life.'
+    intro: 'Dramas about real people, from Oskar Schindler to Mark Zuckerberg. You will probably look up what happened next as soon as the credits roll.'
   },
   {
     slug: 'heist-movies', emoji: '💰', title: 'Heist Movies', query: 'heist',
     discover: 'with_keywords=10051&vote_count.gte=1000',
-    intro: 'A crew, a plan and the moment it goes wrong. Clever capers and bank jobs where half the fun is watching the pieces click.'
+    intro: 'Ocean’s Eleven if you want the plan to work, Reservoir Dogs if you want to see what happens when it does not. Half the fun is watching the crew come together.'
   },
   {
     slug: 'time-travel-movies', emoji: '⏳', title: 'Time Travel Movies', query: 'time travel',
     discover: 'with_keywords=4379',
-    intro: 'Loops, paradoxes and second attempts at the past. From light adventures to stories that tie your brain in a knot.'
+    intro: 'Some of these are pure fun, like Back to the Future. Others, like Tenet and Donnie Darko, you may need to watch twice to work out what happened.'
   },
   {
     slug: 'coming-of-age-movies', emoji: '🎒', title: 'Coming-of-Age Movies', query: 'coming of age',
     discover: 'with_keywords=10683&with_genres=18&without_genres=16,14,28,878&vote_average.gte=7',
-    intro: 'First loves, last summers and the year everything changed. Films about growing up that still hit when you already have.'
+    intro: 'Dead Poets Society and The Perks of Being a Wallflower are the usual place to start. Aftersun and Call Me by Your Name hit harder if you watch them as an adult.'
   },
   {
     slug: 'road-trip-movies', emoji: '🚗', title: 'Road Trip Movies', query: 'road trip',
     discover: 'with_keywords=7312&with_genres=35|18&without_genres=14,878,16,28&vote_count.gte=800',
-    intro: 'Open roads, bad motels and travel companions who slowly become friends. For when you want to get away without leaving the sofa.'
+    intro: 'Long drives with the wrong company. Green Book does it seriously, Dumb and Dumber as stupidly as possible. For when you want to get away without leaving the sofa.'
   },
   {
     slug: 'space-movies', emoji: '🚀', title: 'Space Movies', query: 'space',
     discover: 'with_keywords=9882|3801&with_genres=878&without_genres=16',
-    intro: 'Silence, distance and very small humans. Science fiction set among the stars, from tense survival stories to big-screen spectacle.'
+    intro: 'In The Martian one man tries to grow potatoes on Mars. In Alien a crew is hunted through its own ship. The rest of the science fiction here sits somewhere between the two.'
   },
   {
     slug: 'dystopian-movies', emoji: '🏙️', title: 'Dystopian Movies', query: 'dystopia',
@@ -141,12 +141,12 @@ const MOODS = [
   {
     slug: 'high-school-movies', emoji: '🏫', title: 'High School Movies', query: 'high school comedy',
     discover: 'with_keywords=6270&with_genres=35&vote_count.gte=800',
-    intro: 'Lockers, cliques and prom-night disasters. Teen comedies that are easy to quote and easier to rewatch.'
+    intro: 'Superbad is one night spent trying to buy alcohol for a party, Ferris Bueller’s Day Off one day spent skipping school. The other teen comedies here are just as easy to rewatch.'
   },
   {
     slug: 'serial-killer-thrillers', emoji: '🔪', title: 'Serial Killer Thrillers', query: 'serial killer',
     discover: 'with_keywords=10714&with_genres=53&vote_average.gte=6.8',
-    intro: 'Detectives, obsession and the slow tightening of a case. Dark psychological thrillers for viewers with strong nerves.'
+    intro: 'Detectives who can’t let go: Se7en, plus Zodiac and Memories of Murder, which follow real cases that stayed unsolved for decades. For viewers with strong nerves.'
   },
   {
     slug: 'best-90s-movies', emoji: '📼', title: 'Best Movies of the 90s', query: '90s',
@@ -156,7 +156,7 @@ const MOODS = [
   {
     slug: 'best-80s-movies', emoji: '🕹️', title: 'Best Movies of the 80s', query: '80s',
     discover: 'primary_release_date.gte=1980-01-01&primary_release_date.lte=1989-12-31&sort_by=vote_average.desc&vote_count.gte=3000',
-    intro: 'Synths, practical effects and heroes with one-liners. The best-loved films of the 1980s for a properly nostalgic evening.'
+    intro: 'The list has Back to the Future and Aliens, but also Akira and My Neighbor Totoro. It is ordered by viewer ratings, so it goes well beyond American blockbusters.'
   },
   {
     slug: 'best-anime-movies', emoji: '🎌', title: 'Best Anime Movies', query: 'anime',
@@ -190,18 +190,18 @@ const WATCH_COUNTRIES = { en: 'US', uk: 'UA', ru: 'KZ', fr: 'FR', es: 'ES', de: 
 // [title, intro] of each collection in the other languages
 const MOOD_TEXT = {
   'rainy-day-movies': {
-    uk: ['Фільми для дощового дня', 'Сіре небо, плед і жодних справ. Теплі, смішні й трохи сумні фільми, що пасують до шуму дощу за вікном: у них легко пірнути і важко вимкнути.'],
-    ru: ['Фильмы для дождливого дня', 'Серое небо, плед и никаких дел. Тёплые, смешные и немного грустные фильмы под шум дождя за окном: в них легко погрузиться и трудно выключить.'],
-    fr: ['Films pour un jour de pluie', 'Ciel gris, plaid et nulle part où aller. Des films chaleureux, drôles et un brin doux-amers qui vont bien avec la pluie contre la vitre : on s’y plonge facilement et on a du mal à arrêter.'],
-    es: ['Películas para un día de lluvia', 'Cielo gris, una manta y ningún plan. Películas cálidas, divertidas y un poco agridulces que combinan con la lluvia en la ventana: fáciles de disfrutar y difíciles de apagar.'],
-    de: ['Filme für einen Regentag', 'Grauer Himmel, eine Decke und nichts vor. Warme, witzige und ein bisschen bittersüße Filme, die zum Regen am Fenster passen – leicht einzutauchen und schwer auszuschalten.']
+    uk: ['Фільми для дощового дня', 'На день, коли нікуди не треба йти: «Амелі», «Ноттінґ Гілл» та інші теплі, трохи сумні фільми, які можна дивитися один за одним.'],
+    ru: ['Фильмы для дождливого дня', 'На день, когда никуда не надо идти: «Амели», «Ноттинг Хилл» и другие тёплые, немного грустные фильмы, которые можно смотреть один за другим.'],
+    fr: ['Films pour un jour de pluie', 'Pour une journée sans sortir de chez soi : Le Fabuleux Destin d’Amélie Poulain, Coup de foudre à Notting Hill et d’autres films tendres, un peu tristes, à enchaîner.'],
+    es: ['Películas para un día de lluvia', 'Para un día sin salir de casa: Amelie, Notting Hill y otras películas cálidas y algo tristes para ver una detrás de otra.'],
+    de: ['Filme für einen Regentag', 'Für einen Tag, an dem du nicht rausmusst: Die fabelhafte Welt der Amélie, Notting Hill und andere warme, leicht traurige Filme zum Hintereinanderschauen.']
   },
   'feel-good-movies': {
-    uk: ['Фільми для гарного настрою', 'Добрі, світлі фільми, після яких стає легше на душі. Без важких поворотів і похмурих фіналів — просто приємна компанія на пару годин.'],
-    ru: ['Фильмы для хорошего настроения', 'Добрые, светлые фильмы, после которых становится легче на душе. Без тяжёлых поворотов и мрачных финалов — просто приятная компания на пару часов.'],
-    fr: ['Films feel-good', 'Des films pleins d’espoir et de chaleur qui vous laissent plus léger qu’avant. Pas de rebondissements pesants ni de fins sombres : juste une bonne compagnie pour quelques heures.'],
-    es: ['Películas para levantar el ánimo', 'Películas optimistas y entrañables que te dejan más ligero de lo que estabas. Sin giros pesados ni finales tristes: solo buena compañía para un par de horas.'],
-    de: ['Feel-Good-Filme', 'Hoffnungsvolle, herzliche Filme, nach denen man sich leichter fühlt. Keine harten Wendungen, kein düsteres Ende – einfach gute Gesellschaft für ein paar Stunden.']
+    uk: ['Фільми для гарного настрою', 'Фільми на вечір після поганого дня, від «1+1» до «Збірки промінців надії». Сміятиметеся багато, а часом підступить клубок до горла.'],
+    ru: ['Фильмы для хорошего настроения', 'Фильмы на вечер после плохого дня, от «1+1» до «Мой парень – псих». Смеяться будете много, а иногда подступит ком к горлу.'],
+    fr: ['Films feel-good', 'Des films pour les jours où rien n’a marché, d’Intouchables à Happiness Therapy. On rit beaucoup et, de temps en temps, on a la gorge serrée.'],
+    es: ['Películas para levantar el ánimo', 'Películas para cuando el día ha ido mal, de Intocable a El lado bueno de las cosas. Te vas a reír mucho y, de vez en cuando, se te hará un nudo en la garganta.'],
+    de: ['Feel-Good-Filme', 'Filme für Tage, an denen alles schiefging, von Ziemlich beste Freunde bis Silver Linings. Du wirst viel lachen und ab und zu einen Kloß im Hals haben.']
   },
   'movies-to-cry-to': {
     uk: ['Фільми, щоб поплакати', 'Іноді треба як слід виплакатися. Ці історії кохання та драми чесно заслуговують на кожну сльозу — тримайте серветки поруч.'],
@@ -211,18 +211,18 @@ const MOOD_TEXT = {
     de: ['Filme zum Weinen', 'Manchmal muss man einfach richtig weinen. Diese Liebesgeschichten und Dramen verdienen ihre Tränen ehrlich – die Taschentücher besser griffbereit halten.']
   },
   'date-night-movies': {
-    uk: ['Фільми для побачення', 'Історії кохання, які сподобаються вам обом: справжня хімія, трохи сміху й кілька зітхань. Перевірені улюблені фільми, а не випадкові новинки.'],
-    ru: ['Фильмы для свидания', 'Истории любви, которые понравятся вам обоим: настоящая химия, немного смеха и пара вздохов. Проверенные любимые фильмы, а не случайные новинки.'],
-    fr: ['Films pour une soirée en amoureux', 'Des histoires d’amour qui plairont à tous les deux : une vraie alchimie, quelques rires et quelques soupirs. Des valeurs sûres, pas des nouveautés au hasard.'],
-    es: ['Películas para una cita', 'Historias de amor que os gustarán a los dos: química de verdad, algunas risas y algún suspiro. Favoritas de siempre, no estrenos al azar.'],
-    de: ['Filme für den Date-Abend', 'Liebesgeschichten, auf die ihr euch beide einigen könnt: echte Chemie, ein paar Lacher und ein paar Seufzer. Beliebte Klassiker statt zufälliger Neuerscheinungen.']
+    uk: ['Фільми для побачення', 'Історії кохання на двох: «Щоденник пам’яті», якщо настрій сентиментальний, «Це безглузде кохання», якщо обом хочеться посміятися, і багато чого між ними.'],
+    ru: ['Фильмы для свидания', 'Истории любви на двоих: «Дневник памяти», если настроение сентиментальное, «Эта дурацкая любовь», если обоим хочется посмеяться, и много чего между ними.'],
+    fr: ['Films pour une soirée en amoureux', 'Des histoires d’amour à deux : N’oublie jamais si vous êtes d’humeur sentimentale, Crazy, Stupid, Love si vous préférez rire, et bien d’autres entre les deux.'],
+    es: ['Películas para una cita', 'Historias de amor para dos: El diario de Noa si estáis sentimentales, Crazy, Stupid, Love. si preferís reír, y muchas más entre medias.'],
+    de: ['Filme für den Date-Abend', 'Liebesgeschichten zu zweit: Wie ein einziger Tag, wenn ihr sentimental seid, Crazy, Stupid, Love., wenn ihr lieber lachen wollt, und vieles dazwischen.']
   },
   'cozy-movies': {
-    uk: ['Затишні фільми', 'Ніжні, смішні й рідні фільми, наче тепла кімната взимку. Без насильства й різких лякалок — ідеально з чаєм і чимось солодким.'],
-    ru: ['Уютные фильмы', 'Нежные, смешные и родные фильмы, как тёплая комната зимой. Без насилия и внезапных пугалок — идеально с чаем и чем-нибудь сладким.'],
-    fr: ['Films cocooning', 'Des films doux, drôles et familiers, comme une pièce bien chaude en hiver. Pas de violence ni de sursauts : parfaits avec un thé et une douceur.'],
-    es: ['Películas acogedoras', 'Películas tiernas, divertidas y familiares, como una habitación caldeada en invierno. Sin violencia ni sustos: perfectas con un té y algo dulce.'],
-    de: ['Gemütliche Filme', 'Sanfte, lustige und vertraute Filme, die sich anfühlen wie ein warmes Zimmer im Winter. Keine Gewalt, keine Schockmomente – perfekt mit Tee und etwas Süßem.']
+    uk: ['Затишні фільми', 'Фільми, які багато хто бачив разів по десять і радо подивиться знову, як-от «Мері Поппінс» і «Коли Гаррі зустрів Саллі». Заваріть чаю: лякатися тут нема чого.'],
+    ru: ['Уютные фильмы', 'Фильмы, которые многие видели раз по десять и с радостью посмотрят снова, вроде «Мэри Поппинс» и «Когда Гарри встретил Салли». Заварите чаю: пугаться здесь нечего.'],
+    fr: ['Films cocooning', 'Des films que beaucoup ont vus dix fois et reverraient volontiers, comme Mary Poppins et Quand Harry rencontre Sally. Préparez un thé : rien ici ne vous fera sursauter.'],
+    es: ['Películas acogedoras', 'Películas que muchos han visto diez veces y volverían a ver encantados, como Mary Poppins y Cuando Harry encontró a Sally. Prepara un té: aquí nada te va a dar un susto.'],
+    de: ['Gemütliche Filme', 'Filme, die viele schon zehnmal gesehen haben und gern wieder sehen, etwa Mary Poppins und Harry und Sally. Mach dir einen Tee: Hier erschreckt dich nichts.']
   },
   'mind-bending-movies': {
     uk: ['Фільми, що ламають мозок', 'Головоломки, які грають із часом, пам’яттю та реальністю. Про фінал захочеться поговорити — або одразу переглянути.'],
@@ -239,11 +239,11 @@ const MOOD_TEXT = {
     de: ['Filme mit Plot-Twist', 'Thriller, in denen nichts ist, wie es scheint. So wenig wie möglich vorher wissen und sich das Finale von niemandem spoilern lassen.']
   },
   'halloween-movies': {
-    uk: ['Фільми на Хелловін', 'Будинки з привидами, незнайомці в масках і та єдина ніч на рік, коли все це доречно. Жахи для темного жовтневого вечора.'],
-    ru: ['Фильмы на Хэллоуин', 'Дома с привидениями, незнакомцы в масках и та единственная ночь в году, когда всё это к месту. Ужасы для тёмного октябрьского вечера.'],
-    fr: ['Films d’Halloween', 'Maisons hantées, inconnus masqués et la seule nuit de l’année où tout cela a du sens. Des films d’horreur pour une sombre soirée d’octobre.'],
-    es: ['Películas de Halloween', 'Casas encantadas, desconocidos con máscara y la única noche del año en que todo encaja. Terror para una oscura noche de octubre.'],
-    de: ['Halloween-Filme', 'Spukhäuser, maskierte Fremde und die eine Nacht im Jahr, in der alles einen Sinn ergibt. Horrorfilme für einen dunklen Oktoberabend.']
+    uk: ['Фільми на Хелловін', 'Класичні слешери, як-от «Гелловін» і «Жах на вулиці В’язів», а ще «Закляття», якщо вам ближчі привиди. Якщо хтось на дивані легко лякається, спробуйте «Кораліну у світі кошмарів» або «Гремлінів».'],
+    ru: ['Фильмы на Хэллоуин', 'Классические слэшеры вроде «Хэллоуина» и «Кошмара на улице Вязов», а ещё «Заклятие», если вам ближе призраки. Если кто-то на диване легко пугается, попробуйте «Коралину в стране кошмаров» или «Гремлинов».'],
+    fr: ['Films d’Halloween', 'Des slashers classiques comme La Nuit des masques et Les Griffes de la nuit, et Conjuring si vous préférez les fantômes. Si quelqu’un sur le canapé a peur facilement, essayez Coraline ou Gremlins.'],
+    es: ['Películas de Halloween', 'Slashers clásicos como La noche de Halloween y Pesadilla en Elm Street, y Expediente Warren si prefieres fantasmas. Si alguien en el sofá se asusta fácil, prueba Los mundos de Coraline o Gremlins.'],
+    de: ['Halloween-Filme', 'Klassische Slasher wie Halloween - Die Nacht des Grauens und Nightmare - Mörderische Träume, dazu Conjuring, wenn dir Geister lieber sind. Wer sich leicht erschreckt, nimmt Coraline oder Gremlins.']
   },
   'family-movie-night': {
     uk: ['Фільми для сімейного вечора', 'Анімаційні фільми для будь-якого віку на дивані: яскраві для дітей і достатньо розумні, щоб дорослі не заснули.'],
@@ -253,23 +253,23 @@ const MOOD_TEXT = {
     de: ['Filme für den Familienabend', 'Animationsfilme für jedes Alter auf dem Sofa – bunt genug für Kinder, klug genug, dass die Erwachsenen wach bleiben.']
   },
   'motivational-movies': {
-    uk: ['Мотивуючі фільми', 'Аутсайдери, повернення і люди, які відмовилися здаватися. Увімкніть, коли потрібен поштовх, щоб почати щось складне.'],
-    ru: ['Мотивирующие фильмы', 'Аутсайдеры, возвращения и люди, которые отказались сдаваться. Включите, когда нужен толчок, чтобы начать что-то трудное.'],
-    fr: ['Films motivants', 'Des outsiders, des retours en force et des gens qui ont refusé d’abandonner. À regarder quand il vous faut un coup de pouce pour vous lancer.'],
-    es: ['Películas motivadoras', 'Desvalidos, remontadas y gente que se negó a rendirse. Pon una cuando necesites un empujón para empezar algo difícil.'],
-    de: ['Motivierende Filme', 'Außenseiter, Comebacks und Menschen, die nicht aufgeben wollten. Für die Momente, in denen du einen Schubs brauchst, um etwas Schweres anzufangen.']
+    uk: ['Мотивуючі фільми', 'Роккі ще раз підводиться, а Волтер Мітті нарешті йде з-за свого столу. Увімкніть один із цих фільмів, коли потрібен поштовх, щоб почати щось складне.'],
+    ru: ['Мотивирующие фильмы', 'Рокки ещё раз поднимается, а Уолтер Митти наконец уходит из-за своего стола. Включите один из этих фильмов, когда нужен толчок, чтобы начать что-то трудное.'],
+    fr: ['Films motivants', 'Rocky se relève une fois de plus, Walter Mitty quitte enfin son bureau. Lancez l’un de ces films quand il vous faut un coup de pouce pour commencer quelque chose de difficile.'],
+    es: ['Películas motivadoras', 'Rocky se levanta una vez más y Walter Mitty por fin deja su mesa de trabajo. Pon una de estas películas cuando necesites un empujón para empezar algo difícil.'],
+    de: ['Motivierende Filme', 'Rocky steht noch einmal auf, und Walter Mitty verlässt endlich seinen Schreibtisch. Schau einen dieser Filme, wenn du einen Schubs brauchst, um etwas Schweres anzufangen.']
   },
   // in Ukrainian and Russian the season is New Year first: that is what people search for
   'christmas-movies': {
-    uk: ['Новорічні та різдвяні фільми', 'Сніг, вогники й другий шанс. Улюблені святкові фільми, старі й нові, для тижнів, коли вдома стоїть ялинка: сімейні фільми й мультфільми, історії кохання, а ще комедії та бойовики на вечір, коли діти вже сплять.',
+    uk: ['Новорічні та різдвяні фільми', 'Улюблені святкові фільми, старі й нові, для тижнів, коли вдома стоїть ялинка: сімейні фільми й мультфільми, історії кохання, а ще комедії та бойовики на вечір, коли діти вже сплять.',
       'Як ми обирали: кожен фільм тут відбувається на Різдво чи Новий рік або побудований навколо свят, і його оцінили сотні чи тисячі глядачів на TMDB, тож випадкових телефільмів тут немає. Класика на кшталт «Сам удома», «Це прекрасне життя» і «Міцний горішок» стоїть поруч із новішими улюбленцями, як-от «Клаус». На сторінці кожного фільму є трейлер і де його подивитися, взяти в оренду чи купити.'],
-    ru: ['Новогодние и рождественские фильмы', 'Снег, огоньки и второй шанс. Любимые праздничные фильмы, старые и новые, для недель, когда дома стоит ёлка: семейные фильмы и мультфильмы, истории любви, а ещё комедии и боевики на вечер, когда дети уже спят.',
+    ru: ['Новогодние и рождественские фильмы', 'Любимые праздничные фильмы, старые и новые, для недель, когда дома стоит ёлка: семейные фильмы и мультфильмы, истории любви, а ещё комедии и боевики на вечер, когда дети уже спят.',
       'Как мы выбирали: каждый фильм здесь происходит на Рождество или Новый год либо построен вокруг праздников, и его оценили сотни или тысячи зрителей на TMDB, так что случайных телефильмов тут нет. Классика вроде «Один дома», «Эта замечательная жизнь» и «Крепкий орешек» стоит рядом с более новыми любимцами, например «Клаусом». На странице каждого фильма есть трейлер и где его посмотреть, взять в аренду или купить.'],
-    fr: ['Films de Noël', 'De la neige, des guirlandes et des secondes chances. Les classiques des fêtes, anciens et récents, pour les semaines où le sapin est installé : films en famille et dessins animés, histoires d’amour, comédies et action pour quand les enfants sont couchés.',
+    fr: ['Films de Noël', 'Les classiques des fêtes, anciens et récents, pour les semaines où le sapin est installé : films en famille et dessins animés, histoires d’amour, comédies et action pour quand les enfants sont couchés.',
       'Notre sélection : chaque film se déroule à Noël ou tourne autour des fêtes, et a été noté par des centaines ou des milliers de spectateurs sur TMDB, donc pas de téléfilms au hasard. Des classiques comme Maman, j’ai raté l’avion, La vie est belle et Piège de cristal côtoient des favoris plus récents comme La Légende de Klaus. Chaque titre mène à sa bande-annonce et aux plateformes où le voir, le louer ou l’acheter.'],
-    es: ['Películas de Navidad', 'Nieve, luces y segundas oportunidades. Clásicos navideños antiguos y recientes para las semanas en que el árbol está puesto: películas familiares y de animación, historias de amor, y comedias y acción para cuando los niños ya duermen.',
+    es: ['Películas de Navidad', 'Clásicos navideños antiguos y recientes para las semanas en que el árbol está puesto: películas familiares y de animación, historias de amor, y comedias y acción para cuando los niños ya duermen.',
       'Cómo elegimos: cada película transcurre en Navidad o gira en torno a las fiestas, y la han valorado cientos o miles de espectadores en TMDB, así que no hay telefilmes al azar. Clásicos como Solo en casa, ¡Qué bello es vivir! y Jungla de cristal conviven con favoritas más recientes como Klaus. Cada título lleva a su tráiler y a dónde verlo, alquilarlo o comprarlo.'],
-    de: ['Weihnachtsfilme', 'Schnee, Lichter und zweite Chancen. Alte und neue Weihnachtslieblinge für die Wochen, in denen der Baum steht: Familienfilme und Animation, Liebesgeschichten sowie Komödien und Action für den Abend, wenn die Kinder schlafen.',
+    de: ['Weihnachtsfilme', 'Alte und neue Weihnachtslieblinge für die Wochen, in denen der Baum steht: Familienfilme und Animation, Liebesgeschichten sowie Komödien und Action für den Abend, wenn die Kinder schlafen.',
       'So haben wir ausgewählt: Jeder Film spielt an Weihnachten oder dreht sich um die Feiertage und wurde auf TMDB von Hunderten oder Tausenden Zuschauern bewertet – zufällige TV-Filme gibt es hier nicht. Klassiker wie Kevin – Allein zu Haus, Ist das Leben nicht schön? und Stirb langsam stehen neben neueren Lieblingen wie Klaus. Jeder Titel führt zum Trailer und dazu, wo man ihn streamen, leihen oder kaufen kann.']
   },
   'movies-to-watch-with-friends': {
@@ -287,46 +287,46 @@ const MOOD_TEXT = {
     de: ['Thriller für späte Abende', 'Krimithriller für die Stunden, in denen das Haus still ist und du noch nicht schlafen willst. Spannend, düster und am besten bei ausgeschaltetem Licht.']
   },
   'true-story-movies': {
-    uk: ['Фільми, засновані на реальних подіях', 'Справжні люди, справжні події і дивне відчуття, коли потім шукаєш усе в інтернеті. Драми, взяті з життя.'],
-    ru: ['Фильмы, основанные на реальных событиях', 'Настоящие люди, настоящие события и странное чувство, когда потом ищешь всё в интернете. Драмы, взятые из жизни.'],
-    fr: ['Films tirés d’une histoire vraie', 'De vraies personnes, de vrais événements et cette drôle d’envie de tout vérifier après coup. Des drames inspirés de la vie.'],
-    es: ['Películas basadas en hechos reales', 'Personas reales, hechos reales y esa extraña sensación de buscarlo todo después. Dramas sacados de la vida.'],
-    de: ['Filme nach wahren Begebenheiten', 'Echte Menschen, echte Ereignisse und das seltsame Gefühl, danach alles nachzulesen. Dramen, die das Leben schrieb.']
+    uk: ['Фільми, засновані на реальних подіях', 'Драми про реальних людей, від Оскара Шиндлера до Марка Цукерберга. Щойно підуть титри, ви, мабуть, кинетеся шукати, що було далі.'],
+    ru: ['Фильмы, основанные на реальных событиях', 'Драмы о реальных людях, от Оскара Шиндлера до Марка Цукерберга. Как только пойдут титры, вы, скорее всего, полезете искать, что было дальше.'],
+    fr: ['Films tirés d’une histoire vraie', 'Des drames sur des personnes réelles, d’Oskar Schindler à Mark Zuckerberg. Dès le générique, vous irez sans doute chercher ce qui s’est passé ensuite.'],
+    es: ['Películas basadas en hechos reales', 'Dramas sobre personas reales, de Oskar Schindler a Mark Zuckerberg. En cuanto salgan los créditos, seguramente buscarás qué pasó después.'],
+    de: ['Filme nach wahren Begebenheiten', 'Dramen über reale Menschen, von Oskar Schindler bis Mark Zuckerberg. Sobald der Abspann läuft, suchst du wahrscheinlich nach, wie es weiterging.']
   },
   'heist-movies': {
-    uk: ['Фільми про пограбування', 'Команда, план і мить, коли все йде не так. Хитромудрі афери й пограбування банків, де половина задоволення — дивитися, як усе складається докупи.'],
-    ru: ['Фильмы про ограбления', 'Команда, план и момент, когда всё идёт не так. Хитроумные аферы и ограбления банков, где половина удовольствия — смотреть, как всё складывается.'],
-    fr: ['Films de braquage', 'Une équipe, un plan et le moment où tout dérape. Des casses ingénieux où le plaisir est de voir chaque pièce s’emboîter.'],
-    es: ['Películas de atracos', 'Una banda, un plan y el momento en que todo se tuerce. Golpes ingeniosos donde la mitad de la gracia es ver cómo encajan las piezas.'],
-    de: ['Heist-Filme', 'Eine Crew, ein Plan und der Moment, in dem alles schiefgeht. Clevere Coups und Banküberfälle, bei denen die halbe Freude darin liegt, wie die Teile ineinandergreifen.']
+    uk: ['Фільми про пограбування', '«Одинадцять друзів Оушена», якщо хочете, щоб план спрацював, і «Скажені пси», якщо цікаво, що буває, коли він провалюється. Половину задоволення дає те, як збирається команда.'],
+    ru: ['Фильмы про ограбления', '«Одиннадцать друзей Оушена», если хотите, чтобы план сработал, и «Бешеные псы», если интересно, что бывает, когда он провалился. Половина удовольствия в том, как собирается команда.'],
+    fr: ['Films de braquage', 'Ocean’s Eleven si vous voulez que le plan marche, Reservoir Dogs si vous voulez voir ce qui arrive quand il échoue. Une bonne partie du plaisir : regarder l’équipe se former.'],
+    es: ['Películas de atracos', 'Ocean’s Eleven si quieres que el plan salga bien, Reservoir Dogs si quieres ver qué pasa cuando sale mal. La mitad de la gracia está en ver cómo se forma la banda.'],
+    de: ['Heist-Filme', 'Ocean’s Eleven, wenn der Plan aufgehen soll, Reservoir Dogs, wenn du sehen willst, was passiert, wenn er scheitert. Die halbe Freude ist, wie sich die Crew zusammenfindet.']
   },
   'time-travel-movies': {
-    uk: ['Фільми про подорожі в часі', 'Петлі, парадокси й друга спроба змінити минуле. Від легких пригод до історій, що зав’язують мозок у вузол.'],
-    ru: ['Фильмы про путешествия во времени', 'Петли, парадоксы и вторая попытка изменить прошлое. От лёгких приключений до историй, которые завязывают мозг в узел.'],
-    fr: ['Films de voyage dans le temps', 'Boucles, paradoxes et secondes chances dans le passé. Des aventures légères aux histoires qui vous font des nœuds au cerveau.'],
-    es: ['Películas de viajes en el tiempo', 'Bucles, paradojas y segundas oportunidades en el pasado. Desde aventuras ligeras hasta historias que te hacen un nudo en la cabeza.'],
-    de: ['Zeitreise-Filme', 'Zeitschleifen, Paradoxien und zweite Versuche mit der Vergangenheit. Von leichten Abenteuern bis zu Geschichten, die dir einen Knoten ins Hirn machen.']
+    uk: ['Фільми про подорожі в часі', 'Деякі з них суцільна розвага, як «Назад у майбутнє». Інші, як «Тенет» і «Донні Дарко», доведеться подивитися двічі, щоб зрозуміти, що сталося.'],
+    ru: ['Фильмы про путешествия во времени', 'Некоторые из них чистое развлечение, как «Назад в будущее». Другие, как «Довод» и «Донни Дарко», придётся посмотреть дважды, чтобы понять, что произошло.'],
+    fr: ['Films de voyage dans le temps', 'Certains sont du pur divertissement, comme Retour vers le futur. D’autres, comme Tenet et Donnie Darko, demandent deux visionnages pour comprendre ce qui s’est passé.'],
+    es: ['Películas de viajes en el tiempo', 'Algunas son pura diversión, como Regreso al futuro. Otras, como Tenet y Donnie Darko, hay que verlas dos veces para entender qué ha pasado.'],
+    de: ['Zeitreise-Filme', 'Manche sind reiner Spaß, wie Zurück in die Zukunft. Andere, wie Tenet und Donnie Darko, musst du zweimal sehen, um zu verstehen, was passiert ist.']
   },
   'coming-of-age-movies': {
-    uk: ['Фільми про дорослішання', 'Перше кохання, останнє літо і рік, коли все змінилося. Фільми про дорослішання, які зачіпають навіть тих, хто вже давно дорослий.'],
-    ru: ['Фильмы о взрослении', 'Первая любовь, последнее лето и год, когда всё изменилось. Фильмы о взрослении, которые трогают даже тех, кто давно вырос.'],
-    fr: ['Films sur le passage à l’âge adulte', 'Premiers amours, derniers étés et l’année où tout a changé. Des films sur le fait de grandir qui touchent même quand on a déjà grandi.'],
-    es: ['Películas sobre crecer', 'Primeros amores, últimos veranos y el año en que todo cambió. Películas sobre hacerse mayor que siguen llegando aunque ya lo seas.'],
-    de: ['Coming-of-Age-Filme', 'Erste Liebe, letzte Sommer und das Jahr, in dem sich alles änderte. Filme übers Erwachsenwerden, die auch dann noch treffen, wenn man es längst ist.']
+    uk: ['Фільми про дорослішання', 'Зазвичай починають із «Товариства мертвих поетів» і «Переваг скромників». «Після сонця» й «Назви мене своїм ім’ям» сильніше зачіпають, коли дивишся їх уже дорослим.'],
+    ru: ['Фильмы о взрослении', 'Обычно начинают с «Общества мёртвых поэтов» и «Хорошо быть тихоней». «Солнце моё» и «Назови меня своим именем» сильнее трогают, когда смотришь их уже взрослым.'],
+    fr: ['Films sur le passage à l’âge adulte', 'On commence souvent par Le Cercle des poètes disparus et Le Monde de Charlie. Aftersun et Call Me by Your Name touchent davantage une fois adulte.'],
+    es: ['Películas sobre crecer', 'Se suele empezar por El club de los poetas muertos y Las ventajas de ser un marginado. Aftersun y Call Me by Your Name llegan más hondo cuando ya eres adulto.'],
+    de: ['Coming-of-Age-Filme', 'Meist fängt man mit Der Club der toten Dichter und Vielleicht lieber morgen an. Aftersun und Call Me by Your Name treffen stärker, wenn man schon erwachsen ist.']
   },
   'road-trip-movies': {
-    uk: ['Роуд-муві: фільми про подорожі', 'Відкрита дорога, погані мотелі й попутники, які поступово стають друзями. Для тих вечорів, коли хочеться втекти, не встаючи з дивана.'],
-    ru: ['Роуд-муви: фильмы о путешествиях', 'Открытая дорога, плохие мотели и попутчики, которые постепенно становятся друзьями. Для вечеров, когда хочется сбежать, не вставая с дивана.'],
-    fr: ['Road movies', 'Des routes à perte de vue, des motels douteux et des compagnons de voyage qui deviennent peu à peu des amis. Pour partir sans quitter le canapé.'],
-    es: ['Road movies: películas de carretera', 'Carreteras abiertas, moteles de mala muerte y compañeros de viaje que poco a poco se vuelven amigos. Para escaparte sin salir del sofá.'],
-    de: ['Roadmovies', 'Offene Straßen, schäbige Motels und Reisegefährten, die langsam zu Freunden werden. Für alle, die wegwollen, ohne das Sofa zu verlassen.']
+    uk: ['Роуд-муві: фільми про подорожі', 'Довга дорога й не та компанія. «Зелена книга» показує це всерйоз, а «Тупий та ще тупіший» якомога дурніше. Для вечорів, коли хочеться втекти, не встаючи з дивана.'],
+    ru: ['Роуд-муви: фильмы о путешествиях', 'Долгая дорога и не та компания. «Зелёная книга» показывает это всерьёз, а «Тупой и ещё тупее» как можно глупее. Для вечеров, когда хочется сбежать, не вставая с дивана.'],
+    fr: ['Road movies', 'De longs trajets en mauvaise compagnie. Green Book le raconte sérieusement, Dumb & Dumber le plus bêtement possible. Pour partir sans quitter le canapé.'],
+    es: ['Road movies: películas de carretera', 'Viajes largos con la compañía equivocada. Green Book lo cuenta en serio y Dos tontos muy tontos de la forma más tonta posible. Para escaparte sin salir del sofá.'],
+    de: ['Roadmovies', 'Lange Fahrten in der falschen Gesellschaft. Green Book erzählt das ernst, Dumm und Dümmer so blöd wie möglich. Für alle, die wegwollen, ohne das Sofa zu verlassen.']
   },
   'space-movies': {
-    uk: ['Фільми про космос', 'Тиша, відстані й зовсім маленькі люди. Наукова фантастика серед зірок: від напружених історій виживання до масштабних видовищ.'],
-    ru: ['Фильмы про космос', 'Тишина, расстояния и совсем маленькие люди. Научная фантастика среди звёзд: от напряжённых историй выживания до масштабных зрелищ.'],
-    fr: ['Films sur l’espace', 'Le silence, la distance et des humains minuscules. De la science-fiction parmi les étoiles, des récits de survie haletants aux grands spectacles.'],
-    es: ['Películas del espacio', 'Silencio, distancia y humanos muy pequeños. Ciencia ficción entre las estrellas, desde tensas historias de supervivencia hasta grandes espectáculos.'],
-    de: ['Weltraumfilme', 'Stille, Entfernung und sehr kleine Menschen. Science-Fiction zwischen den Sternen, von spannenden Überlebensgeschichten bis zum großen Kinospektakel.']
+    uk: ['Фільми про космос', 'У «Марсіянині» одна людина намагається виростити картоплю на Марсі. У «Чужому» на екіпаж полюють просто на його кораблі. Решта наукової фантастики тут десь посередині.'],
+    ru: ['Фильмы про космос', 'В «Марсианине» один человек пытается вырастить картошку на Марсе. В «Чужом» на экипаж охотятся прямо на его корабле. Остальная фантастика здесь где-то посередине.'],
+    fr: ['Films sur l’espace', 'Dans Seul sur Mars, un homme tente de faire pousser des pommes de terre sur Mars. Dans Alien, un équipage est traqué dans son propre vaisseau. Le reste de cette science-fiction se situe entre les deux.'],
+    es: ['Películas del espacio', 'En Marte (The Martian), un hombre intenta cultivar patatas en Marte. En Alien, una tripulación es perseguida por su propia nave. El resto de esta ciencia ficción queda en algún punto intermedio.'],
+    de: ['Weltraumfilme', 'In Der Marsianer versucht ein Mann, auf dem Mars Kartoffeln anzubauen. In Alien wird eine Crew durch ihr eigenes Schiff gejagt. Der Rest dieser Science-Fiction liegt irgendwo dazwischen.']
   },
   'dystopian-movies': {
     uk: ['Антиутопії: найкращі фільми', 'Майбутнє, яке пішло не так, і люди, що чинять опір. Похмурі й стильні світи, які говорять більше про сьогодення, ніж про завтра.'],
@@ -336,18 +336,18 @@ const MOOD_TEXT = {
     de: ['Dystopische Filme', 'Zukünfte, die schiefgelaufen sind, und Menschen, die sich wehren. Düstere, stilvolle Welten, die mehr über heute als über morgen erzählen.']
   },
   'high-school-movies': {
-    uk: ['Фільми про школу', 'Шафки, шкільні компанії й катастрофи на випускному. Підліткові комедії, які легко цитувати й ще легше переглядати.'],
-    ru: ['Фильмы про школу', 'Шкафчики, школьные компании и катастрофы на выпускном. Подростковые комедии, которые легко цитировать и ещё легче пересматривать.'],
-    fr: ['Films de lycée', 'Casiers, bandes rivales et bals de promo catastrophiques. Des comédies ados faciles à citer et encore plus à revoir.'],
-    es: ['Películas de instituto', 'Taquillas, grupitos y bailes de graduación desastrosos. Comedias adolescentes fáciles de citar y aún más fáciles de volver a ver.'],
-    de: ['Highschool-Filme', 'Spinde, Cliquen und Abschlussball-Katastrophen. Teeniekomödien, die man leicht zitiert und noch leichter wieder anschaut.']
+    uk: ['Фільми про школу', '«Супер перці» показують одну ніч спроб купити алкоголь на вечірку, «Вихідний день Ферріса Бюллера» один день прогулу. Решту підліткових комедій тут так само легко переглядати.'],
+    ru: ['Фильмы про школу', '«SuperПерцы» показывают одну ночь попыток купить алкоголь на вечеринку, «Выходной день Ферриса Бьюллера» один день прогула. Остальные подростковые комедии здесь так же легко пересматривать.'],
+    fr: ['Films de lycée', 'SuperGrave, c’est une nuit à essayer d’acheter de l’alcool pour une fête. La Folle Journée de Ferris Bueller, une journée à sécher les cours. Les autres comédies ados d’ici se revoient aussi facilement.'],
+    es: ['Películas de instituto', 'Supersalidos es una noche intentando comprar alcohol para una fiesta; Todo en un día, un día haciendo novillos. Las demás comedias adolescentes de aquí se vuelven a ver con la misma facilidad.'],
+    de: ['Highschool-Filme', 'In Superbad geht es eine Nacht lang darum, Alkohol für eine Party zu besorgen, in Ferris macht Blau einen Tag lang ums Schwänzen. Die anderen Teeniekomödien hier schaut man genauso leicht wieder.']
   },
   'serial-killer-thrillers': {
-    uk: ['Трилери про маніяків', 'Детективи, одержимість і розслідування, що поволі затягує петлю. Похмурі психологічні трилери для глядачів із міцними нервами.'],
-    ru: ['Триллеры про маньяков', 'Детективы, одержимость и расследование, которое медленно затягивает петлю. Мрачные психологические триллеры для зрителей с крепкими нервами.'],
-    fr: ['Thrillers de tueurs en série', 'Des enquêteurs, l’obsession et une enquête qui se resserre lentement. Des thrillers psychologiques sombres pour les spectateurs aux nerfs solides.'],
-    es: ['Thrillers de asesinos en serie', 'Detectives, obsesión y un caso que se cierra poco a poco. Thrillers psicológicos oscuros para espectadores con nervios de acero.'],
-    de: ['Serienkiller-Thriller', 'Ermittler, Besessenheit und ein Fall, der sich langsam zuzieht. Düstere Psychothriller für Zuschauer mit starken Nerven.']
+    uk: ['Трилери про маніяків', 'Слідчі, які не можуть відступитися: «Сім», а також «Зодіак» і «Спогади про вбивство», в основі яких реальні справи, нерозкриті десятиліттями. Для глядачів із міцними нервами.'],
+    ru: ['Триллеры про маньяков', 'Следователи, которые не могут отступиться: «Семь», а ещё «Зодиак» и «Воспоминания об убийстве», в основе которых реальные дела, не раскрытые десятилетиями. Для зрителей с крепкими нервами.'],
+    fr: ['Thrillers de tueurs en série', 'Des enquêteurs qui ne lâchent rien : Seven, mais aussi Zodiac et Memories of Murder, tirés d’affaires réelles restées non résolues pendant des décennies. Pour les nerfs solides.'],
+    es: ['Thrillers de asesinos en serie', 'Investigadores que no sueltan el caso: Seven, y también Zodiac y Memories of Murder, basadas en crímenes reales sin resolver durante décadas. Para nervios de acero.'],
+    de: ['Serienkiller-Thriller', 'Ermittler, die nicht loslassen können: Sieben, dazu Zodiac und Memories of Murder nach echten Fällen, die jahrzehntelang ungelöst blieben. Für starke Nerven.']
   },
   'best-90s-movies': {
     uk: ['Найкращі фільми 90-х', 'Десятиліття відеопрокатів і аншлагів у п’ятницю ввечері. Найвище оцінені фільми 1990-х, які й досі не застаріли.'],
@@ -371,11 +371,11 @@ const MOOD_TEXT = {
     de: ['Die besten Dokumentarfilme', 'Wahre Geschichten, besser erzählt als jede Fiktion: Dokus über Natur, Sport, Musik und Verbrechen, die alle weiterempfehlen.']
   },
   'best-80s-movies': {
-    uk: ['Найкращі фільми 80-х', 'Синтезатори, практичні ефекти й герої з крилатими фразами. Найулюбленіші фільми 1980-х для по-справжньому ностальгійного вечора.'],
-    ru: ['Лучшие фильмы 80-х', 'Синтезаторы, практические эффекты и герои с крылатыми фразами. Самые любимые фильмы 1980-х для по-настоящему ностальгического вечера.'],
-    fr: ['Meilleurs films des années 80', 'Des synthés, des effets spéciaux à l’ancienne et des héros aux répliques cultes. Les films préférés des années 1980 pour une vraie soirée nostalgie.'],
-    es: ['Mejores películas de los 80', 'Sintetizadores, efectos artesanales y héroes con frases míticas. Las películas más queridas de los años 80 para una noche de pura nostalgia.'],
-    de: ['Die besten Filme der 80er', 'Synthesizer, handgemachte Effekte und Helden mit coolen Sprüchen. Die beliebtesten Filme der 1980er für einen richtig nostalgischen Abend.']
+    uk: ['Найкращі фільми 80-х', 'У списку і «Назад у майбутнє» з «Чужими», і «Акіра» з «Моїм сусідом Тоторо». Порядок залежить від оцінок глядачів, тож тут не лише американські блокбастери.'],
+    ru: ['Лучшие фильмы 80-х', 'В списке и «Назад в будущее» с «Чужими», и «Акира» с «Моим соседом Тоторо». Порядок зависит от оценок зрителей, так что здесь не только американские блокбастеры.'],
+    fr: ['Meilleurs films des années 80', 'On y trouve Retour vers le futur et Aliens, le retour, mais aussi Akira et Mon voisin Totoro. Le classement suit les notes des spectateurs et dépasse donc les blockbusters américains.'],
+    es: ['Mejores películas de los 80', 'Hay Regreso al futuro y Aliens: El regreso, pero también Akira y Mi vecino Totoro. El orden sigue las notas de los espectadores, así que va mucho más allá de los taquillazos americanos.'],
+    de: ['Die besten Filme der 80er', 'Hier stehen Zurück in die Zukunft und Aliens - Die Rückkehr, aber auch Akira und Mein Nachbar Totoro. Sortiert nach Zuschauerwertung, also längst nicht nur US-Blockbuster.']
   }
 };
 
