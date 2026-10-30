@@ -9,13 +9,14 @@
 //   /sitemap.xml, /robots.txt
 
 import LIKE_DATA from './_like-data.js';
+import { LEGAL, CONTACT_EMAIL, PRIVACY_UPDATED } from './_legal.js';
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '838a2b872b36560920c01b7b50b0bb9e';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 // posters in the card grids: sharp at card size, half the weight of w500
 const TMDB_CARD_URL = 'https://image.tmdb.org/t/p/w342';
-const ASSET_VERSION = '20261028b';
+const ASSET_VERSION = '20261030';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -186,6 +187,9 @@ const OG_LOCALES = { en: 'en_US', uk: 'uk_UA', ru: 'ru_RU', fr: 'fr_FR', es: 'es
 const PREMIERO_URLS = { en: 'https://thepremiero.com/en/us', uk: 'https://thepremiero.com/uk/ua', ru: 'https://thepremiero.com/ru/kz', fr: 'https://thepremiero.com/fr/fr', es: 'https://thepremiero.com/es/es', de: 'https://thepremiero.com/de/de' };
 const premieroLine = lang => `<p class="footer-premiero"><span data-i18n="footer.premiero">${escapeHtml(tr(lang, 'premiero'))}</span> <a href="${PREMIERO_URLS[lang]}" data-premiero>Premiero</a></p>`;
 const WATCH_COUNTRIES = { en: 'US', uk: 'UA', ru: 'KZ', fr: 'FR', es: 'ES', de: 'DE' };
+// About, Contact and Privacy: one line in every footer
+const LEGAL_PAGES = ['about', 'contact', 'privacy'];
+const legalLine = lang => `<p class="footer-legal">${LEGAL_PAGES.map(name => `<a href="${langPath(lang, `/${name}`)}" data-i18n="footer.${name}">${escapeHtml(LEGAL[lang].links[name])}</a>`).join(' &#x00B7; ')}</p>`;
 
 // [title, intro] of each collection in the other languages
 const MOOD_TEXT = {
@@ -837,6 +841,7 @@ function layout({ lang = 'en', origin, path, title, description, image, head = '
   <footer class="home-footer">
     <p>${escapeHtml(tr(lang, 'footer'))}</p>
     ${premieroLine(lang)}
+    ${legalLine(lang)}
   </footer>
 
   <script>
@@ -1076,6 +1081,26 @@ function renderMoodIndex(origin, lang) {
   });
 }
 
+// About, Contact and Privacy (texts: _legal.js)
+function renderLegal(origin, lang, name) {
+  const text = LEGAL[lang][name];
+  const email = `<a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>`;
+  const para = value => `<p>${escapeHtml(value).replace('{email}', email)}</p>`;
+  const updated = new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(PRIVACY_UPDATED));
+  const body = name === 'privacy'
+    ? `${para(text.intro)}${text.sections.map(([heading, value]) => `<h2>${escapeHtml(heading)}</h2>${para(value)}`).join('')}<p class="legal-updated">${escapeHtml(text.updated)}: ${escapeHtml(updated)}</p>`
+    : text.paragraphs.map(para).join('');
+  return layout({
+    lang,
+    origin,
+    path: `/${name}`,
+    title: `${text.title} | MovieMood`,
+    description: text.description,
+    hero: `<h1 class="home-title mood-title">${escapeHtml(text.title)}</h1>`,
+    main: `<article class="legal-page">${body}</article>`
+  });
+}
+
 function renderNotFound(origin, lang = 'en') {
   return layout({
     lang,
@@ -1116,6 +1141,7 @@ async function renderHomePage(origin, lang) {
     .replace(/<(h2|h3|p)([^>]*) data-i18n="about\.(\w+)">[^<]*<\/\1>/g, (all, tag, attrs, key) => `<${tag}${attrs} data-i18n="about.${key}">${escapeHtml(TEXT.about[key]?.[lang] ?? '')}</${tag}>`)
     .replace(/<span data-i18n="quick\.(\w+)">[^<]*<\/span>/g, (all, key) => `<span data-i18n="quick.${key}">${escapeHtml(TEXT.quick[key]?.[lang] ?? '')}</span>`)
     .replace(/<p class="footer-premiero">[\s\S]*?<\/p>/, () => premieroLine(lang))
+    .replace(/<p class="footer-legal">[\s\S]*?<\/p>/, () => legalLine(lang))
     .replace(/href="\/moods(\/[^"]*)?"/g, (all, rest = '') => `href="${langPath(lang, `/moods${rest}`)}"`);
   // the structured data names this page, in its language, at its own address
   html = html.replace(
@@ -1340,6 +1366,7 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
     .replace('<div class="trailer-modal"', () => `${moodsSection}<footer class="home-footer">
     <p>${escapeHtml(tr(lang, 'footer'))}</p>
     ${premieroLine(lang)}
+    ${legalLine(lang)}
   </footer>
 
   <div class="trailer-modal"`)
@@ -1439,6 +1466,7 @@ async function renderPersonPage(id, origin, requestedPath, lang = 'en') {
     // the template is kept out of the index; this address is the indexable one (see noindex above)
     .replace('<meta name="robots" content="noindex, follow">', noindex ? '<meta name="robots" content="noindex, follow">' : '')
     .replace(/<title>[^<]*<\/title>/, () => head)
+    .replace(/<p class="footer-legal">[\s\S]*?<\/p>/, () => legalLine(lang))
     .replace('id="personName"></h1>', () => `id="personName">${escapeHtml(name)}</h1>`)
     .replace('id="personBio"></p>', () => `id="personBio">${escapeHtml(person.biography || '')}</p>`)
     .replace('id="personMoviesTitle"></h2>', () => `id="personMoviesTitle">${escapeHtml(tr(lang, 'filmography', { name }))}</h2>`)
@@ -1496,7 +1524,7 @@ ${SITEMAP_PARTS.map(name => `  <sitemap><loc>${escapeHtml(`${origin}/sitemap/${n
     const moodMovies = await Promise.all(MOODS.map(mood => fetchMoodMovies(mood).catch(() => [])));
     const titlePaths = [...new Set(moodMovies.flat().map(m => titlePath(m)))];
     const likePaths = Object.values(LIKE_DATA).map(entry => likePath(entry.path));
-    return urlset(origin, ['/', '/moods', ...MOODS.map(m => `/moods/${m.slug}`), ...likePaths, ...titlePaths]);
+    return urlset(origin, ['/', '/moods', ...LEGAL_PAGES.map(name => `/${name}`), ...MOODS.map(m => `/moods/${m.slug}`), ...likePaths, ...titlePaths]);
   }
   const lists = SITEMAP_LISTS[SITEMAP_PARTS.indexOf(part) - 1];
   if (!lists) return null;
@@ -1572,6 +1600,12 @@ export default async function handler(req, res) {
 
     if (kind === 'moods') {
       return send(res, 200, renderMoodIndex(origin, lang));
+    }
+
+    if (kind === 'legal') {
+      const name = String(query.page || '');
+      if (!LEGAL_PAGES.includes(name)) return send(res, 404, renderNotFound(origin, lang));
+      return send(res, 200, renderLegal(origin, lang, name));
     }
 
     if (kind === 'mood') {

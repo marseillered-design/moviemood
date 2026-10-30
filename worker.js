@@ -9,6 +9,7 @@ const LANG = '(?:/(uk|ru|fr|es|de))?';
 // [address, query for api/page.js]: the "rewrites" of vercel.json
 const PAGE_ROUTES = [
   [new RegExp(`^${LANG}/moods$`), m => ({ kind: 'moods', lang: m[1] })],
+  [new RegExp(`^${LANG}/(about|contact|privacy)$`), m => ({ kind: 'legal', lang: m[1], page: m[2] })],
   [new RegExp(`^${LANG}/moods/([^/]+)$`), m => ({ kind: 'mood', lang: m[1], slug: m[2] })],
   [new RegExp(`^${LANG}/(movie|tv)/([^/]+)$`), m => ({ kind: 'title', lang: m[1], type: m[2], id: m[3] })],
   [new RegExp(`^${LANG}/person/([^/]+)$`), m => ({ kind: 'person', lang: m[1], id: m[2] })],

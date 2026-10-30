@@ -94,6 +94,9 @@
     'quick.all': { en: 'All moods', uk: 'Усі настрої', ru: 'Все настроения', fr: 'Toutes les humeurs', es: 'Todos los ánimos', de: 'Alle Stimmungen' },
     'footer.premiero': { en: 'What’s coming out this week? Movie, series & game premieres —', uk: 'Що виходить цього тижня? Календар прем’єр кіно, серіалів та ігор —', ru: 'Что выходит на этой неделе? Календарь премьер кино, сериалов и игр —', fr: 'Qu’est-ce qui sort cette semaine ? Calendrier des sorties films, séries et jeux —', es: '¿Qué se estrena esta semana? Calendario de estrenos de cine, series y videojuegos —', de: 'Was startet diese Woche? Kalender für Film-, Serien- und Spielestarts —' },
     'footer.tmdb': { en: 'This product uses the TMDB API but is not endorsed or certified by TMDB.', uk: 'Сайт використовує TMDB API, але не схвалений і не сертифікований TMDB.', ru: 'Сайт использует TMDB API, но не одобрен и не сертифицирован TMDB.', fr: "Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB.", es: 'Este producto usa la API de TMDB, pero no está avalado ni certificado por TMDB.', de: 'Dieses Produkt nutzt die TMDB-API, wird aber nicht von TMDB unterstützt oder zertifiziert.' },
+    'footer.about': { en: 'About', uk: 'Про сайт', ru: 'О сайте', fr: 'À propos', es: 'Acerca de', de: 'Über uns' },
+    'footer.contact': { en: 'Contact', uk: 'Контакти', ru: 'Контакты', fr: 'Contact', es: 'Contacto', de: 'Kontakt' },
+    'footer.privacy': { en: 'Privacy', uk: 'Конфіденційність', ru: 'Конфиденциальность', fr: 'Confidentialité', es: 'Privacidad', de: 'Datenschutz' },
     'discover': { en: 'Discover Movies', uk: 'Шукати фільми', ru: 'Искать фильмы', fr: 'Découvrir des films', es: 'Descubrir películas', de: 'Filme entdecken' },
 
     // mood recipes (api/mood.js MOOD_PROFILES)
@@ -354,7 +357,7 @@
 
     // Links to the home page and the collections stay in the visitor's language
     if (lang !== 'en') {
-      document.querySelectorAll('a[href="/"], a[href^="/moods"], a[href^="/?"]').forEach(link => {
+      document.querySelectorAll('a[href="/"], a[href^="/moods"], a[href^="/?"], a[href="/about"], a[href="/contact"], a[href="/privacy"]').forEach(link => {
         link.setAttribute('href', langPath(link.getAttribute('href')));
       });
     }
