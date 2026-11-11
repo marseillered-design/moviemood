@@ -987,6 +987,19 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 .imdb-badge:hover { background: rgba(245, 197, 24, 0.22); }
 [data-theme="light"] .imdb-badge { color: #8a6d00; }
 
+/* RELATED: the collections, "movies like" lists and series a title is in (api/page.js relatedSection) */
+.related-section { max-width: 1100px; margin: 0 auto 48px; }
+.related-section .section-title { font-size: 1.5rem; margin: 32px 0 14px; }
+.related-section .section-title:first-child { margin-top: 0; }
+.related-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.related-chips .mood-chip { color: var(--text); }
+.related-chips .mood-chip small { color: var(--text-dim); margin-left: 4px; font-size: 0.85em; white-space: nowrap; }
+.related-more { align-self: center; color: var(--text-dim); font-size: 0.9rem; }
+.related-series { color: var(--text-dim); line-height: 1.9; margin: 0; }
+.related-series a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); }
+.related-series a:hover { color: var(--neon); }
+.related-series strong { color: var(--neon); font-weight: 600; }
+
 /* SIMILAR */
 .similar-section { max-width: 1100px; margin: 0 auto; }
 .section-title {

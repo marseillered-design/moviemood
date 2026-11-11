@@ -16,7 +16,7 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 // posters in the card grids: sharp at card size, half the weight of w500
 const TMDB_CARD_URL = 'https://image.tmdb.org/t/p/w342';
-const ASSET_VERSION = '20261030';
+const ASSET_VERSION = '20261111';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -561,6 +561,12 @@ const TEXT = {
   genres: { en: 'Genres', uk: 'Жанри', ru: 'Жанры', fr: 'Genres', es: 'Géneros', de: 'Genres' },
   rating: { en: 'Rating', uk: 'Рейтинг', ru: 'Рейтинг', fr: 'Note', es: 'Puntuación', de: 'Bewertung' },
   similar: { en: 'More Like This', uk: 'Схожі', ru: 'Похожие', fr: 'Dans le même genre', es: 'Títulos similares', de: 'Ähnliche Titel' },
+  // a film page: the collections it is in, the "movies like" lists it is picked for, its series
+  fits_mood: { en: 'Fits the mood', uk: 'Під який настрій', ru: 'Под какое настроение', fr: 'Pour quelle humeur', es: 'Para qué estado de ánimo', de: 'Für welche Stimmung' },
+  mood_rank: { en: '#{pos} of {total}', uk: '№{pos} з {total}', ru: '№{pos} из {total}', fr: 'n° {pos} sur {total}', es: 'n.º {pos} de {total}', de: 'Nr. {pos} von {total}' },
+  liked_with: { en: 'Recommended if you liked', uk: 'Радимо, якщо сподобались', ru: 'Советуем, если понравились', fr: 'À voir si vous avez aimé', es: 'Para fans de', de: 'Für Fans von' },
+  liked_more: { en: 'and {n} more', uk: 'і ще {n}', ru: 'и ещё {n}', fr: 'et {n} de plus', es: 'y {n} más', de: 'und {n} weitere' },
+  series: { en: 'Films in the series', uk: 'Фільми серії', ru: 'Фильмы серии', fr: 'Films de la saga', es: 'Películas de la saga', de: 'Filme der Reihe' },
   minutes: { en: '{n} min', uk: '{n} хв', ru: '{n} мин', fr: '{n} min', es: '{n} min', de: '{n} Min.' },
   filmography: { en: 'Films & Series with {name}', uk: 'Фільми й серіали: {name}', ru: 'Фильмы и сериалы: {name}', fr: 'Films et séries : {name}', es: 'Películas y series: {name}', de: 'Filme & Serien mit {name}' },
   // the groups of the Christmas collection
@@ -724,22 +730,23 @@ function buildDiscoverUrl(mood, locale = 'en-US') {
   return `${TMDB_BASE_URL}/discover/movie?${params}`;
 }
 
-async function fetchJson(url) {
-  const res = await fetch(url);
+// ttl (seconds): Cloudflare keeps TMDB's answer that long, for lists every page asks about
+async function fetchJson(url, ttl = 0) {
+  const res = await fetch(url, ttl ? { cf: { cacheTtl: ttl, cacheEverything: true } } : undefined);
   if (!res.ok) throw new Error(`TMDB ${res.status}`);
   return res.json();
 }
 
 // One collection's films in one language: its discover pages (mood.pages, one by default) and the
 // films it pins by id, most-rated first when there are pins
-async function fetchMoodList(mood, locale) {
+async function fetchMoodList(mood, locale, ttl = 0) {
   const pages = Array.from({ length: mood.pages || 1 }, (_, i) => i + 1);
   const lists = await Promise.all([
-    ...pages.map(page => fetchJson(`${buildDiscoverUrl(mood, locale)}&page=${page}`)
+    ...pages.map(page => fetchJson(`${buildDiscoverUrl(mood, locale)}&page=${page}`, ttl)
       .then(data => data.results || [])
       // the first page is the collection; the further ones only add to it
       .catch(error => { if (page === 1) throw error; return []; })),
-    ...(mood.pin || []).map(id => fetchJson(`${TMDB_BASE_URL}/movie/${id}?api_key=${TMDB_API_KEY}&language=${locale}`)
+    ...(mood.pin || []).map(id => fetchJson(`${TMDB_BASE_URL}/movie/${id}?api_key=${TMDB_API_KEY}&language=${locale}`, ttl)
       .then(movie => [{ ...movie, genre_ids: (movie.genres || []).map(g => g.id) }])
       .catch(() => []))
   ]);
@@ -762,6 +769,29 @@ async function fetchMoodMovies(mood, lang = 'en') {
       // unknown → no slug, and the movie page adds it with a redirect
       slug_title: englishTitles.get(m.id) || (m.original_language === 'en' ? m.original_title : '')
     });
+}
+
+// Which collections each film is in, and where, in one language: id → [{ mood, pos, total }], in the
+// order of the collection pages (the same lists as fetchMoodMovies). Built once for every film page
+// and kept for a few hours by the running Worker, a few minutes when a collection failed to load.
+const moodIndexes = {};
+function moodIndex(lang) {
+  const known = moodIndexes[lang];
+  if (known && known.until > Date.now()) return known.promise;
+  const entry = { until: Date.now() + 6 * 3600e3 };
+  entry.promise = Promise.all(MOODS.map(mood => fetchMoodList(mood, TMDB_LOCALES[lang], 6 * 3600)
+    .then(list => list.filter(m => m.poster_path && (!mood.keep || mood.keep(m))))
+    .catch(() => { entry.until = Date.now() + 300e3; return []; })))
+    .then(lists => {
+      const index = new Map();
+      lists.forEach((list, i) => list.forEach((movie, pos) => {
+        if (!index.has(movie.id)) index.set(movie.id, []);
+        index.get(movie.id).push({ mood: MOODS[i], pos: pos + 1, total: list.length });
+      }));
+      return index;
+    });
+  moodIndexes[lang] = entry;
+  return entry.promise;
 }
 
 function getOrigin(req) {
@@ -986,6 +1016,16 @@ const LIKE_PREFIXES = { movie: '/movies-like', tv: '/shows-like' };
 // "/movie/27205-inception" → "/movies-like/27205-inception"
 const likePath = path => path.replace(/^\/(movie|tv)\//, (_, type) => `${LIKE_PREFIXES[type]}/`);
 const likeEntry = (type, id) => LIKE_DATA[`${type}/${id}`];
+// The other way round: "movie/603" → the lists it is picked for ("movies like Inception", ...), in the
+// order of LIKE_DATA, best-known titles first
+const LIKED_IN = new Map();
+for (const entry of Object.values(LIKE_DATA)) {
+  for (const pick of entry.picks) {
+    const key = pick.replace(/^\/(movie|tv)\/(\d+).*/, '$1/$2');
+    if (!LIKED_IN.has(key)) LIKED_IN.set(key, []);
+    LIKED_IN.get(key).push(entry.path);
+  }
+}
 
 async function renderLikePage(type, id, origin, requestedPath, lang) {
   const entry = likeEntry(type, id);
@@ -1170,6 +1210,62 @@ async function renderHomePage(origin, lang) {
 // file and the parts search engines need are filled in before movie.js takes over.
 // Returns the page's HTML, or { redirect } when the address is not the page's own one
 // ("/movie/218" or an old title → "/movie/218-the-terminator"): one address per film for search engines
+// What only MovieMood says about a title, under its details: the collections it is in and its place
+// there, the "movies like" lists it is picked for, and the other films of its series. Each part
+// shows only when there is something to show; a part that fails to load is left out.
+const LIKED_SHOWN = 8;
+async function relatedSection(type, id, details, lang) {
+  const locale = TMDB_LOCALES[lang];
+  const collectionId = details.belongs_to_collection?.id;
+  const collection = (code, ttl) => fetchJson(`${TMDB_BASE_URL}/collection/${collectionId}?api_key=${TMDB_API_KEY}&language=${code}`, ttl).catch(() => null);
+  const likedIn = LIKED_IN.get(`${type}/${id}`) || [];
+  const [moods, liked, series, seriesEnglish] = await Promise.all([
+    type === 'movie' ? moodIndex(lang).then(index => index.get(id) || []).catch(() => []) : [],
+    Promise.all(likedIn.slice(0, LIKED_SHOWN).map(path => {
+      const [, kind, likeId] = path.match(/^\/(movie|tv)\/(\d+)/);
+      return fetchJson(`${TMDB_BASE_URL}/${kind}/${likeId}?api_key=${TMDB_API_KEY}&language=${locale}`, 7 * DAY)
+        .then(item => ({ kind, path, name: item.title || item.name }))
+        .catch(() => null);
+    })),
+    collectionId ? collection(locale, DAY) : null,
+    collectionId && lang !== 'en' ? collection('en-US', DAY) : null
+  ]);
+
+  const parts = [];
+  if (moods.length) {
+    parts.push(`<h2 class="section-title">${escapeHtml(tr(lang, 'fits_mood'))}</h2>
+      <div class="related-chips">
+      ${[...moods].sort((a, b) => a.pos - b.pos).map(({ mood, pos, total }) => `<a class="mood-chip" href="${langPath(lang, `/moods/${mood.slug}`)}">${mood.emoji} ${escapeHtml(moodTitle(mood, lang))}${mood.sections ? '' : ` <small>${escapeHtml(tr(lang, 'mood_rank', { pos, total }))}</small>`}</a>`).join('\n      ')}
+      </div>`);
+  }
+  const likedLinks = liked.filter(Boolean);
+  if (likedLinks.length) {
+    const more = likedIn.length - LIKED_SHOWN;
+    parts.push(`<h2 class="section-title">${escapeHtml(tr(lang, 'liked_with'))}</h2>
+      <div class="related-chips">
+      ${likedLinks.map(item => `<a class="mood-chip" href="${langPath(lang, likePath(item.path))}" title="${escapeHtml(tr(lang, `like_h1_${item.kind}`, { name: item.name }))}">${escapeHtml(item.name)}</a>`).join('\n      ')}
+      ${more > 0 ? `<span class="related-more">${escapeHtml(tr(lang, 'liked_more', { n: more }))}</span>` : ''}
+      </div>`);
+  }
+  const films = (series?.parts || []).filter(film => film.release_date || film.id === id)
+    .sort((a, b) => (a.release_date || '9999').localeCompare(b.release_date || '9999'));
+  if (films.length > 1) {
+    const englishTitles = new Map((seriesEnglish?.parts || []).map(film => [film.id, film.title]));
+    parts.push(`<h2 class="section-title">${escapeHtml(tr(lang, 'series'))}</h2>
+      <p class="related-series">${films.map((film, i) => {
+        const label = escapeHtml(`${i + 1}. ${film.title}${film.release_date ? ` (${film.release_date.slice(0, 4)})` : ''}`);
+        if (film.id === id) return `<strong>${label}</strong>`;
+        const slugTitle = lang === 'en' ? film.title : englishTitles.get(film.id) || (film.original_language === 'en' ? film.original_title : '');
+        return `<a href="${langPath(lang, titlePath({ id: film.id, slug_title: slugTitle }))}">${label}</a>`;
+      }).join(' · ')}</p>`);
+  }
+  return parts.length ? `<section class="related-section">
+      ${parts.join('\n      ')}
+    </section>
+
+    ` : '';
+}
+
 async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   const detailsUrl = locale => `${TMDB_BASE_URL}/${type}/${id}?api_key=${TMDB_API_KEY}&language=${locale}`;
   const [templateRes, details, english] = await Promise.all([
@@ -1182,6 +1278,7 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   const basePath = titlePath(english || details, type);
   const ownPath = langPath(lang, basePath);
   if (requestedPath !== ownPath) return { redirect: ownPath };
+  const related = relatedSection(type, id, details, lang).catch(() => '');
 
   if (!templateRes.ok) throw new Error(`template ${templateRes.status}`);
   const template = await templateRes.text();
@@ -1342,6 +1439,7 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
 
   // "Movies like Inception": the list built around this title, when there is one
   const like = likeEntry(type, id);
+  const relatedHtml = await related;
   const moodsSection = `<section class="mood-more movie-moods">
     ${like ? `<a class="like-cta" href="${langPath(lang, likePath(like.path))}">${escapeHtml(tr(lang, `like_h1_${type}`, { name }))} →</a>` : ''}
     <h2 class="mood-section-title">${escapeHtml(tr(lang, 'browse_by_mood'))}</h2>
@@ -1369,6 +1467,7 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
     .replace('id="movieCast"></div>', () => `id="movieCast">${castHtml}</div>`)
     .replace('id="movieGenres"></div>', () => `id="movieGenres">${genres.map(g => `<span class="genre-tag">${escapeHtml(g.name)}</span>`).join('')}</div>`)
     .replace('id="tmdbRating"></span>', () => `id="tmdbRating">${rating}</span>`)
+    .replace('<section class="similar-section"', () => `${relatedHtml}<section class="similar-section"`)
     .replace('id="similarSection" style="display: none;"', () => similarHtml ? 'id="similarSection"' : 'id="similarSection" style="display: none;"')
     .replace('<h2 class="section-title">More Like This</h2>', () => `<h2 class="section-title">${escapeHtml(tr(lang, 'similar'))}</h2>`)
     .replace('id="similarGrid"></div>', () => `id="similarGrid">${similarHtml}</div>`)
