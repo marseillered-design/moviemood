@@ -699,6 +699,17 @@ const titlePath = (item, type = 'movie') => {
   return `/${type}/${item.id}${slug ? `-${slug}` : ''}`;
 };
 
+// Which films and series search engines are asked to index: the ones people look for (enough TMDB
+// votes or popular right now) and anything new or upcoming. The rest stay on the site as noindex:
+// tens of thousands of near-identical pages of little-known titles pulled the whole site down
+// in Google (Search Console, November 2026). The bars are a choice, change them here.
+const INDEX_MIN_VOTES = 200;
+const INDEX_MIN_POPULARITY = 10;
+const INDEX_NEW_DAYS = 180;
+const worthIndexing = item => (item.vote_count || 0) >= INDEX_MIN_VOTES
+  || (item.popularity || 0) >= INDEX_MIN_POPULARITY
+  || (item.release_date || item.first_air_date || '') >= new Date(Date.now() - INDEX_NEW_DAYS * DAY * 1000).toISOString().slice(0, 10);
+
 const truncate = (text, max) => {
   const clean = String(text || '').replace(/\s+/g, ' ').trim();
   return clean.length <= max ? clean : `${clean.slice(0, max - 1).replace(/\s+\S*$/, '')}…`;
@@ -1187,9 +1198,9 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   );
   const poster = details.poster_path ? `${TMDB_IMAGE_BASE_URL}${details.poster_path}` : '';
 
-  // A version in another language with no description of its own repeats the English page:
-  // kept out of the index (its links are still followed), the English page stands for it
-  const noindex = lang !== 'en' && !details.overview;
+  // Kept out of the index (its links are still followed): a little-known title (worthIndexing), and
+  // a version in another language with no description of its own, which repeats the English page
+  const noindex = !worthIndexing(details) || (lang !== 'en' && !details.overview);
   // The language versions search engines are pointed to: the same rule, for every language at once
   const described = new Set((details.translations?.translations || [])
     .filter(item => item.data?.overview).map(item => `${item.iso_639_1}-${item.iso_3166_1}`));
@@ -1415,12 +1426,9 @@ async function renderPersonPage(id, origin, requestedPath, lang = 'en') {
     const path = titlePath(lang === 'en' ? item : { ...item, slug_title: englishTitles.get(`${itemType}/${item.id}`) || '' }, itemType);
     return movieCard(item, lang, path);
   }).join('\n      ');
-  // A version in another language with no biography of its own is a list of posters and little
-  // else: kept out of the index, while its links to the films are still followed
-  const noindex = lang !== 'en' && !person.biography;
-  const described = new Set((person.translations?.translations || [])
-    .filter(item => item.data?.biography).map(item => `${item.iso_639_1}-${item.iso_3166_1}`));
-  const indexedLangs = LANGS.filter(code => code === 'en' || described.has(TMDB_LOCALES[code]) || (code === lang && !noindex));
+  // People pages are all kept out of the index, while their links to the films are still followed:
+  // thousands of them brought 6 clicks from 7,111 Google impressions (October 2026) and weighed the
+  // site down with near-identical pages
   const pageTitle = fitTitle(`${tr(lang, 'person_page_title', { name })} | MovieMood`, tr(lang, 'person_page_title', { name }));
   const description = truncate(
     known.length
@@ -1447,7 +1455,6 @@ async function renderPersonPage(id, origin, requestedPath, lang = 'en') {
   const head = `<title>${escapeHtml(pageTitle)}</title>
   <meta name="description" content="${escapeHtml(description)}">
   <link rel="canonical" href="${escapeHtml(canonical)}">
-  ${noindex ? '' : alternates(origin, basePath, indexedLangs)}
   <meta property="og:type" content="profile">
   <meta property="og:site_name" content="MovieMood">
   ${ogLocales(lang)}
@@ -1463,8 +1470,7 @@ async function renderPersonPage(id, origin, requestedPath, lang = 'en') {
     .replace(/<html lang="[^"]*"/, () => `<html lang="${lang}"`)
     .replace(/<p class="footer-premiero">[\s\S]*?<\/p>/, () => premieroLine(lang))
     .replace('<head>', () => '<head>\n  <base href="/">')
-    // the template is kept out of the index; this address is the indexable one (see noindex above)
-    .replace('<meta name="robots" content="noindex, follow">', noindex ? '<meta name="robots" content="noindex, follow">' : '')
+    // person.html already carries noindex, follow, which stays (see above)
     .replace(/<title>[^<]*<\/title>/, () => head)
     .replace(/<p class="footer-legal">[\s\S]*?<\/p>/, () => legalLine(lang))
     .replace('id="personName"></h1>', () => `id="personName">${escapeHtml(name)}</h1>`)
@@ -1489,8 +1495,9 @@ function sendPage(res, page) {
 // Besides the films of the collections: what is popular, new, trending and best rated, films
 // and series — the titles people search "where to watch" for.
 // /sitemap.xml lists the parts: /sitemap/moods.xml (collections and their films, "movies like"
-// pages) and /sitemap/lists-1.xml, lists-2.xml (the lists below). Each part asks TMDB at most
-// about 30 times: Cloudflare's free plan allows 50 requests out of one request.
+// pages) and /sitemap/lists-1.xml, lists-2.xml (the lists below). Every part is built from all of
+// them (about 85 TMDB requests, within the paid Workers plan's limit) so that no title appears
+// twice; each part is cached for a day.
 const SITEMAP_LISTS = [
   [
     ['movie', 'movie/popular', 5], ['movie', 'movie/top_rated', 10], ['movie', 'movie/now_playing', 3],
@@ -1520,22 +1527,29 @@ async function renderSitemap(origin, part = '') {
 ${SITEMAP_PARTS.map(name => `  <sitemap><loc>${escapeHtml(`${origin}/sitemap/${name}.xml`)}</loc></sitemap>`).join('\n')}
 </sitemapindex>`;
   }
-  if (part === 'moods') {
-    const moodMovies = await Promise.all(MOODS.map(mood => fetchMoodMovies(mood).catch(() => [])));
-    const titlePaths = [...new Set(moodMovies.flat().map(m => titlePath(m)))];
-    const likePaths = Object.values(LIKE_DATA).map(entry => likePath(entry.path));
-    return urlset(origin, ['/', '/moods', ...LEGAL_PAGES.map(name => `/${name}`), ...MOODS.map(m => `/moods/${m.slug}`), ...likePaths, ...titlePaths]);
+  const index = SITEMAP_PARTS.indexOf(part);
+  if (index < 0) return null;
+  // Only titles the pages themselves let into the index (worthIndexing), and each title in one part
+  // only: the parts are built together, the collections' films first, then the lists in order
+  const moodMovies = await Promise.all(MOODS.map(mood => fetchMoodMovies(mood).catch(() => [])));
+  const seen = new Set();
+  const take = paths => paths.filter(path => !seen.has(path) && seen.add(path));
+  const parts = [take(moodMovies.flat().filter(worthIndexing).map(m => titlePath(m)))];
+  for (const lists of SITEMAP_LISTS) {
+    const found = await Promise.all(lists.flatMap(([type, list, pages]) =>
+      Array.from({ length: pages }, (_, i) =>
+        fetchJson(`${TMDB_BASE_URL}/${list}${list.includes('?') ? '&' : '?'}api_key=${TMDB_API_KEY}&language=en-US&page=${i + 1}`)
+          .then(data => (data.results || [])
+            .filter(item => !item.adult && item.poster_path && worthIndexing(item))
+            .map(item => titlePath(item, type)))
+          .catch(() => []))));
+    parts.push(take(found.flat()));
   }
-  const lists = SITEMAP_LISTS[SITEMAP_PARTS.indexOf(part) - 1];
-  if (!lists) return null;
-  const found = await Promise.all(lists.flatMap(([type, list, pages]) =>
-    Array.from({ length: pages }, (_, i) =>
-      fetchJson(`${TMDB_BASE_URL}/${list}${list.includes('?') ? '&' : '?'}api_key=${TMDB_API_KEY}&language=en-US&page=${i + 1}`)
-        .then(data => (data.results || [])
-          .filter(item => !item.adult && item.poster_path && (item.vote_count || 0) >= 20)
-          .map(item => titlePath(item, type)))
-        .catch(() => []))));
-  return urlset(origin, [...new Set(found.flat())]);
+  if (index === 0) {
+    const likePaths = Object.values(LIKE_DATA).map(entry => likePath(entry.path));
+    return urlset(origin, ['/', '/moods', ...LEGAL_PAGES.map(name => `/${name}`), ...MOODS.map(m => `/moods/${m.slug}`), ...likePaths, ...parts[0]]);
+  }
+  return urlset(origin, parts[index]);
 }
 
 // ══════════════════════════════════════════════
