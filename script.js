@@ -432,6 +432,12 @@ async function handleSearch(resetPage = true) {
     }
   }
 
+  // "Anime only" and nothing anime matched the words: the best-loved anime instead of an empty page
+  if (includeAnime) {
+    await loadAnimeBrowse();
+    return;
+  }
+
   hideSkeleton();
   renderEmptyState(t('home.empty_search'));
 }
@@ -753,7 +759,7 @@ async function searchTMDB(query, page = 1) {
         `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&query=${encodeURIComponent(query)}&page=${page}`
       );
       const data = await res.json();
-      const filtered = (data.results || []).filter(item => item.media_type === 'movie' || item.media_type === 'tv');
+      const filtered = onlyAnimeIfAsked((data.results || []).filter(item => item.media_type === 'movie' || item.media_type === 'tv'));
       return markTitleMatches(await personalizeItems(filtered, { preferredType: 'trending' }));
     }
 
@@ -762,12 +768,18 @@ async function searchTMDB(query, page = 1) {
       `${TMDB_BASE_URL}/search/${endpoint}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&query=${encodeURIComponent(query)}&page=${page}`
     );
     const data = await res.json();
-    return markTitleMatches(data.results || []);
+    return markTitleMatches(onlyAnimeIfAsked(data.results || []));
   } catch (e) {
     console.error(e);
     return [];
   }
 }
+
+// "Anime only" also narrows searches by name: animated titles from Japan (search results carry
+// no keywords, so genre and country stand in for the anime tag)
+const onlyAnimeIfAsked = items => includeAnime
+  ? items.filter(item => (item.genre_ids || []).includes(16) && (item.original_language === 'ja' || (item.origin_country || []).includes('JP')))
+  : items;
 
 // Found by name: shown even when already watched (see displayMovies)
 const markTitleMatches = items => items.map(item => ({ ...item, title_match: true }));
@@ -890,7 +902,24 @@ async function fetchLikeTitle(aiData, page) {
   return items;
 }
 
+// Anime and documentaries are small pools: "80s horror" anime finds two titles. Then the era goes
+// and the rest of the request stays ("horror" anime); the "Showing" row loses the decade with it.
+// A pool that is big enough keeps its era ("90s anime" works as asked).
 async function fetchByAiData(aiData, page = 1) {
+  const results = await fetchByAiDataOnce(aiData, page);
+  const smallPool = currentType === 'documentary' || includeAnime || (aiData.keywords || []).includes(ANIME_KEYWORD_ID);
+  if (page > 1 || results.length >= 6 || !smallPool || !(aiData.year_from || aiData.year_to)) return results;
+  const years = { year_from: aiData.year_from, year_to: aiData.year_to };
+  delete aiData.year_from;
+  delete aiData.year_to;
+  const wider = await fetchByAiDataOnce(aiData, page);
+  if (wider.length > results.length) return wider;
+  // no better without it: the era stays, and the search runs again so that later pages continue it
+  Object.assign(aiData, years);
+  return fetchByAiDataOnce(aiData, page);
+}
+
+async function fetchByAiDataOnce(aiData, page = 1) {
   try {
     const endpoint = (currentType === 'tv' || aiData.media_type === 'tv') ? 'tv' : 'movie';
 
@@ -926,6 +955,10 @@ async function fetchByAiData(aiData, page = 1) {
       return await searchTMDB(aiData.search_query, page);
     }
     
+    // 2b. A mood for series, documentaries or anime: their own recipe (see TYPE_MOODS)
+    const typeMood = await fetchTypeMood(aiData, endpoint, page);
+    if (typeMood) return typeMood;
+
     // 3. Discover by genre / topic / country / years
     // ("nothing scary" has no genre at all, only things to leave out)
     if (aiData.genres?.length || aiData.genres_any?.length || aiData.keywords?.length || aiData.language || aiData.year_from || aiData.year_to ||
@@ -973,9 +1006,20 @@ async function fetchByAiData(aiData, page = 1) {
       const moodExcluded = (endpoint === 'tv' ? mapGenresToTv(aiData.exclude_genres || []) : (aiData.exclude_genres || []))
         .filter(g => !(wantsAnime && g === 16));
       const excludedGenres = [...moodExcluded.filter(g => !genreIds.includes(g)), ...(isPlainGenre || skipCartoons ? [16] : [])];
+      // Anime: Japanese animation without fan-service shows, in every attempt below, so that a looser
+      // try ("zombie" alone) still finds anime and not I Am Legend
+      const animeOnly = wantsAnime && !isDocumentary;
+      // ...and the anime tag itself is not needed then: animation is a genre, so looser tries drop
+      // a topic but keep "horror" or "comedy" ("80s horror anime" must not become Dragon Ball)
+      if (animeOnly) {
+        keywordIds.splice(keywordIds.indexOf(ANIME_KEYWORD_ID), 1);
+        genreIds = useAnyGenre ? [16] : [16, ...genreIds.filter(g => g !== 16)];
+      }
+      const leaveOutKeywords = [...(aiData.exclude_keywords || []), ...(animeOnly ? [ANIME_LEAVE_OUT] : [])];
       const excludeParam = (excludedGenres.length ? `&without_genres=${[...new Set(excludedGenres)].join(',')}` : '') +
+        (animeOnly && !aiData.language ? '&with_original_language=ja' : '') +
         // "not too gory", "no tearjerkers"
-        (aiData.exclude_keywords?.length ? `&without_keywords=${aiData.exclude_keywords.join('|')}` : '') +
+        (leaveOutKeywords.length ? `&without_keywords=${leaveOutKeywords.join('|')}` : '') +
         // "not too long" (series only have episode lengths)
         (aiData.max_runtime && endpoint === 'movie' ? `&with_runtime.lte=${aiData.max_runtime}` : '');
 
@@ -990,9 +1034,14 @@ async function fetchByAiData(aiData, page = 1) {
       // From the exact request to looser ones; the first that gives a full row wins
       const attempts = [{}];
       if (isMood) attempts.push({ moodKeywords: [], votes: 200 });
-      if (keywordIds.length && genreIds.length) attempts.push({ genres: [], votes: Math.min(minVotes, 100) });
-      if (keywordIds.length > 1) attempts.push({ genres: [], keywords: [keywordIds[0]], votes: 50 });
-      if (genreIds.length > 1 && !useAnyGenre) attempts.push({ joiner: '|', votes: 20 });
+      // (a documentary stays a documentary: "anime" there means anime documentaries, not anime;
+      // anime stays animation)
+      const looserGenres = isDocumentary ? [99] : animeOnly ? [16] : [];
+      if (keywordIds.length && genreIds.length && !isDocumentary) attempts.push({ genres: looserGenres, votes: Math.min(minVotes, 100) });
+      if (keywordIds.length > 1) attempts.push({ genres: looserGenres, keywords: [keywordIds[0]], votes: 50 });
+      if (isDocumentary && keywordIds.length) attempts.push({ votes: 5 });
+      // (anime keeps animation: animation and the first asked genre, not "any of them")
+      if (genreIds.length > 1 && !useAnyGenre) attempts.push(animeOnly ? { genres: genreIds.slice(0, 2), votes: 20 } : { joiner: '|', votes: 20 });
       if (isNarrow) attempts.push({ votes: 20 });
 
       // Later pages must continue the list that page 1 started
@@ -1006,7 +1055,8 @@ async function fetchByAiData(aiData, page = 1) {
           best = results;
           if (page === 1) aiData._attempt = i;
         }
-        if (results.length >= 6) break;
+        // anime is a smaller pool: look further before settling for half a row
+        if (results.length >= (wantsAnime ? 12 : 6)) break;
       }
 
       // "comedy" should show films that are comedies first of all, not action films with a few jokes
@@ -1025,6 +1075,158 @@ async function fetchByAiData(aiData, page = 1) {
 }
 
 const ANIME_KEYWORD_ID = 210024;
+
+/*
+ * Moods for series, documentaries and anime. The film recipes lean on TMDB mood tags ("comforting",
+ * "tearjerker") that series and documentaries rarely carry, and anime is animation that most film
+ * moods leave out: so "sad" found Sex Education, every documentary mood found the same list, and
+ * anime got Haikyu!! for any mood. Each type has its own recipe here, chosen by trying them on TMDB
+ * (November 2026). Films keep the server's mood recipes; only "plot twist", "dark", "scary" and
+ * "funny" have their own here (they used to open with this week's releases instead of the classics).
+ * g = genres ("," all of, "|" any of), k = TMDB keywords (any of), wg = genres to leave out,
+ * v = least votes, min = least rating. Anime = Japanese animation, without fan-service shows.
+ */
+const ANIME_LEAVE_OUT = '195669|9194|198385|281741'; // ecchi, harem, hentai, nudity
+const TYPE_MOODS = {
+  cozy: {
+    tv: { g: '35', k: '193171|319357|325784|288816|9914', wg: '80,9648,10765,16,10759' },
+    documentary: { g: '99', k: '221355|18330|9902|18165|1918|18293|9935', wg: '80' },
+    animeMovie: { g: '16', k: '9914|291483|325784|319357|288816|324713', wg: '28,27,53' },
+    animeTv: { g: '16', k: '9914|291483', wg: '10759,80,9648,10765', v: 50 }
+  },
+  rainy: {
+    tv: { g: '18', k: '9914|10235', wg: '80,10759,10765,16,9648,10762', v: 500 },
+    documentary: { g: '99', k: '246377|283297|14893|221355|164246' },
+    animeMovie: { g: '16', k: '164246|319319|278730|225219|9914|325784', wg: '28,27,53' },
+    animeTv: { g: '16,18', k: '9914|291483|164246|319319|278730', wg: '10759,10765,80', v: 50 }
+  },
+  feelgood: {
+    tv: { g: '35', k: '319357|325824|325782|281585|288816|193171', wg: '80,9648,16' },
+    documentary: { g: '99', k: '18165|15162|246377|333328|281585|319357' },
+    animeMovie: { g: '16', k: '319357|325824|325782|288816|9914|324713', wg: '27,53' },
+    animeTv: { g: '16,35', k: '9914|291483|319357|325824|288816', wg: '10759,80,9648,10765', v: 50 }
+  },
+  sad: {
+    tv: { g: '18', k: '156924|319319|4232|9872|278730|10614', wg: '35,80,9648,10759,16,10765' },
+    documentary: { g: '99', k: '9872|6203|10614|1739|156924|273967', v: 30 },
+    animeMovie: { g: '16,18', wg: '28,27,878' },
+    animeTv: { g: '16', k: '156924|9872|6203|319319|10614', wg: '10759,10765,80', v: 30 }
+  },
+  date: {
+    tv: { g: '18|35', k: '9840|9673|324429', wg: '80,9648,10765,16,10762,10759' },
+    documentary: { g: '99', k: '1918|18293|9935|246377|1691|14893', wg: '80' },
+    animeMovie: { g: '16,10749' },
+    animeTv: { g: '16', k: '9840', wg: '10759,10765,80,9648', v: 50 }
+  },
+  inspiring: {
+    tv: { g: '18', k: '281585|240|367610|351961|6075|325824', wg: '10765,80,9648,16' },
+    documentary: { g: '99', k: '5565|333328|6075|281585|240|367784' },
+    animeMovie: { g: '16', k: '281585|240|325824|6075', v: 30 },
+    animeTv: { g: '16', k: '6075|240', v: 50 }
+  },
+  mind: {
+    tv: { g: '10765|9648', k: '272553|212737|197582|362567|10854|275311', wg: '16,10762,35' },
+    documentary: { g: '99', k: '287067|325892|9882|272553|10410' },
+    animeMovie: { g: '16', k: '272553|212737|197582|10854|12565|362567|12190' },
+    animeTv: { g: '16', k: '12565|272553|10854|362567', wg: '35', v: 50 }
+  },
+  twist: {
+    movie: { g: '9648|53', k: '275311|326438|12565|373440', v: 1000 },
+    tv: { g: '9648|80', k: '275311|326438|373440|12565', wg: '16,35' },
+    documentary: { g: '99', k: '33722|210661|10714|6158|10941' },
+    animeMovie: { g: '16', k: '275311|326438|12565|373440|10941|5340', v: 50 },
+    animeTv: { g: '16,9648', v: 50 }
+  },
+  dark: {
+    movie: { g: '53|18|80', k: '12565|177895|10714|272553', wg: '35,16,10751', v: 1000 },
+    tv: { g: '80|18', k: '12565|177895|10714|272553', wg: '35,16,10751' },
+    documentary: { g: '99', k: '33722|10714|6158|1739' },
+    animeMovie: { g: '16', k: '177895|12565|12190|10714|272553' },
+    animeTv: { g: '16', k: '177895|12565|12190|10714|272553', v: 50 }
+  },
+  scary: {
+    movie: { g: '27', v: 2000, min: 6.5 },
+    tv: { k: '315058|6152|162846|50009', wg: '35,16,10762' },
+    documentary: { g: '99', k: '33722|10714|6158|162846|6152' },
+    animeMovie: { g: '16', k: '315058|325319|162846|50009', v: 50 },
+    animeTv: { g: '16', k: '315058|325319|50009|162846', wg: '35', v: 30 }
+  },
+  epic: {
+    documentary: { g: '99', k: '221355|9882|9902|1262|270' },
+    animeMovie: { g: '16,28|12' },
+    animeTv: { g: '16,10759', v: 50 }
+  },
+  friends: {
+    tv: { g: '35', k: '6054|193171', wg: '16,10762' },
+    documentary: { g: '99', k: '246377|9716|333328|1691' },
+    animeMovie: { g: '16,35' },
+    animeTv: { g: '16,35', v: 50 }
+  },
+  family: {
+    documentary: { g: '99', k: '18165|221355|9902|15162' },
+    animeMovie: { g: '16,10751' },
+    animeTv: { g: '16,10751', v: 30 }
+  },
+  funny: {
+    movie: { g: '35', wg: '16,18,53,80,27,28', v: 2000, min: 6.5 },
+    documentary: { g: '99,35' },
+    animeMovie: { g: '16,35' },
+    animeTv: { g: '16,35', v: 50 }
+  }
+};
+
+// The mood a request stands for: a named mood, or the genres the parser gives mood words
+// ("plot twist" = mystery + thriller, "with friends" = comedy + action)
+const GENRE_MOODS = {
+  '53,9648': 'twist', '18,53': 'dark', '12,28': 'epic', '28,35': 'friends', '10751,35': 'family', '10751,16': 'family',
+  '10751': 'family', '27': 'scary', '35': 'funny', '878,9648': 'mind', '18,10749': 'sad', '10749': 'date', '10749,35': 'date', '18': 'sad'
+};
+function typeMoodKey(aiData, type) {
+  // a topic ("zombie"), a country or a name decides by itself
+  const topics = (aiData.keywords || []).filter(id => id !== ANIME_KEYWORD_ID);
+  if (topics.length || aiData.language || aiData.search_query || aiData.company_id) return null;
+  if (aiData.mood && TYPE_MOODS[aiData.mood]) return aiData.mood;
+  const genres = [...(aiData.genres || [])].filter(g => g !== 16 || (aiData.genres || []).length === 1).sort((a, b) => a - b).join(',');
+  // "drama series" is not "sad series"; "sad anime" arrives as anime + drama
+  if (genres === '18' && type === 'tv') return null;
+  return GENRE_MOODS[genres] || null;
+}
+
+async function fetchTypeMood(aiData, endpoint, page) {
+  const anime = includeAnime || (aiData.keywords || []).includes(ANIME_KEYWORD_ID);
+  const type = currentType === 'documentary' ? 'documentary' : anime ? (endpoint === 'tv' ? 'animeTv' : 'animeMovie') : endpoint;
+  const mood = type && typeMoodKey(aiData, type);
+  const recipe = mood && TYPE_MOODS[mood][type];
+  if (!recipe) return null;
+  const isAnime = type.startsWith('anime');
+  const dateField = endpoint === 'movie' ? 'primary_release_date' : 'first_air_date';
+  const url = loose => `${TMDB_BASE_URL}/discover/${type === 'documentary' ? 'movie' : endpoint}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}` +
+    // an era ("80s horror") is a smaller pool: a lower vote bar
+    `&sort_by=vote_count.desc&vote_count.gte=${aiData.year_from || aiData.year_to ? Math.min(recipe.v ?? 100, 200) : (recipe.v ?? 100)}&include_adult=false&page=${page}` +
+    (recipe.min ? `&vote_average.gte=${recipe.min}` : '') +
+    (recipe.g ? `&with_genres=${recipe.g}` : '') +
+    (recipe.k && !loose ? `&with_keywords=${recipe.k}` : '') +
+    (recipe.wg ? `&without_genres=${recipe.wg}` : '') +
+    (isAnime ? `&with_original_language=ja&without_keywords=${ANIME_LEAVE_OUT}` : '') +
+    (aiData.year_from ? `&${dateField}.gte=${aiData.year_from}-01-01` : '') +
+    (aiData.year_to ? `&${dateField}.lte=${aiData.year_to}-12-31` : '');
+  // too few with the mood tags: the same genres without them (later pages keep the choice). Only
+  // when a genre still carries the mood: without tags, "documentary" or "animation" alone is any
+  // documentary or any anime ("80s horror" anime turned into Totoro)
+  const moodGenre = String(recipe.g || '').split(/[,|]/).some(g => g && !['16', '99'].includes(g));
+  if (page === 1) aiData._looseMood = false;
+  let results = (await tmdbJson(url(aiData._looseMood))).results || [];
+  if (page === 1 && results.length < 6 && recipe.k && moodGenre) {
+    aiData._looseMood = true;
+    const loose = (await tmdbJson(url(true))).results || [];
+    if (loose.length > results.length) results = loose;
+    else aiData._looseMood = false;
+  }
+  // nothing at all: the general search below gets its chance; documentaries and anime come back
+  // empty instead, and fetchByAiData drops the era first ("80s horror" documentaries → true crime)
+  if (!results.length) return (type === 'documentary' || isAnime) && (aiData.year_from || aiData.year_to) ? [] : null;
+  return results.map(item => ({ ...item, media_type: type === 'documentary' ? 'movie' : endpoint }));
+}
 
 // TMDB uses different genre ids for series; movie ids would return nothing
 // (there is no horror genre for series: supernatural mystery is the closest)
@@ -1113,7 +1315,7 @@ function renderUnderstood(aiData) {
     (aiData.topics || []).forEach(topic => chips.push(`#${topic}`));
     // the "Anime only" switch narrows searches by genre, mood or topic (not names or titles)
     const byDiscover = !aiData.search_query && !aiData.company_id && !aiData.title_query;
-    if (includeAnime && byDiscover && !(aiData.topics || []).includes('anime')) chips.push('#anime');
+    if (includeAnime && byDiscover && currentType !== 'documentary' && !(aiData.topics || []).includes('anime')) chips.push('#anime');
     if (aiData.language) chips.push(mmDisplayName('language', aiData.language));
 
     const { year_from: from, year_to: to } = aiData;

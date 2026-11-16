@@ -2197,7 +2197,8 @@ const I18N_TERMS = {
   "dark": ["мрачн*", "темн*", "похмур*", "sombre*", "oscuro", "oscura"],
   "sad": ["грустн*", "сумн*", "печальн*", "triste*"],
   "want to cry": ["поплакат*", "поплакати", "плакат*", "поплач*", "pleurer", "llorar"],
-  "feel good": ["позитивн*", "жизнеутверждающ*", "життєствердн*", "для настроения", "для настрою", "поднять настроение", "підняти настрій", "pour le moral", "bonne humeur", "buen humor"],
+  // "фил гуд": the English "feel good" typed in Cyrillic (a bare "гуд" is handled in translateQuery)
+  "feel good": ["фил гуд", "філ гуд", "фил-гуд", "філ-гуд", "филгуд", "позитивн*", "жизнеутверждающ*", "життєствердн*", "для настроения", "для настрою", "поднять настроение", "підняти настрій", "pour le moral", "bonne humeur", "buen humor"],
   "uplifting": ["трогательн*", "зворушлив*", "душевн*", "добр* фильм*", "добр* фільм*", "emouvant*", "touchant*", "conmovedor*", "emotiv*"],
   "inspiring": ["вдохновля*", "мотивир*", "мотивац*", "надиха*", "мотиву*", "inspirant*", "motivant*", "inspirador*", "motivador*"],
   "mind bending": ["взрыв мозга", "вынос мозга", "вибух мозку", "винос мозку", "запутанн*", "заплутан*", "неожиданн* концовк*", "несподіван* кінцівк*"],
@@ -2504,8 +2505,12 @@ const DECADE_LABEL = d => (d === '00' ? '2000s' : d === '10' ? '2010s' : d === '
 //   text     — the query with known words replaced by English ones
 //   changed  — whether anything was translated at all
 //   leftover — a meaningful non-English word stayed untranslated (the AI should decide)
+// "гуд", "гуд аниме": "good" typed in Cyrillic, read as "feel good" only when it is the whole query
+// (with a film, series or anime word at most): "Робин Гуд" stays a title
+const GOOD_ALONE = /^гуд(?=$|\s+(?:фильм\p{L}*|фільм\p{L}*|кино|кіно|аниме|аніме|сериал\p{L}*|серіал\p{L}*)$)/u;
+
 function translateQuery(query) {
-  const original = normalizeForMatch(query);
+  const original = normalizeForMatch(query).replace(GOOD_ALONE, 'фил гуд');
   let text = original
     // "90-х", "1980-ые", "80-ті"
     .replace(/(?<![\p{L}\p{N}])(?:19|20)?(\d0)\s*-?\s*(?:х|ых|ые|е|их|тих|ті)(?![\p{L}\p{N}])/gu, (_, d) => ` ${DECADE_LABEL(d)} `)
