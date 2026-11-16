@@ -344,7 +344,18 @@ document.addEventListener('DOMContentLoaded', () => {
       chip.classList.toggle('active', document.getElementById(chip.dataset.press)?.classList.contains('active'));
     });
   });
-  
+
+  // The mood chips lead to the film collections. With series, documentaries or "Anime only" chosen
+  // they search for that mood in that mode instead: a film list there would be the wrong answer
+  document.querySelectorAll('.quick-moods a.mood-chip[href*="/moods/"]').forEach(chip => {
+    chip.addEventListener('click', e => {
+      if (currentType !== 'tv' && currentType !== 'documentary' && !includeAnime) return;
+      e.preventDefault();
+      moodInput.value = (chip.querySelector('[data-i18n]') || chip).textContent.trim();
+      handleSearch(true);
+    });
+  });
+
   // FILTERS PANEL
   const filtersBtn = document.getElementById('filtersBtn');
   const filtersPanel = document.getElementById('filtersPanel');
@@ -1084,13 +1095,15 @@ const ANIME_KEYWORD_ID = 210024;
  * (November 2026). Films keep the server's mood recipes; only "plot twist", "dark", "scary" and
  * "funny" have their own here (they used to open with this week's releases instead of the classics).
  * g = genres ("," all of, "|" any of), k = TMDB keywords (any of), wg = genres to leave out,
- * v = least votes, min = least rating. Anime = Japanese animation, without fan-service shows.
+ * wk = keywords to leave out, v = least votes, min = least rating. Anime = Japanese animation,
+ * without fan-service shows.
  */
 const ANIME_LEAVE_OUT = '195669|9194|198385|281741'; // ecchi, harem, hentai, nudity
 const TYPE_MOODS = {
   cozy: {
     tv: { g: '35', k: '193171|319357|325784|288816|9914', wg: '80,9648,10765,16,10759' },
-    documentary: { g: '99', k: '221355|18330|9902|18165|1918|18293|9935', wg: '80' },
+    // calm nature, animals, food and travel; not the sad ones (captivity, cruelty, killers)
+    documentary: { g: '99', k: '221355|18165|1918|18293|9935', wg: '80,18,36,10752', wk: '206219|205685|155529|271866|10714' },
     animeMovie: { g: '16', k: '9914|291483|325784|319357|288816|324713', wg: '28,27,53' },
     animeTv: { g: '16', k: '9914|291483', wg: '10759,80,9648,10765', v: 50 }
   },
@@ -1098,7 +1111,7 @@ const TYPE_MOODS = {
     tv: { g: '18', k: '9914|10235', wg: '80,10759,10765,16,9648,10762', v: 500 },
     documentary: { g: '99', k: '246377|283297|14893|221355|164246' },
     animeMovie: { g: '16', k: '164246|319319|278730|225219|9914|325784', wg: '28,27,53' },
-    animeTv: { g: '16,18', k: '9914|291483|164246|319319|278730', wg: '10759,10765,80', v: 50 }
+    animeTv: { g: '16', k: '164246|319319|278730|291483', wg: '10759,10765,80,9648', v: 30 }
   },
   feelgood: {
     tv: { g: '35', k: '319357|325824|325782|281585|288816|193171', wg: '80,9648,16' },
@@ -1121,7 +1134,7 @@ const TYPE_MOODS = {
   inspiring: {
     tv: { g: '18', k: '281585|240|367610|351961|6075|325824', wg: '10765,80,9648,16' },
     documentary: { g: '99', k: '5565|333328|6075|281585|240|367784' },
-    animeMovie: { g: '16', k: '281585|240|325824|6075', v: 30 },
+    animeMovie: { g: '16', k: '6075|240|281585', wg: '878', v: 30 },
     animeTv: { g: '16', k: '6075|240', v: 50 }
   },
   mind: {
@@ -1148,7 +1161,7 @@ const TYPE_MOODS = {
     movie: { g: '27', v: 2000, min: 6.5 },
     tv: { k: '315058|6152|162846|50009', wg: '35,16,10762' },
     documentary: { g: '99', k: '33722|10714|6158|162846|6152' },
-    animeMovie: { g: '16', k: '315058|325319|162846|50009', v: 50 },
+    animeMovie: { g: '16', k: '315058|325319|162846|50009', wk: '41645', v: 50 }, // not the game spin-offs
     animeTv: { g: '16', k: '315058|325319|50009|162846', wg: '35', v: 30 }
   },
   epic: {
@@ -1169,7 +1182,7 @@ const TYPE_MOODS = {
   },
   funny: {
     movie: { g: '35', wg: '16,18,53,80,27,28', v: 2000, min: 6.5 },
-    documentary: { g: '99,35' },
+    documentary: { g: '99,35', wk: '5452' }, // not Jackass stunts
     animeMovie: { g: '16,35' },
     animeTv: { g: '16,35', v: 50 }
   }
@@ -1207,7 +1220,8 @@ async function fetchTypeMood(aiData, endpoint, page) {
     (recipe.g ? `&with_genres=${recipe.g}` : '') +
     (recipe.k && !loose ? `&with_keywords=${recipe.k}` : '') +
     (recipe.wg ? `&without_genres=${recipe.wg}` : '') +
-    (isAnime ? `&with_original_language=ja&without_keywords=${ANIME_LEAVE_OUT}` : '') +
+    (isAnime ? '&with_original_language=ja' : '') +
+    (isAnime || recipe.wk ? `&without_keywords=${[isAnime && ANIME_LEAVE_OUT, recipe.wk].filter(Boolean).join('|')}` : '') +
     (aiData.year_from ? `&${dateField}.gte=${aiData.year_from}-01-01` : '') +
     (aiData.year_to ? `&${dateField}.lte=${aiData.year_to}-12-31` : '');
   // too few with the mood tags: the same genres without them (later pages keep the choice). Only
@@ -1311,7 +1325,8 @@ function renderUnderstood(aiData) {
     if (aiData.media_type === 'tv' || currentType === 'tv') chips.push(t('type.series'));
     if (aiData.mood) chips.push(t(`moodname.${aiData.mood}`));
     // with a mood recipe the genres are only "any of", the mood name says more
-    if (!aiData.genres_any) (aiData.genres || []).forEach(id => chips.push(t(`genre.${id}`)));
+    // (documentaries with a mood have their own recipe: "Feel-good · Comedy · Drama" would be wrong)
+    if (!aiData.genres_any && !(currentType === 'documentary' && aiData.mood)) (aiData.genres || []).forEach(id => chips.push(t(`genre.${id}`)));
     (aiData.topics || []).forEach(topic => chips.push(`#${topic}`));
     // the "Anime only" switch narrows searches by genre, mood or topic (not names or titles)
     const byDiscover = !aiData.search_query && !aiData.company_id && !aiData.title_query;

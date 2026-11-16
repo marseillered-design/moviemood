@@ -981,7 +981,7 @@ const promptsDB = {
   "motivational": { genres: [18, 36] },
   "inspiring": { genres: [18, 36] },
   "empowering": { genres: [18, 36] },
-  "nostalgic": { genres: [16, 10751] },
+  "nostalgic": { genres: [35, 18] }, // the rainy-day mood (see MOOD_PROFILE_WORDS), not cartoons
   "childhood": { genres: [16, 10751] },
   "childhood movies": { genres: [16, 10751] },
   "childhood favorites": { genres: [16, 10751] },
@@ -2198,10 +2198,14 @@ const I18N_TERMS = {
   "sad": ["грустн*", "сумн*", "печальн*", "triste*"],
   "want to cry": ["поплакат*", "поплакати", "плакат*", "поплач*", "pleurer", "llorar"],
   // "фил гуд": the English "feel good" typed in Cyrillic (a bare "гуд" is handled in translateQuery)
-  "feel good": ["фил гуд", "філ гуд", "фил-гуд", "філ-гуд", "филгуд", "позитивн*", "жизнеутверждающ*", "життєствердн*", "для настроения", "для настрою", "поднять настроение", "підняти настрій", "pour le moral", "bonne humeur", "buen humor"],
+  "feel good": ["фил гуд", "філ гуд", "фил-гуд", "філ-гуд", "филгуд", "позитивн*", "жизнеутверждающ*", "життєствердн*", "для настроения", "для настрою", "поднять настроение", "підняти настрій", "pour le moral", "bonne humeur", "buen humor",
+    // the home page chips' own words ("Хорошее настроение" was read as plain comedy)
+    "хорош* настроени*", "гарн* настр*", "para animarse", "animarse"],
   "uplifting": ["трогательн*", "зворушлив*", "душевн*", "добр* фильм*", "добр* фільм*", "emouvant*", "touchant*", "conmovedor*", "emotiv*"],
   "inspiring": ["вдохновля*", "мотивир*", "мотивац*", "надиха*", "мотиву*", "inspirant*", "motivant*", "inspirador*", "motivador*"],
-  "mind bending": ["взрыв мозга", "вынос мозга", "вибух мозку", "винос мозку", "запутанн*", "заплутан*", "неожиданн* концовк*", "несподіван* кінцівк*"],
+  "mind bending": ["взрыв мозга", "вынос мозга", "вибух мозку", "винос мозку", "запутанн*", "заплутан*", "неожиданн* концовк*", "несподіван* кінцівк*",
+    // the home page chips' own words
+    "ламают мозг", "ламають мозок", "ломают мозг", "ломающ* мозг", "casse tete", "casse-tete", "para pensar"],
   "bored": ["скучно", "скучаю", "нудно", "нудьг*", "ennuie", "ennui", "aburrid*"],
   "lonely": ["одинок*", "самотн*", "seul", "seule", "solitari*"],
   "alone": ["наедине", "наодинці", "сам на сам", "tout seul", "toute seule", "a solas"],
@@ -2669,7 +2673,7 @@ const MOOD_PROFILES = {
 };
 
 const MOOD_PROFILE_WORDS = [
-  ['rainy', 'rainy|rain|rainy day|rainy evening|autumn evening'],
+  ['rainy', 'rainy|rain|rainy day|rainy evening|autumn evening|nostalgic|nostalgia'],
   ['cozy', 'cozy|cosy|comfort|comforting|warm|chill|relax|relaxing|calm|quiet|peaceful|light|something light|lighthearted|light hearted|lazy|winter evening'],
   ['feelgood', 'feel good|feelgood|uplifting|heartwarming|wholesome|positive|happy|cheerful|optimistic|after hard day'],
   ['sad', 'sad|cry|crying|want to cry|tearjerker|tear jerker|emotional|heartbreaking|melancholy|melancholic|moving|touching|breakup|break up|heartbroken|broken heart'],
@@ -2874,7 +2878,14 @@ function enrich(result, parsed) {
 // A topic ("zombie") is more specific than a mood and keeps its own keyword search.
 function applyMoodProfile(result, parsed) {
   const profile = MOOD_PROFILES[parsed.moodProfile];
-  if (!profile || result.company_id || result.keywords) return;
+  if (!profile || result.company_id) return;
+  // "cozy anime": anime is not a topic that outranks the mood. The mood name is enough: the client
+  // has its own anime recipe for each mood (TYPE_MOODS in script.js)
+  if (result.keywords?.length && result.keywords.every(id => id === 210024)) {
+    result.mood = parsed.moodProfile;
+    return;
+  }
+  if (result.keywords) return;
 
   result.mood = parsed.moodProfile;
   result.keywords_any = profile.keywords_any;
