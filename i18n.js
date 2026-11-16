@@ -22,7 +22,7 @@
     'home.page_title': { en: 'MovieMood: Find a Movie for Your Mood', uk: 'MovieMood: фільм під ваш настрій', ru: 'MovieMood: фильм под ваше настроение', fr: 'MovieMood : un film selon votre humeur', es: 'MovieMood: una película para tu estado de ánimo', de: 'MovieMood: der passende Film für deine Stimmung' },
     'home.title': { en: "What's your", uk: 'Який у вас', ru: 'Какое у вас', fr: 'Quelle est votre', es: '¿Cómo te', de: 'Wie ist deine' },
     'home.title_accent': { en: 'mood?', uk: 'настрій?', ru: 'настроение?', fr: 'humeur ?', es: 'sientes?', de: 'Stimmung?' },
-    'home.subtitle': { en: "Tell us how you feel - we'll find the perfect film.", uk: 'Розкажіть, що на душі, — ми підберемо фільм.', ru: 'Расскажите, что на душе, — мы подберём фильм.', fr: 'Dites-nous comment vous vous sentez, nous trouvons le film.', es: 'Cuéntanos cómo te sientes y encontramos la película.', de: 'Sag uns, wie du dich fühlst – wir finden den passenden Film.' },
+    'home.subtitle': { en: "Type how you feel, a film you loved or just what you want tonight.", uk: "Напишіть, який у вас настрій, який фільм сподобався або що хочеться сьогодні.", ru: "Напишите, какое у вас настроение, какой фильм понравился или что хочется сегодня.", fr: "Écrivez votre humeur, un film que vous avez aimé ou simplement votre envie du soir.", es: "Escribe cómo te sientes, una película que te gustó o lo que te apetece esta noche.", de: "Schreib, wie du dich fühlst, welcher Film dir gefallen hat oder worauf du heute Lust hast." },
     'home.search': { en: 'Search', uk: 'Знайти', ru: 'Найти', fr: 'Chercher', es: 'Buscar', de: 'Suchen' },
     'home.random': { en: 'Random', uk: 'Навмання', ru: 'Наугад', fr: 'Au hasard', es: 'Al azar', de: 'Zufall' },
     'home.random_hint': { en: 'Show random films', uk: 'Показати випадкові фільми', ru: 'Показать случайные фильмы', fr: 'Afficher des films au hasard', es: 'Mostrar películas al azar', de: 'Zufällige Filme zeigen' },
@@ -32,7 +32,7 @@
     'home.content_type': { en: 'Content type', uk: 'Тип', ru: 'Тип', fr: 'Type de contenu', es: 'Tipo de contenido', de: 'Inhaltstyp' },
     'home.options': { en: 'Options', uk: 'Параметри', ru: 'Параметры', fr: 'Options', es: 'Opciones', de: 'Optionen' },
     'home.include_anime': { en: 'Anime only', uk: 'Тільки аніме', ru: 'Только аниме', fr: 'Uniquement des animes', es: 'Solo anime', de: 'Nur Anime' },
-    'home.examples': { en: 'Try: "horrors of 90s" · "80s action" · "dark sci-fi like Interstellar"', uk: 'Спробуйте: «жахи 90-х» · «затишний вечір» · «комедія про зомбі»', ru: 'Попробуйте: «ужасы 90-х» · «уютный вечер» · «комедия про зомби»', fr: 'Essayez : « horreur des années 90 » · « soirée cocooning » · « comédie de zombies »', es: 'Prueba: «terror de los 90» · «noche tranquila» · «comedia de zombis»', de: 'Probier: „Horror der 90er“ · „ruhiger Abend“ · „Zombie-Komödie“' },
+    'home.examples': { en: 'Try: "horrors of 90s", "80s action", "dark sci-fi like Interstellar"', uk: 'Спробуйте: «жахи 90-х», «затишний вечір», «комедія про зомбі»', ru: 'Попробуйте: «ужасы 90-х», «уютный вечер», «комедия про зомби»', fr: 'Essayez : « horreur des années 90 », « soirée cocooning », « comédie de zombies »', es: 'Prueba: «terror de los 90», «noche tranquila», «comedia de zombis»', de: 'Probier: „Horror der 90er“, „ruhiger Abend“, „Zombie-Komödie“' },
     'home.load_more': { en: 'Load More', uk: 'Показати ще', ru: 'Показать ещё', fr: 'Voir plus', es: 'Ver más', de: 'Mehr laden' },
     'home.browse_moods': { en: 'Browse movies by mood', uk: 'Добірки під настрій', ru: 'Подборки под настроение', fr: 'Films par humeur', es: 'Películas por ánimo', de: 'Filme nach Stimmung' },
     'home.empty_search': { en: 'No movies found. Try a different mood!', uk: 'Нічого не знайшлося. Спробуйте інший настрій!', ru: 'Ничего не нашлось. Попробуйте другое настроение!', fr: 'Aucun film trouvé. Essayez une autre humeur !', es: 'No encontramos nada. ¡Prueba con otro ánimo!', de: 'Nichts gefunden. Probier eine andere Stimmung!' },
@@ -70,7 +70,7 @@
     'card.favorite': { en: 'Add to favorites', uk: 'Додати в обране', ru: 'Добавить в избранное', fr: 'Ajouter aux favoris', es: 'Añadir a favoritos', de: 'Zu Favoriten hinzufügen' },
     'card.unfavorite': { en: 'Remove from favorites', uk: 'Прибрати з обраного', ru: 'Убрать из избранного', fr: 'Retirer des favoris', es: 'Quitar de favoritos', de: 'Aus Favoriten entfernen' },
     'card.mark_watched': { en: 'Mark as watched', uk: 'Позначити переглянутим', ru: 'Отметить просмотренным', fr: 'Marquer comme vu', es: 'Marcar como vista', de: 'Als gesehen markieren' },
-    'card.unmark_watched': { en: 'Watched - click to undo', uk: 'Переглянуто — натисніть, щоб скасувати', ru: 'Просмотрено — нажмите, чтобы отменить', fr: 'Vu - cliquez pour annuler', es: 'Vista: pulsa para deshacer', de: 'Gesehen – klicken zum Rückgängigmachen' },
+    'card.unmark_watched': { en: 'Watched — click to undo', uk: 'Переглянуто — натисніть, щоб скасувати', ru: 'Просмотрено — нажмите, чтобы отменить', fr: 'Vu - cliquez pour annuler', es: 'Vista: pulsa para deshacer', de: 'Gesehen – klicken zum Rückgängigmachen' },
     'card.watched': { en: 'Watched', uk: 'Переглянуто', ru: 'Просмотрено', fr: 'Vu', es: 'Vista', de: 'Gesehen' },
     'card.remove': { en: 'Remove', uk: 'Прибрати', ru: 'Убрать', fr: 'Retirer', es: 'Quitar', de: 'Entfernen' },
     // short labels of the mood buttons under the home page search
@@ -171,7 +171,7 @@
     'tag.inspirational': { en: 'Inspiring', uk: 'Надихаючий', ru: 'Вдохновляющий', fr: 'Inspirant', es: 'Inspirador', de: 'Inspirierend' },
 
     // trailer feed
-    'feed.page_title': { en: 'Trailer Feed - MovieMood', uk: 'Трейлери — MovieMood', ru: 'Трейлеры — MovieMood', fr: 'Bandes-annonces — MovieMood', es: 'Tráilers — MovieMood', de: 'Trailer — MovieMood' },
+    'feed.page_title': { en: 'Trailer Feed — MovieMood', uk: 'Трейлери — MovieMood', ru: 'Трейлеры — MovieMood', fr: 'Bandes-annonces — MovieMood', es: 'Tráilers — MovieMood', de: 'Trailer — MovieMood' },
     'feed.loading': { en: 'Loading trailers...', uk: 'Завантажуємо трейлери...', ru: 'Загружаем трейлеры...', fr: 'Chargement des bandes-annonces...', es: 'Cargando tráilers...', de: 'Trailer werden geladen...' },
     'feed.none': { en: 'No trailers found right now. Try again in a minute.', uk: 'Зараз трейлерів немає. Спробуйте за хвилину.', ru: 'Сейчас трейлеров нет. Попробуйте через минуту.', fr: "Aucune bande-annonce pour l'instant. Réessayez dans une minute.", es: 'No hay tráilers ahora. Inténtalo en un minuto.', de: 'Gerade keine Trailer gefunden. Versuch es in einer Minute noch einmal.' },
     'feed.failed': { en: 'Failed to load feed. Try refresh.', uk: 'Не вдалося завантажити. Оновіть сторінку.', ru: 'Не удалось загрузить. Обновите страницу.', fr: 'Échec du chargement. Actualisez la page.', es: 'No se pudo cargar. Actualiza la página.', de: 'Laden fehlgeschlagen. Aktualisiere die Seite.' },
@@ -189,14 +189,14 @@
     'feed.next': { en: 'Next trailer', uk: 'Наступний трейлер', ru: 'Следующий трейлер', fr: 'Bande-annonce suivante', es: 'Tráiler siguiente', de: 'Nächster Trailer' },
 
     // favorites / watched lists
-    'fav.page_title': { en: 'Favorites - MovieMood', uk: 'Обране — MovieMood', ru: 'Избранное — MovieMood', fr: 'Favoris — MovieMood', es: 'Favoritos — MovieMood', de: 'Favoriten — MovieMood' },
+    'fav.page_title': { en: 'Favorites — MovieMood', uk: 'Обране — MovieMood', ru: 'Избранное — MovieMood', fr: 'Favoris — MovieMood', es: 'Favoritos — MovieMood', de: 'Favoriten — MovieMood' },
     'fav.title': { en: 'My Favorites', uk: 'Моє обране', ru: 'Моё избранное', fr: 'Mes favoris', es: 'Mis favoritos', de: 'Meine Favoriten' },
     'fav.count': { en: 'Saved: {n}', uk: 'Збережено: {n}', ru: 'Сохранено: {n}', fr: 'Enregistrés : {n}', es: 'Guardados: {n}', de: 'Gespeichert: {n}' },
     'fav.empty_title': { en: 'No favorites yet', uk: 'Обраного поки немає', ru: 'В избранном пока пусто', fr: 'Pas encore de favoris', es: 'Aún no hay favoritos', de: 'Noch keine Favoriten' },
-    'fav.empty_text': { en: 'Explore movies and hit ❤️ to save them here', uk: 'Шукайте фільми й тисніть ❤️, щоб зберегти їх тут', ru: 'Ищите фильмы и нажимайте ❤️, чтобы сохранить их здесь', fr: 'Explorez des films et appuyez sur ❤️ pour les garder ici', es: 'Explora películas y pulsa ❤️ para guardarlas aquí', de: 'Entdecke Filme und tippe auf ❤️, um sie hier zu speichern' },
+    'fav.empty_text': { en: 'Explore movies and hit ♡ to save them here', uk: 'Шукайте фільми й тисніть ♡, щоб зберегти їх тут', ru: 'Ищите фильмы и нажимайте ♡, чтобы сохранить их здесь', fr: 'Explorez des films et appuyez sur ♡ pour les garder ici', es: 'Explora películas y pulsa ♡ para guardarlas aquí', de: 'Entdecke Filme und tippe auf ♡, um sie hier zu speichern' },
     'fav.clear': { en: 'Clear all favorites', uk: 'Очистити обране', ru: 'Очистить избранное', fr: 'Vider les favoris', es: 'Vaciar favoritos', de: 'Alle Favoriten löschen' },
     'fav.clear_confirm': { en: 'Remove all favorites?', uk: 'Прибрати все з обраного?', ru: 'Убрать всё из избранного?', fr: 'Retirer tous les favoris ?', es: '¿Quitar todos los favoritos?', de: 'Alle Favoriten entfernen?' },
-    'seen.page_title': { en: 'Watched - MovieMood', uk: 'Переглянуте — MovieMood', ru: 'Просмотрено — MovieMood', fr: 'Déjà vus — MovieMood', es: 'Vistos — MovieMood', de: 'Gesehen — MovieMood' },
+    'seen.page_title': { en: 'Watched — MovieMood', uk: 'Переглянуте — MovieMood', ru: 'Просмотрено — MovieMood', fr: 'Déjà vus — MovieMood', es: 'Vistos — MovieMood', de: 'Gesehen — MovieMood' },
     'seen.title': { en: 'Watched', uk: 'Переглянуте', ru: 'Просмотрено', fr: 'Déjà vus', es: 'Vistos', de: 'Gesehen' },
     'seen.count': { en: 'Watched: {n}', uk: 'Переглянуто: {n}', ru: 'Просмотрено: {n}', fr: 'Vus : {n}', es: 'Vistos: {n}', de: 'Gesehen: {n}' },
     'seen.empty_title': { en: 'No watched titles yet', uk: 'Переглянутого поки немає', ru: 'Просмотренного пока нет', fr: 'Rien de vu pour le moment', es: 'Aún no hay títulos vistos', de: 'Noch nichts gesehen' },
@@ -224,17 +224,17 @@
     ['#filtersBtn .btn-label', 'home.filters'],
     ['.chip-icon[data-press="surpriseBtn"]', 'home.random_hint', 'title'],
     ['.chip-icon[data-press="filtersBtn"]', 'home.filters', 'title'],
-    ['.region-label', 'home.region', 'text', '🌍'],
+    ['.region-label', 'home.region', 'text'],
     ['.filter-group:nth-child(1) .filter-group-label', 'home.content_type'],
     ['.filter-group:nth-child(2) .filter-group-label', 'home.options'],
-    ['.tab[data-type="movie"]', 'type.movies', 'text', '🎬'],
-    ['.tab[data-type="tv"]', 'type.series', 'text', '📺'],
-    ['.tab[data-type="documentary"]', 'type.documentary', 'text', '🎥'],
+    ['.tab[data-type="movie"]', 'type.movies', 'text'],
+    ['.tab[data-type="tv"]', 'type.series', 'text'],
+    ['.tab[data-type="documentary"]', 'type.documentary', 'text'],
     ['.anime-toggle .toggle-label', 'home.include_anime'],
     ['.example-text', 'home.examples'],
     ['.home-footer .footer-moods', 'home.browse_moods'],
     ['.home-footer .footer-tmdb', 'footer.tmdb'],
-    ['#btnPlayTrailer', 'movie.play_trailer', 'text', '▶'],
+    ['#btnPlayTrailer', 'movie.play_trailer', 'text', 'play'],
     ['.info-row[data-row="director"] .info-label', 'movie.director'],
     ['.info-row[data-row="cast"] .info-label', 'movie.cast'],
     ['.info-row[data-row="genres"] .info-label', 'movie.genres'],
@@ -244,11 +244,11 @@
     ['body[data-page="favorites"] .page-title', 'fav.title'],
     ['body[data-page="favorites"] .fav-empty h2', 'fav.empty_title'],
     ['body[data-page="favorites"] .fav-empty p', 'fav.empty_text'],
-    ['#clearAllBtn', 'fav.clear', 'text', '🗑️'],
+    ['#clearAllBtn', 'fav.clear', 'text'],
     ['body[data-page="seen"] .page-title', 'seen.title'],
     ['body[data-page="seen"] .fav-empty h2', 'seen.empty_title'],
     ['body[data-page="seen"] .fav-empty p', 'seen.empty_text'],
-    ['#clearSeenBtn', 'seen.clear', 'text', '🗑️']
+    ['#clearSeenBtn', 'seen.clear', 'text']
   ];
 
   const PAGE_TITLES = { home: 'home.page_title', feed: 'feed.page_title', favorites: 'fav.page_title', seen: 'seen.page_title' };
@@ -322,11 +322,12 @@
     const page = document.body.dataset.page;
     if (PAGE_TITLES[page]) document.title = t(PAGE_TITLES[page]);
 
-    for (const [selector, key, mode = 'text', emoji] of BINDINGS) {
+    for (const [selector, key, mode = 'text', icon] of BINDINGS) {
       document.querySelectorAll(selector).forEach(el => {
         const text = t(key);
         if (mode === 'title') { el.title = text; el.setAttribute('aria-label', text); }
-        else el.textContent = emoji ? `${emoji} ${text}` : text;
+        else if (icon) el.replaceChildren(mmIcon(icon), ` ${text}`);
+        else el.textContent = text;
       });
     }
 
@@ -363,6 +364,14 @@
     }
   }
 
+  // A line icon from the set in style.css (.i-heart, .i-eye...): emoji look different on every system
+  function mmIcon(name) {
+    const icon = document.createElement('span');
+    icon.className = `i i-${name}`;
+    icon.setAttribute('aria-hidden', 'true');
+    return icon;
+  }
+
   window.MM_LANG = lang;
   window.mmLangPath = langPath;
   // for the language picker in nav.js
@@ -370,6 +379,8 @@
   window.TMDB_LANG = TMDB_LOCALES[lang];
   window.t = t;
   window.mmDisplayName = displayName;
+  window.mmIcon = mmIcon;
+  window.mmIconHtml = name => `<span class="i i-${name}" aria-hidden="true"></span>`;
 
   applyTranslations();
 })();

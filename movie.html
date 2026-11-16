@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://api.themoviedb.org">
   <link rel="preconnect" href="https://image.tmdb.org">
-  <link rel="stylesheet" href="style.css?v=2026111611">
+  <link rel="stylesheet" href="style.css?v=2026111705">
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,700&family=Inter:wght@300;400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,700&family=Inter:wght@300;400;500;600&display=swap"></noscript>
   <link rel="icon" href="/favicon.ico?v=3" sizes="16x16 32x32 48x48">
   <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml">
@@ -22,14 +22,14 @@
 </head>
 <body class="movie-body" data-page="movie">
   <nav class="movie-nav">
-    <a href="/" class="nav-logo">MovieMood</a>
+    <a href="/" class="nav-logo">MOVIEMOOD</a>
     <div class="nav-links">
-      <a href="feed.html" class="nav-link">&#x1F3AC; Feed</a>
+      <a href="feed.html" class="nav-link">Feed</a>
       <a href="favorites.html" class="nav-link">&#x2764;&#xFE0F; Favorites</a>
-      <a href="seen.html" class="nav-link">&#x1F37F; Seen</a>
+      <a href="seen.html" class="nav-link">Seen</a>
       <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
-        <span class="icon-sun">&#x2600;&#xFE0F;</span>
-        <span class="icon-moon">&#x1F319;</span>
+        <span class="icon-sun"><span class="i i-sun" aria-hidden="true"></span></span>
+        <span class="icon-moon"><span class="i i-moon" aria-hidden="true"></span></span>
       </button>
     </div>
   </nav>
@@ -46,15 +46,15 @@
         <div class="hero-moods" id="heroMoods" hidden></div>
         <p class="hero-overview" id="movieOverview"></p>
         <div class="hero-actions">
-          <button class="btn-play" id="btnPlayTrailer">&#x25B6; Play Trailer</button>
-          <button class="btn-fav" id="btnFavorite">&#x1F90D; Add to Favorites</button>
+          <button class="btn-play" id="btnPlayTrailer"><span class="i i-play" aria-hidden="true"></span> Play Trailer</button>
+          <button class="btn-fav" id="btnFavorite"><span class="i i-heart" aria-hidden="true"></span> Add to Favorites</button>
           <button class="btn-fav" id="btnWatched" type="button"></button>
-          <a href="#" class="btn-imdb" id="imdbLink" target="_blank" rel="noopener" style="display: none;">&#x1F3AC; IMDb</a>
+          <a href="#" class="btn-imdb" id="imdbLink" target="_blank" rel="noopener" style="display: none;">IMDb</a>
         </div>
         <div class="hero-providers" id="watchProviders"></div>
       </div>
     </div>
-    <button class="mute-btn" id="muteBtn" style="display: none;">&#x1F507;</button>
+    <button class="mute-btn" id="muteBtn" style="display: none;"><span class="i i-volume-off" aria-hidden="true"></span></button>
   </section>
 
   <section class="movie-details-section">
@@ -122,12 +122,12 @@
     });
   </script>
 
-  <script src="i18n.js?v=2026111611"></script>
+  <script src="i18n.js?v=2026111705"></script>
 
-  <script src="/urls.js?v=2026111611"></script>
-  <script src="nav.js?v=2026111611"></script>
+  <script src="/urls.js?v=2026111705"></script>
+  <script src="nav.js?v=2026111705"></script>
 
-  <script src="movie.js?v=2026111611"></script>
+  <script src="movie.js?v=2026111705"></script>
 </body>
 </html>
 

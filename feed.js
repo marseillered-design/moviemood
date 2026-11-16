@@ -167,7 +167,9 @@ function actionButton(className, onClick) {
 }
 
 function setAction(button, icon, label) {
-  button.querySelector('.reel-action-icon').textContent = icon;
+  // a name from the icon set ("heart") or a plain sign ("↗")
+  const holder = button.querySelector('.reel-action-icon');
+  if (/^[a-z-]+$/.test(icon)) holder.replaceChildren(mmIcon(icon)); else holder.textContent = icon;
   button.querySelector('.reel-action-label').textContent = label;
   button.setAttribute('aria-label', label);
 }
@@ -205,7 +207,7 @@ function createReel(item, index) {
     reel.querySelector('.reel-poster').src = `${TMDB_POSTER_URL}${image}`;
   }
   reel.querySelector('.reel-title').textContent = title;
-  reel.querySelector('.reel-sub').textContent = [year, score ? `⭐ ${score}` : '', typeLabel].filter(Boolean).join(' · ');
+  reel.querySelector('.reel-sub').textContent = [year, score ? `★ ${score}` : '', typeLabel].filter(Boolean).join(', ');
   reel.querySelector('.reel-overview').textContent = item.overview || '';
 
   // Long descriptions open on tap
@@ -239,14 +241,14 @@ function detailsUrl(item) {
 
 function updateLike(button, item) {
   const liked = isFavorite(item);
-  setAction(button, liked ? '❤️' : '🤍', liked ? t('feed.liked') : t('feed.like'));
+  setAction(button, liked ? 'heart-fill' : 'heart', liked ? t('feed.liked') : t('feed.like'));
   button.classList.toggle('active', liked);
 }
 
 // Sound and frame mode are shared by every reel
 function updateSharedButtons() {
   document.querySelectorAll('.reel-sound').forEach(button => {
-    setAction(button, feedState.muted ? '🔇' : '🔊', feedState.muted ? t('feed.sound_off') : t('feed.sound_on'));
+    setAction(button, feedState.muted ? 'volume-off' : 'volume', feedState.muted ? t('feed.sound_off') : t('feed.sound_on'));
   });
   document.querySelectorAll('.reel-fit').forEach(button => {
     setAction(button, feedState.fit ? '⤢' : '⤡', feedState.fit ? t('feed.fill') : t('feed.fit'));

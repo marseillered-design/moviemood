@@ -37,7 +37,9 @@
   function menuLink(href, icon, label, count) {
     const link = el('a', 'nav-menu-item');
     link.href = href;
-    link.append(el('span', '', `${icon} ${label}`));
+    const text = el('span', '', ` ${label}`);
+    text.prepend(mmIcon(icon));
+    link.append(text);
     if (count) link.append(el('span', 'nav-menu-count', String(count)));
     return link;
   }
@@ -46,7 +48,8 @@
   const watchedCount = readCount('watched');
 
   // Favorites: always visible, like a shopping cart
-  const favorites = el('a', 'nav-icon-btn nav-favorites-btn', '♥');
+  const favorites = el('a', 'nav-icon-btn nav-favorites-btn');
+  favorites.append(mmIcon('heart'));
   favorites.href = '/favorites.html';
   favorites.title = t('nav.favorites');
   favorites.setAttribute('aria-label', t('nav.favorites'));
@@ -54,7 +57,8 @@
 
   // Menu
   const menu = el('div', 'nav-menu');
-  const menuButton = el('button', 'nav-icon-btn', '☰');
+  const menuButton = el('button', 'nav-icon-btn');
+  menuButton.append(mmIcon('menu'));
   menuButton.type = 'button';
   menuButton.title = t('nav.menu');
   menuButton.setAttribute('aria-label', t('nav.menu'));
@@ -65,20 +69,20 @@
   panel.hidden = true;
   // On phones the trailers link does not fit next to the logo: it moves into the menu
   const mobileLinks = el('div', 'nav-menu-mobile');
-  mobileLinks.append(menuLink('/feed.html', '▶️', t('nav.feed')));
+  mobileLinks.append(menuLink('/feed.html', 'play', t('nav.feed')));
 
   panel.append(
     mobileLinks,
     // mood collections also open from the 😊 button next to the search on the home page
-    menuLink(window.mmLangPath('/moods'), '🎭', t('nav.moods')),
+    menuLink(window.mmLangPath('/moods'), 'grid', t('nav.moods')),
     el('div', 'nav-menu-sep'),
-    menuLink('/favorites.html', '❤️', t('nav.favorites'), favoritesCount),
-    menuLink('/seen.html', '✅', t('nav.seen'), watchedCount),
+    menuLink('/favorites.html', 'heart', t('nav.favorites'), favoritesCount),
+    menuLink('/seen.html', 'eye', t('nav.seen'), watchedCount),
     el('div', 'nav-menu-sep')
   );
 
   const languageRow = el('label', 'nav-menu-row');
-  languageRow.append(el('span', '', `🌐 ${t('nav.language')}`));
+  languageRow.append(el('span', '', t('nav.language')));
   const languageSelect = el('select', 'lang-select');
   for (const [code, name] of Object.entries(window.MM_LANGUAGES || {})) {
     const option = el('option', '', name);

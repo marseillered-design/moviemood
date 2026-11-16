@@ -1339,7 +1339,7 @@ function renderUnderstood(aiData) {
     else if (to) chips.push(t('home.until_year', { year: to }));
     else if (from) chips.push(t('home.since_year', { year: from }));
 
-    (aiData.avoid || []).forEach(what => chips.push(`🚫 ${t(`avoid.${what}`)}`));
+    (aiData.avoid || []).forEach(what => chips.push(`✕ ${t(`avoid.${what}`)}`));
 
     if (aiData.search_query) chips.push(`${t('home.title_search')}: «${aiData.search_query}»`);
   }
@@ -1448,12 +1448,12 @@ function isFavorite(id, mediaType = 'movie') {
   return favorites.some(f => f.id === id && normalizeMediaType(f.media_type) === normalizedType);
 }
 
-const FAV_ICONS = { on: '\u2764\uFE0F', off: '\uD83E\uDD0D' };
+const FAV_ICONS = { on: 'heart-fill', off: 'heart' };
 // The eye in both states, like the heart: a watched title gets a lit-up eye (see .watched-btn.active)
-const WATCHED_ICONS = { on: '\uD83D\uDC41\uFE0F', off: '\uD83D\uDC41\uFE0F' };
+const WATCHED_ICONS = { on: 'eye', off: 'eye' };
 
 function setCardButton(button, active, icons, labels) {
-  button.textContent = active ? icons.on : icons.off;
+  button.replaceChildren(mmIcon(active ? icons.on : icons.off));
   button.classList.toggle('active', active);
   button.title = t(active ? labels.on : labels.off);
   button.setAttribute('aria-label', button.title);

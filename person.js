@@ -124,7 +124,7 @@ async function loadPerson() {
     const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '';
     const role = movie.character || movie.job || '';
     const cardType = normalizeMediaType(movie.media_type || (movie.first_air_date ? 'tv' : 'movie'));
-    const favIcon = isFavoriteItem(movie.id, cardType) ? '\u2764\uFE0F' : '\uD83E\uDD0D';
+    const favIcon = mmIconHtml(isFavoriteItem(movie.id, cardType) ? 'heart-fill' : 'heart');
 
     // A real link: search engines follow it from the person to the films
     const card = document.createElement('a');
@@ -155,7 +155,7 @@ async function loadPerson() {
         poster_path: movie.poster_path,
         media_type: cardType
       });
-      favBtn.textContent = nowFavorite ? '\u2764\uFE0F' : '\uD83E\uDD0D';
+      favBtn.replaceChildren(mmIcon(nowFavorite ? 'heart-fill' : 'heart'));
     });
 
     grid.appendChild(card);

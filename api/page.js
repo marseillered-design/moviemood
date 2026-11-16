@@ -16,7 +16,7 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 // posters in the card grids: sharp at card size, half the weight of w500
 const TMDB_CARD_URL = 'https://image.tmdb.org/t/p/w342';
-const ASSET_VERSION = '2026111611';
+const ASSET_VERSION = '2026111705';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -597,12 +597,12 @@ const TEXT = {
   home_h1: { en: 'What’s your', uk: 'Який у вас', ru: 'Какое у вас', fr: 'Quelle est votre', es: '¿Cómo te', de: 'Wie ist deine' },
   home_h1_accent: { en: 'mood?', uk: 'настрій?', ru: 'настроение?', fr: 'humeur ?', es: 'sientes?', de: 'Stimmung?' },
   home_subtitle: {
-    en: 'Tell us how you feel - we’ll find the perfect film.',
-    uk: 'Розкажіть, що на душі, — ми підберемо фільм.',
-    ru: 'Расскажите, что на душе, — мы подберём фильм.',
-    fr: 'Dites-nous comment vous vous sentez, nous trouvons le film.',
-    es: 'Cuéntanos cómo te sientes y encontramos la película.',
-    de: 'Sag uns, wie du dich fühlst – wir finden den passenden Film.'
+    en: "Type how you feel, a film you loved or just what you want tonight.",
+    uk: "Напишіть, який у вас настрій, який фільм сподобався або що хочеться сьогодні.",
+    ru: "Напишите, какое у вас настроение, какой фильм понравился или что хочется сегодня.",
+    fr: "Écrivez votre humeur, un film que vous avez aimé ou simplement votre envie du soir.",
+    es: "Escribe cómo te sientes, una película que te gustó o lo que te apetece esta noche.",
+    de: "Schreib, wie du dich fühlst, welcher Film dir gefallen hat oder worauf du heute Lust hast."
   },
   // "How MovieMood works" on the home page (about.* in i18n.js)
   about: {
@@ -865,8 +865,8 @@ function layout({ lang = 'en', origin, path, title, description, image, head = '
       <a href="/feed.html" class="nav-text-link">${tr(lang, 'trailers')}</a>
       <a href="/favorites.html" class="nav-text-link">${tr(lang, 'favorites')}</a>
       <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle theme">
-        <span class="icon-sun">&#x2600;&#xFE0F;</span>
-        <span class="icon-moon">&#x1F319;</span>
+        <span class="icon-sun"><span class="i i-sun" aria-hidden="true"></span></span>
+        <span class="icon-moon"><span class="i i-moon" aria-hidden="true"></span></span>
       </button>
     </div>
   </nav>
@@ -901,7 +901,7 @@ function layout({ lang = 'en', origin, path, title, description, image, head = '
 }
 
 const moodChips = (lang, exceptSlug = '') => `<div class="mood-chips">
-      ${moodsInSeasonOrder().filter(m => m.slug !== exceptSlug).map(m => `<a class="mood-chip" href="${langPath(lang, `/moods/${m.slug}`)}">${m.emoji} ${escapeHtml(moodTitle(m, lang))}</a>`).join('\n      ')}
+      ${moodsInSeasonOrder().filter(m => m.slug !== exceptSlug).map(m => `<a class="mood-chip" href="${langPath(lang, `/moods/${m.slug}`)}">${escapeHtml(moodTitle(m, lang))}</a>`).join('\n      ')}
     </div>`;
 
 function movieCard(movie, lang, path = titlePath(movie)) {
@@ -926,7 +926,7 @@ function likeItem(item, lang, position) {
   const title = item.title || item.name;
   const year = (item.release_date || item.first_air_date || '').slice(0, 4);
   const rating = item.vote_average ? item.vote_average.toFixed(1) : '';
-  const genres = (item.genres || []).slice(0, 3).map(g => g.name).join(' · ');
+  const genres = (item.genres || []).slice(0, 3).map(g => g.name).join(', ');
   const overview = truncate(item.overview, 300);
   return `<li class="like-item">
         <a class="like-item-poster" href="${langPath(lang, item.path)}">
@@ -934,7 +934,7 @@ function likeItem(item, lang, position) {
         </a>
         <div class="like-item-text">
           <h2 class="like-item-title"><span class="like-item-number">${position}.</span> <a href="${langPath(lang, item.path)}">${escapeHtml(title)}</a>${year ? ` <span class="like-item-year">(${year})</span>` : ''}</h2>
-          <p class="like-item-meta">${[rating && `★ ${rating}`, genres].filter(Boolean).join(' · ')}</p>
+          <p class="like-item-meta">${[rating && `★ ${rating}`, genres].filter(Boolean).map(part => `<span>${part}</span>`).join('')}</p>
           ${overview ? `<p class="like-item-overview">${escapeHtml(overview)}</p>` : ''}
         </div>
       </li>`;
@@ -1087,7 +1087,7 @@ async function renderLikePage(type, id, origin, requestedPath, lang) {
       ${source.poster_path ? `<img src="${TMDB_CARD_URL}${source.poster_path}" alt="${escapeHtml(name)} ${tr(lang, 'poster')}" width="48" height="72">` : ''}
       <span class="like-source-text">
         <strong>${escapeHtml(name)}</strong>
-        <span class="like-source-meta">${[year, rating && `★ ${rating}`].filter(Boolean).join(' · ')}</span>
+        <span class="like-source-meta">${[year, rating && `★ ${rating}`].filter(Boolean).map(part => `<span>${part}</span>`).join('')}</span>
         <span class="like-source-link">${escapeHtml(tr(lang, 'like_where', { name }))} →</span>
       </span>
     </a>`,
@@ -1124,7 +1124,6 @@ function renderMoodIndex(origin, lang) {
     <p class="home-subtitle mood-intro">${escapeHtml(tr(lang, 'index_intro')).replace('{link}', homeLink)}</p>`,
     main: `<section class="mood-list">
       ${moodsInSeasonOrder().map(m => `<a class="mood-tile"href="${langPath(lang, `/moods/${m.slug}`)}">
-        <span class="mood-tile-emoji">${m.emoji}</span>
         <h2 class="mood-tile-title">${escapeHtml(moodTitle(m, lang))}</h2>
         <p class="mood-tile-text">${escapeHtml(truncate(moodIntro(m, lang), 110))}</p>
       </a>`).join('\n      ')}
@@ -1235,7 +1234,7 @@ async function relatedSection(type, id, details, lang) {
   if (moods.length) {
     parts.push(`<h2 class="section-title">${escapeHtml(tr(lang, 'fits_mood'))}</h2>
       <div class="related-chips">
-      ${[...moods].sort((a, b) => a.pos - b.pos).map(({ mood, pos, total }) => `<a class="mood-chip" href="${langPath(lang, `/moods/${mood.slug}`)}">${mood.emoji} ${escapeHtml(moodTitle(mood, lang))}${mood.sections ? '' : ` <small>${escapeHtml(tr(lang, 'mood_rank', { pos, total }))}</small>`}</a>`).join('\n      ')}
+      ${[...moods].sort((a, b) => a.pos - b.pos).map(({ mood, pos, total }) => `<a class="mood-chip" href="${langPath(lang, `/moods/${mood.slug}`)}">${escapeHtml(moodTitle(mood, lang))}${mood.sections ? '' : ` <small>${escapeHtml(tr(lang, 'mood_rank', { pos, total }))}</small>`}</a>`).join('\n      ')}
       </div>`);
   }
   const likedLinks = liked.filter(Boolean);
@@ -1257,7 +1256,7 @@ async function relatedSection(type, id, details, lang) {
         if (film.id === id) return `<strong>${label}</strong>`;
         const slugTitle = lang === 'en' ? film.title : englishTitles.get(film.id) || (film.original_language === 'en' ? film.original_title : '');
         return `<a href="${langPath(lang, titlePath({ id: film.id, slug_title: slugTitle }))}">${label}</a>`;
-      }).join(' · ')}</p>`);
+      }).join('')}</p>`);
   }
   return parts.length ? `<section class="related-section">
       ${parts.join('\n      ')}
@@ -1402,7 +1401,7 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   const genres = details.genres || [];
   const rating = details.vote_average ? details.vote_average.toFixed(1) : '';
   const metaHtml = [year, details.runtime ? tr(lang, 'minutes', { n: details.runtime }) : '', rating ? `${tr(lang, 'rating')} ${rating}` : '']
-    .filter(Boolean).map(part => `<span>${escapeHtml(part)}</span>`).join(' · ');
+    .filter(Boolean).map(part => `<span>${escapeHtml(part)}</span>`).join('');
   const crew = details.credits?.crew || [];
   const director = crew.find(p => p.job === 'Director') || crew.find(p => p.department === 'Directing');
   // people's addresses carry the Latin name, as on their own pages (Кіану Рівз → keanu-reeves)

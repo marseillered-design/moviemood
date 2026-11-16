@@ -113,7 +113,7 @@ async function loadMovie() {
   document.getElementById('tmdbRating').textContent = rating;
 
   const metaParts = [year, runtime, rating ? `${t('movie.rating')} ${rating}` : ''].filter(Boolean);
-  document.getElementById('heroMeta').innerHTML = metaParts.map(p => `<span>${p}</span>`).join(' · ');
+  document.getElementById('heroMeta').innerHTML = metaParts.map(p => `<span>${p}</span>`).join('');
 
   const badges = details.genres?.slice(0, 3).map(g => `<span class="badge">${mmEsc(g.name)}</span>`).join('') || '';
   document.getElementById('heroBadges').innerHTML = badges;
@@ -213,7 +213,7 @@ async function loadMovie() {
 
     similarGrid.innerHTML = similarItems.map(m => {
       const simRating = m.vote_average ? m.vote_average.toFixed(1) : '';
-      const fav = isFavoriteItem(m.id, mediaType) ? '\u2764\uFE0F' : '\uD83E\uDD0D';
+      const fav = mmIconHtml(isFavoriteItem(m.id, mediaType) ? 'heart-fill' : 'heart');
       return `
         <a class="similar-card" href="${mmTitleUrl(m, mediaType)}" data-id="${m.id}" data-type="${normalizeMediaType(mediaType)}" data-title="${mmEsc(m.title || m.name || '')}" data-poster="${m.poster_path || ''}">
           <div class="similar-poster-wrap">
@@ -238,7 +238,7 @@ async function loadMovie() {
         const poster_path = card.dataset.poster || null;
 
         const nowFavorite = toggleFavoriteItem({ id, title, poster_path, media_type: type });
-        btn.textContent = nowFavorite ? '\u2764\uFE0F' : '\uD83E\uDD0D';
+        btn.replaceChildren(mmIcon(nowFavorite ? 'heart-fill' : 'heart'));
       });
     });
   }
@@ -325,7 +325,7 @@ function setupWatchedBtn(details) {
 
   const update = () => {
     // the same eye as on the cards, lit up once watched
-    setIconLabel(btn, '👁️', t(isWatched() ? 'card.watched' : 'card.mark_watched'));
+    setIconLabel(btn, mmIcon('eye'), t(isWatched() ? 'card.watched' : 'card.mark_watched'));
     btn.classList.toggle('watched-on', isWatched());
   };
 
@@ -354,7 +354,8 @@ function showImdb(imdbId) {
     .then(res => (res.ok ? res.json() : {}))
     .then(({ rating, votes }) => {
       if (!rating) return;
-      setIconLabel(button, `⭐ ${rating}`, 'IMDb');
+      setIconLabel(button, mmIcon('star'), 'IMDb');
+      button.querySelector('.btn-text').textContent = ` ${rating}`;
       if (votes) button.title = t('movie.imdb_votes', { votes });
 
       const badge = document.createElement('a');
@@ -362,7 +363,7 @@ function showImdb(imdbId) {
       badge.href = url;
       badge.target = '_blank';
       badge.rel = 'noopener';
-      badge.textContent = `⭐ ${rating} IMDb`;
+      badge.textContent = `★ ${rating} IMDb`;
       if (votes) badge.title = button.title;
       document.querySelector('.ratings-row')?.appendChild(badge);
     })
@@ -413,7 +414,7 @@ function startHeroVideo(key) {
 
   const muteBtn = document.getElementById('muteBtn');
   muteBtn.style.display = isPhoneLayout() ? 'none' : 'flex';
-  muteBtn.textContent = isMuted ? '\uD83D\uDD07' : '\uD83D\uDD0A';
+  muteBtn.replaceChildren(mmIcon(isMuted ? 'volume-off' : 'volume'));
 }
 
 function tryNextTrailer() {
@@ -444,7 +445,7 @@ function toggleMute() {
   isMuted = !isMuted;
   const iframe = document.getElementById('heroIframe');
   if (iframe) iframe.src = heroEmbedUrl(trailerKey, isMuted);
-  document.getElementById('muteBtn').textContent = isMuted ? '\uD83D\uDD07' : '\uD83D\uDD0A';
+  document.getElementById('muteBtn').replaceChildren(mmIcon(isMuted ? 'volume-off' : 'volume'));
 }
 
 function openTrailerModal(key) {
@@ -479,8 +480,8 @@ function setupFavoriteBtn(details) {
   const isFav = () => isFavoriteItem(id, normalizedType);
 
   const update = () => {
-    if (isFav()) setIconLabel(btn, '❤️', t('movie.in_favorites'));
-    else setIconLabel(btn, '🤍', t('movie.add_favorite'));
+    if (isFav()) setIconLabel(btn, mmIcon('heart-fill'), t('movie.in_favorites'));
+    else setIconLabel(btn, mmIcon('heart'), t('movie.add_favorite'));
   };
 
   update();
