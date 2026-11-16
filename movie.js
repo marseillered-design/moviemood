@@ -354,8 +354,10 @@ function showImdb(imdbId) {
     .then(res => (res.ok ? res.json() : {}))
     .then(({ rating, votes }) => {
       if (!rating) return;
-      setIconLabel(button, mmIcon('star'), 'IMDb');
-      button.querySelector('.btn-text').textContent = ` ${rating}`;
+      // the star and the score stay together: phones hide the label part of these buttons
+      const score = document.createElement('span');
+      score.append(mmIcon('star'), ` ${rating}`);
+      setIconLabel(button, score, 'IMDb');
       if (votes) button.title = t('movie.imdb_votes', { votes });
 
       const badge = document.createElement('a');
