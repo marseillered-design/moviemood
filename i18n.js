@@ -31,7 +31,7 @@
     'home.region_detected': { en: 'Auto-detected', uk: 'Визначено автоматично', ru: 'Определено автоматически', fr: 'Détectée automatiquement', es: 'Detectada automáticamente', de: 'Automatisch erkannt' },
     'home.content_type': { en: 'Content type', uk: 'Тип', ru: 'Тип', fr: 'Type de contenu', es: 'Tipo de contenido', de: 'Inhaltstyp' },
     'home.options': { en: 'Options', uk: 'Параметри', ru: 'Параметры', fr: 'Options', es: 'Opciones', de: 'Optionen' },
-    'home.include_anime': { en: 'Include Anime', uk: 'Тільки аніме', ru: 'Только аниме', fr: 'Uniquement des animes', es: 'Solo anime', de: 'Nur Anime' },
+    'home.include_anime': { en: 'Anime only', uk: 'Тільки аніме', ru: 'Только аниме', fr: 'Uniquement des animes', es: 'Solo anime', de: 'Nur Anime' },
     'home.examples': { en: 'Try: "horrors of 90s" · "80s action" · "dark sci-fi like Interstellar"', uk: 'Спробуйте: «жахи 90-х» · «затишний вечір» · «комедія про зомбі»', ru: 'Попробуйте: «ужасы 90-х» · «уютный вечер» · «комедия про зомби»', fr: 'Essayez : « horreur des années 90 » · « soirée cocooning » · « comédie de zombies »', es: 'Prueba: «terror de los 90» · «noche tranquila» · «comedia de zombis»', de: 'Probier: „Horror der 90er“ · „ruhiger Abend“ · „Zombie-Komödie“' },
     'home.load_more': { en: 'Load More', uk: 'Показати ще', ru: 'Показать ещё', fr: 'Voir plus', es: 'Ver más', de: 'Mehr laden' },
     'home.browse_moods': { en: 'Browse movies by mood', uk: 'Добірки під настрій', ru: 'Подборки под настроение', fr: 'Films par humeur', es: 'Películas por ánimo', de: 'Filme nach Stimmung' },

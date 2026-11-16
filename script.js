@@ -327,8 +327,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   
+  // "Anime only" applies at once: the current search again, or popular anime when nothing was typed
   document.getElementById('animeToggle').addEventListener('change', e => {
     includeAnime = e.target.checked;
+    if (moodInput.value.trim()) handleSearch(true);
+    else if (includeAnime) loadAnimeBrowse();
+    else loadTrendingMixed();
   });
   
   document.getElementById('surpriseBtn').addEventListener('click', handleSurprise);
@@ -432,6 +436,25 @@ async function handleSearch(resetPage = true) {
   renderEmptyState(t('home.empty_search'));
 }
 
+// "Anime only" with an empty search box: the best-loved anime of the chosen type
+async function loadAnimeBrowse() {
+  currentPage = 1;
+  currentQuery = '';
+  removeLoadMoreBtn();
+  setResultsHeading(null);
+  showSkeleton();
+  lastAiData = { genres: [16], sort: 'votes' };
+  const results = await fetchByAiData(lastAiData, currentPage);
+  hideSkeleton();
+  renderUnderstood(lastAiData);
+  if (results.length > 0) {
+    displayMovies(results, false);
+    addLoadMoreBtn();
+  } else {
+    renderEmptyState(t('home.empty_search'));
+  }
+}
+
 async function handleSurprise() {
   renderUnderstood(null);
   setResultsHeading(null);
@@ -451,7 +474,10 @@ async function handleSurprise() {
     const randomGenre = genres[Math.floor(Math.random() * genres.length)];
     lastAiData = { genres: [randomGenre] };
     const endpoint = currentType === 'tv' ? 'tv' : 'movie';
-    url = `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&with_genres=${randomGenre}&sort_by=popularity.desc&vote_count.gte=100&page=${randomPage}`;
+    // "Anime only": a random page of well-known anime, any genre
+    const filter = includeAnime ? `with_keywords=${ANIME_KEYWORD_ID}` : `with_genres=${randomGenre}`;
+    if (includeAnime) lastAiData = { genres: [16], keywords: [ANIME_KEYWORD_ID] };
+    url = `${TMDB_BASE_URL}/discover/${endpoint}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&${filter}&sort_by=popularity.desc&vote_count.gte=100&page=${randomPage}`;
   }
 
   try {
@@ -941,8 +967,11 @@ async function fetchByAiData(aiData, page = 1) {
       // "epic fantasy adventure" too: cartoons only when animation, family or anime was asked for
       const wantsCartoons = includeAnime || isMood || genreIds.some(g => [16, 10751].includes(g));
       const skipCartoons = endpoint === 'movie' && !isDocumentary && genreIds.length > 0 && !wantsCartoons;
-      // series use their own genre ids; never exclude a genre that was asked for
-      const moodExcluded = endpoint === 'tv' ? mapGenresToTv(aiData.exclude_genres || []) : (aiData.exclude_genres || []);
+      // series use their own genre ids; never exclude a genre that was asked for. Anime is animation:
+      // the moods that leave cartoons out ("feel-good", "cozy", "mind-bending") must keep it for anime
+      const wantsAnime = keywordIds.includes(ANIME_KEYWORD_ID);
+      const moodExcluded = (endpoint === 'tv' ? mapGenresToTv(aiData.exclude_genres || []) : (aiData.exclude_genres || []))
+        .filter(g => !(wantsAnime && g === 16));
       const excludedGenres = [...moodExcluded.filter(g => !genreIds.includes(g)), ...(isPlainGenre || skipCartoons ? [16] : [])];
       const excludeParam = (excludedGenres.length ? `&without_genres=${[...new Set(excludedGenres)].join(',')}` : '') +
         // "not too gory", "no tearjerkers"
@@ -1082,6 +1111,9 @@ function renderUnderstood(aiData) {
     // with a mood recipe the genres are only "any of", the mood name says more
     if (!aiData.genres_any) (aiData.genres || []).forEach(id => chips.push(t(`genre.${id}`)));
     (aiData.topics || []).forEach(topic => chips.push(`#${topic}`));
+    // the "Anime only" switch narrows searches by genre, mood or topic (not names or titles)
+    const byDiscover = !aiData.search_query && !aiData.company_id && !aiData.title_query;
+    if (includeAnime && byDiscover && !(aiData.topics || []).includes('anime')) chips.push('#anime');
     if (aiData.language) chips.push(mmDisplayName('language', aiData.language));
 
     const { year_from: from, year_to: to } = aiData;
