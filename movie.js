@@ -4,7 +4,8 @@ const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 // "More like this" cards: w342 is sharp at card size, half the weight of w500
 const TMDB_CARD_URL = 'https://image.tmdb.org/t/p/w342';
 // The backdrop never shows larger than the screen: "original" files weigh several megabytes
-const TMDB_BACKDROP_URL = `https://image.tmdb.org/t/p/${window.matchMedia('(max-width: 600px)').matches ? 'w780' : 'w1280'}`;
+// phones w780, computers w1280, 2K and 4K screens the original (the same as api/page.js preloads)
+const TMDB_BACKDROP_URL = `https://image.tmdb.org/t/p/${window.matchMedia('(max-width: 600px)').matches ? 'w780' : window.matchMedia('(min-width: 2200px)').matches ? 'original' : 'w1280'}`;
 
 const params = new URLSearchParams(window.location.search);
 // Pretty URLs (/movie/603-the-matrix) are rendered by api/page.js, which passes the id here

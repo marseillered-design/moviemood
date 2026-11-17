@@ -16,7 +16,7 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 // posters in the card grids: sharp at card size, half the weight of w500
 const TMDB_CARD_URL = 'https://image.tmdb.org/t/p/w342';
-const ASSET_VERSION = '2026111706';
+const ASSET_VERSION = '2026111802';
 const DAY = 86400;
 
 // Shared quality bar: known, well-rated titles only
@@ -910,7 +910,7 @@ function movieCard(movie, lang, path = titlePath(movie)) {
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '';
   return `<a class="movie-card" href="${langPath(lang, path)}">
         <div class="card-poster-wrapper">
-          <img src="${TMDB_CARD_URL}${movie.poster_path}" class="movie-poster" loading="lazy" alt="${escapeHtml(title)}${year ? ` (${year})` : ''} ${tr(lang, 'poster')}">
+          <img src="${TMDB_CARD_URL}${movie.poster_path}" srcset="${TMDB_CARD_URL}${movie.poster_path} 342w, ${TMDB_IMAGE_BASE_URL}${movie.poster_path} 500w" sizes="(max-width: 600px) 46vw, (min-width: 3400px) 400px, (min-width: 2880px) 300px, (min-width: 2200px) 240px, 200px" class="movie-poster" loading="lazy" alt="${escapeHtml(title)}${year ? ` (${year})` : ''} ${tr(lang, 'poster')}">
           ${rating ? `<span class="tmdb-mini-score card-score">${rating}</span>` : ''}
         </div>
         <div class="card-info">
@@ -1376,8 +1376,9 @@ async function renderTitlePage(type, id, origin, requestedPath, lang = 'en') {
   // scripts have asked TMDB about the film
   const backdrop = size => `https://image.tmdb.org/t/p/${size}${details.backdrop_path}`;
   const backdropHead = details.backdrop_path ? `<link rel="preload" as="image" href="${backdrop('w780')}" media="(max-width: 600px)" fetchpriority="high">
-  <link rel="preload" as="image" href="${backdrop('w1280')}" media="(min-width: 601px)" fetchpriority="high">
-  <style>#heroBackdrop{background-image:url(${backdrop('w780')})}@media (min-width:601px){#heroBackdrop{background-image:url(${backdrop('w1280')})}}</style>` : '';
+  <link rel="preload" as="image" href="${backdrop('w1280')}" media="(min-width: 601px) and (max-width: 2199px)" fetchpriority="high">
+  <link rel="preload" as="image" href="${backdrop('original')}" media="(min-width: 2200px)" fetchpriority="high">
+  <style>#heroBackdrop{background-image:url(${backdrop('w780')})}@media (min-width:601px){#heroBackdrop{background-image:url(${backdrop('w1280')})}}@media (min-width:2200px){#heroBackdrop{background-image:url(${backdrop('original')})}}</style>` : '';
 
   const head = `<title>${escapeHtml(pageTitle)}</title>
   <meta name="description" content="${escapeHtml(description)}">

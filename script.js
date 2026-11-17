@@ -1476,7 +1476,7 @@ function createCard(movie, eager = false) {
 
   card.innerHTML = `
     <div class="card-poster-wrapper">
-      <img src="${poster}" class="movie-poster" loading="${eager ? 'eager' : 'lazy'}"${eager ? ' fetchpriority="high"' : ''} alt="">
+      <img src="${poster}"${movie.poster_path ? ` srcset="${poster} 342w, https://image.tmdb.org/t/p/w500${movie.poster_path} 500w" sizes="(max-width: 600px) 46vw, (min-width: 3400px) 400px, (min-width: 2880px) 300px, (min-width: 2200px) 240px, 200px"` : ''} class="movie-poster" loading="${eager ? 'eager' : 'lazy'}"${eager ? ' fetchpriority="high"' : ''} alt="">
       ${rating ? `<span class="tmdb-mini-score card-score">${rating}</span>` : ''}
       <div class="card-overlay"></div>
     </div>

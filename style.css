@@ -1,4 +1,14 @@
 
+/* ==================== WIDE SCREENS ====================
+   2K and 4K at 100% scale: the whole page grows in steps instead of a narrow column in the middle.
+   Lengths taken from the screen (vh, vw) are divided by the same number, so full-screen parts
+   (the trailer feed, the film hero) still fit. Laptops and Full HD stay at 1. */
+:root { --zoom: 1; }
+@media (min-width: 2200px) { :root { --zoom: 1.2; } }
+@media (min-width: 2880px) { :root { --zoom: 1.5; } }
+@media (min-width: 3400px) { :root { --zoom: 2; } }
+html { zoom: var(--zoom); }
+
 /* ==================== RESET ==================== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -74,7 +84,7 @@ body, .movie-card, .fav-card, input, select, button, .nav-favorites, .theme-togg
   font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
-  min-height: 100vh;
+  min-height: calc(100vh / var(--zoom));
   overflow-x: hidden;
 }
 
@@ -206,7 +216,7 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
 }
 .home-title {
   font-family: var(--font-display);
-  font-size: clamp(4rem, 12vw, 9rem);
+  font-size: clamp(4rem, calc(12vw / var(--zoom)), 9rem);
   letter-spacing: 4px;
   line-height: 0.9;
   color: var(--text);
@@ -604,7 +614,7 @@ html:not([data-theme]) .theme-toggle .icon-moon { display: inline; }
 
 /* ==================== MOOD PAGES (api/page.js) ==================== */
 .mood-hero { padding: 40px 20px 30px; }
-.mood-title { font-size: clamp(2.6rem, 7vw, 5rem); line-height: 1; }
+.mood-title { font-size: clamp(2.6rem, calc(7vw / var(--zoom)), 5rem); line-height: 1; }
 .mood-intro { max-width: 720px; margin: 0 auto; line-height: 1.6; }
 .mood-intro a { color: var(--neon); }
 a.movie-card { display: block; text-decoration: none; color: inherit; }
@@ -705,7 +715,7 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 .movie-hero-section {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: calc(100vh / var(--zoom));
   min-height: 600px;
   overflow: hidden;
 }
@@ -747,7 +757,7 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 }
 .hero-title {
   font-family: var(--font-display);
-  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-size: clamp(2.5rem, calc(6vw / var(--zoom)), 5rem);
   letter-spacing: 2px;
   line-height: 1;
   margin-bottom: 12px;
@@ -1055,7 +1065,7 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 .trailer-modal.active { display: flex; }
 .trailer-modal-inner {
   position: relative;
-  width: 90vw;
+  width: calc(90vw / var(--zoom));
   max-width: 960px;
   aspect-ratio: 16/9;
 }
@@ -1086,7 +1096,7 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 }
 .page-title {
   font-family: var(--font-display);
-  font-size: clamp(3rem, 8vw, 6rem);
+  font-size: clamp(3rem, calc(8vw / var(--zoom)), 6rem);
   letter-spacing: 3px;
   line-height: 1;
   color: var(--text);
@@ -1326,7 +1336,7 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 }
 .person-name {
   font-family: var(--font-display);
-  font-size: clamp(2.6rem, 7vw, 5.2rem);
+  font-size: clamp(2.6rem, calc(7vw / var(--zoom)), 5.2rem);
   letter-spacing: 2px;
   line-height: 0.95;
   margin-bottom: 12px;
@@ -1383,7 +1393,7 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
   .nav-logo { font-size: 1.6rem; }
   .nav-favorites { font-size: 0.8rem; padding: 6px 12px; }
   .home-hero { padding: 24px 16px 20px; }
-  .home-title { font-size: clamp(3.2rem, 18vw, 5.5rem); }
+  .home-title { font-size: clamp(3.2rem, calc(18vw / var(--zoom)), 5.5rem); }
   .search-container {
     display: grid;
     grid-template-columns: 1fr auto auto auto;
@@ -1403,7 +1413,7 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 @media (max-width: 480px) {
   .movies-grid { grid-template-columns: repeat(2, 1fr); }
   .similar-grid { grid-template-columns: repeat(2, 1fr); }
-  .home-title { font-size: clamp(2.8rem, 17vw, 4rem); }
+  .home-title { font-size: clamp(2.8rem, calc(17vw / var(--zoom)), 4rem); }
 }
 @media (hover: none) {
   .fav-btn { opacity: 1 !important; }
@@ -1567,8 +1577,8 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
   font-family: var(--font-body);
 }
 .reels-feed {
-  height: 100vh;
-  height: 100dvh;
+  height: calc(100vh / var(--zoom));
+  height: calc(100dvh / var(--zoom));
   overflow-y: auto;
   scroll-snap-type: y mandatory;
   overscroll-behavior: contain;
@@ -1577,8 +1587,8 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 .reels-feed::-webkit-scrollbar { display: none; }
 .reel {
   position: relative;
-  height: 100vh;
-  height: 100dvh;
+  height: calc(100vh / var(--zoom));
+  height: calc(100dvh / var(--zoom));
   display: flex;
   justify-content: center;
   overflow: hidden;
@@ -1598,8 +1608,8 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 .reel-stage {
   position: relative;
   height: 100%;
-  width: min(100vw, calc(100vh * 9 / 16));
-  width: min(100vw, calc(100dvh * 9 / 16));
+  width: min(calc(100vw / var(--zoom)), calc(calc(100vh / var(--zoom)) * 9 / 16));
+  width: min(calc(100vw / var(--zoom)), calc(calc(100dvh / var(--zoom)) * 9 / 16));
   overflow: hidden;
   background: #000;
 }
@@ -1611,8 +1621,8 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
   top: 50%;
   left: 50%;
   height: 100%;
-  width: calc(100vh * 16 / 9);
-  width: calc(100dvh * 16 / 9);
+  width: calc(calc(100vh / var(--zoom)) * 16 / 9);
+  width: calc(calc(100dvh / var(--zoom)) * 16 / 9);
   transform: translate(-50%, -50%);
   border: 0;
   /* touches go to .reel-tap, otherwise the video would swallow the swipe */
@@ -1851,7 +1861,7 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
   left: 50%;
   top: -14px;
   transform: translateX(-50%);
-  width: min(860px, 96vw);
+  width: min(860px, calc(96vw / var(--zoom)));
   height: 170px;
   border-radius: var(--r-lg);
   background: radial-gradient(circle at 50% 30%, rgba(201, 160, 90, 0.20), rgba(201, 160, 90, 0.06) 52%, transparent 74%);
@@ -1958,7 +1968,7 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 
 /* Smaller hero: the first films are visible without scrolling */
 .home-hero { padding: 28px 20px 24px; }
-.home-title { font-size: clamp(2.6rem, 6.5vw, 4.6rem); line-height: 1; margin-bottom: 12px; }
+.home-title { font-size: clamp(2.6rem, calc(6.5vw / var(--zoom)), 4.6rem); line-height: 1; margin-bottom: 12px; }
 .home-subtitle { font-size: 1rem; }
 .results-section { margin-top: 24px; }
 
@@ -2013,14 +2023,14 @@ a.movie-card { display: block; text-decoration: none; color: inherit; }
 
 @media (max-width: 768px) {
   .home-hero { padding: 12px 16px 16px; }
-  .home-title { font-size: clamp(1.9rem, 9vw, 2.8rem); margin-bottom: 8px; }
+  .home-title { font-size: clamp(1.9rem, calc(9vw / var(--zoom)), 2.8rem); margin-bottom: 8px; }
   .home-subtitle { font-size: 0.9rem; }
   .search-container { grid-template-columns: 1fr 1fr 1fr; margin-bottom: 16px; }
   .search-btn, .surprise-btn, .filters-btn { justify-content: center; padding: 13px 10px; }
   .results-section { margin-top: 16px; }
 }
 @media (max-width: 480px) {
-  .home-title { font-size: clamp(1.8rem, 9vw, 2.4rem); }
+  .home-title { font-size: clamp(1.8rem, calc(9vw / var(--zoom)), 2.4rem); }
 }
 /* ==================== NAV: two links, favorites, menu (nav.js) ==================== */
 .nav-main { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
@@ -2132,12 +2142,12 @@ a.nav-menu-item:hover, button.nav-menu-item:hover { background: var(--input-bg);
 
 /* ==================== MOVIE PAGE PASS ==================== */
 /* The hero grows with its content: on short screens the text no longer slides under the nav */
-.movie-hero-section { height: auto; min-height: 100vh; min-height: 100svh; }
+.movie-hero-section { height: auto; min-height: calc(100vh / var(--zoom)); min-height: calc(100svh / var(--zoom)); }
 .hero-content {
   position: relative;
   inset: auto;
-  min-height: 100vh;
-  min-height: 100svh;
+  min-height: calc(100vh / var(--zoom));
+  min-height: calc(100svh / var(--zoom));
   padding: 110px 48px 60px;
   box-sizing: border-box;
 }
@@ -2528,3 +2538,7 @@ a:focus-visible, button:focus-visible, [role="button"]:focus-visible { outline: 
 [data-theme="light"] .home-body, [data-theme="light"] .movie-body, [data-theme="light"] .feed-body { background: var(--bg); }
 /* the empty shade at the bottom of posters (nothing is shown in it any more) */
 .card-overlay { display: none !important; }
+
+/* Wide screens (see --zoom at the top): no sideways scrolling (Chrome counts hidden carousel
+   parts as page width once the page is zoomed) */
+@media (min-width: 2200px) { html { overflow-x: clip; } }
